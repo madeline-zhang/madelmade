@@ -1,5 +1,2 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://${PGHOST:localhost}:${PGPORT:5432}/${PGTESTDATABASE:madelmade_test}
 app:
   show-codes-on-screen: false
