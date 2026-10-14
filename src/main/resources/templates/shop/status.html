@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title th:text="${'Order ' + order.number + ' · MadelMade'}">Order · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="t-eyebrow" th:text="${'Order ' + order.number + ' · sent ' + @fmt.stamp(order.createdAt)}">Order #1042</div>
+      <h1 class="t-page-title" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
+        <span th:text="${headline}">Waiting for Madeline</span>
+        <span th:replace="~{components/status-badge :: badge(${order.status}, true)}"></span>
+      </h1>
+      <p class="t-subtitle" th:text="${subline}">Madeline will review your request soon.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="stack" style="gap: 20px">
+        <section class="card" aria-labelledby="msgs">
+          <h2 id="msgs" class="card-title">Messages</h2>
+          <div class="messages">
+            <p class="muted t-small" th:if="${order.visibleMessages.isEmpty()}" style="margin: 0">No messages yet. Questions about your order? Write to Madeline here.</p>
+            <th:block th:each="m : ${order.visibleMessages}"><div th:replace="~{components/message-bubble :: bubble(${m}, 'CUSTOMER')}"></div></th:block>
+          </div>
+          <form method="post" th:action="@{/o/{t}/reply(t=${order.statusToken})}" class="stack" style="margin-top: 18px" th:if="${!order.status.closed}">
+            <div class="field"><label for="reply">Write to Madeline</label>
+              <textarea id="reply" name="message" rows="3" maxlength="4000" required></textarea></div>
+            <button type="submit" class="btn" style="align-self: flex-start">Send</button>
+          </form>
+        </section>
+
+        <section class="card" th:if="${!certItems.isEmpty()}">
+          <h2 class="card-title">Birth certificate</h2>
+          <p class="t-small muted">Your printed card comes with the loaf. Here's a digital copy to save or print.</p>
+          <div class="action-row">
+            <a class="btn btn-secondary" th:each="i : ${certItems}" th:href="@{/o/{t}/certificate/{id}(t=${order.statusToken},id=${i.id})}" th:text="${'View ' + i.certName + '''s certificate'}">View certificate</a>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">Your order</h2>
+          <div th:replace="~{components/order-summary :: order(${order}, false)}"></div>
+        </section>
+      </div>
+
+      <aside class="stack" style="gap: 20px">
+        <section class="card">
+          <h2 class="card-title">Progress</h2>
+          <ol class="timeline">
+            <li th:each="s : ${steps}" th:classappend="${s.state}">
+              <span class="dot" aria-hidden="true"></span>
+              <div><div class="step-title" th:text="${s.title}">Request sent</div><div class="step-sub" th:text="${s.sub}"></div></div>
+            </li>
+          </ol>
+        </section>
+        <section class="card stack" style="gap: 10px">
+          <h2 class="card-title" style="margin: 0">Details</h2>
+          <div><strong th:text="${order.fulfillment.label}">Pickup</strong> · <span th:text="${@fmt.longDay(order.requestedDate)}">Saturday</span><span th:if="${order.requestedTime != null}" th:text="${', ' + order.requestedTime.toLowerCase()}"></span></div>
+          <div class="t-small muted" th:if="${!order.delivery}" th:text="${'Pickup in the ' + settings.pickupArea() + ' area. The address comes with your confirmation.'}"></div>
+          <div class="t-small" th:if="${order.delivery}" th:text="${'Delivering to ' + order.deliveryAddress}"></div>
+          <div class="t-small" th:if="${order.depositRequired and order.status.name() == 'APPROVED'}">
+            <span th:if="${order.depositPaid}">Delivery deposit received. Thank you!</span>
+            <span th:unless="${order.depositPaid}" th:text="${'Please send the ' + @money.fmt(order.deliveryFee) + ' delivery deposit by Venmo or Zelle so Madeline can start baking.'}"></span>
+          </div>
+          <div class="t-small muted">Payment: at pickup or delivery (cash, Venmo or Zelle).</div>
+          <div class="t-small muted" th:text="${'Updates go to ' + order.contactEmail + (order.contactPref.name() != 'EMAIL' ? ' and by ' + order.contactPref.label : '')}"></div>
+        </section>
+        <form method="post" th:action="@{/o/{t}/cancel(t=${order.statusToken})}" th:if="${order.status.cancellableByCustomer}" data-confirm="Cancel this order? Madeline will be told right away.">
+          <button type="submit" class="btn btn-danger btn-block">Cancel order</button>
+        </form>
+        <a class="btn btn-secondary" th:if="${order.status.closed}" th:href="@{/#menu}">Order again</a>
+      </aside>
+    </div>
+  </div>
+</main>
+</body>
+</html>

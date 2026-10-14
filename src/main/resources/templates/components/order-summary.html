@@ -1,0 +1,62 @@
+<!-- Cart lines (editable in the drawer and cart page) -->
+<div th:fragment="cartLines(editable)">
+  <p th:if="${cart.empty}" class="muted" style="padding: 24px 0">Your cart is empty. <a th:href="@{/#menu}">Browse the menu</a>.</p>
+  <div class="cart-line" th:each="l : ${cart.lines}">
+    <img th:if="${l.photoId != null}" th:src="@{/photos/{id}(id=${l.photoId})}" alt="" loading="lazy">
+    <div th:unless="${l.photoId != null}" class="thumb"></div>
+    <div>
+      <div class="cart-line-name" th:text="${l.productName}">Classic Loaf</div>
+      <div class="cart-line-opts" th:if="${l.optionsSummary != null and !l.optionsSummary.isEmpty()}" th:text="${l.optionsSummary}">Whole · Plain · Double leaf</div>
+      <div class="cart-line-opts" th:if="${l.customNotes != null}" th:text="${'Note: ' + l.customNotes}"></div>
+      <div class="nested" th:if="${l.certificate}">
+        Birth certificate <span th:text="${'+' + @money.fmt(l.certPrice)}">+$1</span><br>
+        <span th:text="${l.certName}">Hazel</span><span th:if="${l.certMessage != null}" th:text="${' · ' + l.certMessage}"></span>
+      </div>
+      <div class="cart-line-actions" th:if="${editable}">
+        <form method="post" th:action="@{/cart/update}">
+          <input type="hidden" name="line" th:value="${l.id}">
+          <input type="hidden" name="back" th:value="${path}">
+          <div class="qty">
+            <button type="submit" name="quantity" th:value="${l.quantity - 1}" aria-label="One fewer">−</button>
+            <input type="text" readonly th:value="${l.quantity}" aria-label="Quantity">
+            <button type="submit" name="quantity" th:value="${l.quantity + 1}" aria-label="One more">+</button>
+          </div>
+        </form>
+        <form method="post" th:action="@{/cart/remove}">
+          <input type="hidden" name="line" th:value="${l.id}">
+          <input type="hidden" name="back" th:value="${path}">
+          <button type="submit" class="link-btn">Remove</button>
+        </form>
+      </div>
+      <div class="cart-line-opts" th:unless="${editable}" th:text="${'Qty ' + l.quantity}">Qty 1</div>
+    </div>
+    <div class="summary-price" th:text="${l.priceTbd ? @money.fmt(l.lineTotal) + ' + custom' : @money.fmt(l.lineTotal)}">$16</div>
+  </div>
+</div>
+
+<!-- Order summary for a placed order: status page, checkout receipt, admin -->
+<div th:fragment="order(o, showPrivate)">
+  <div class="summary-line" th:each="i : ${o.items}">
+    <div>
+      <div class="summary-name"><span th:if="${i.quantity > 1}" th:text="${i.quantity + ' × '}"></span><span th:text="${i.productName}">Stencil Loaf</span></div>
+      <div class="summary-opts" th:if="${i.optionsSummary != null and !i.optionsSummary.isEmpty()}" th:text="${i.optionsSummary}">Whole · Rosemary garlic · Butterfly</div>
+      <div class="summary-opts" th:if="${i.customNotes != null}" th:text="${'Note: ' + i.customNotes}"></div>
+      <div class="nested" th:if="${i.hasCertificate}">
+        Birth certificate <span th:text="${'+' + @money.fmt(i.certPrice)}">+$1</span><br>
+        <span th:text="${i.certName}">Hazel</span><span th:if="${i.certMessage != null}" th:text="${' · ' + i.certMessage}"></span>
+      </div>
+    </div>
+    <div class="summary-price">
+      <span th:if="${i.priceTbd}">Price to be discussed</span>
+      <span th:unless="${i.priceTbd}" th:text="${@money.fmt(i.lineTotal)}">$16</span>
+    </div>
+  </div>
+  <div class="summary-totals">
+    <div><span>Items</span><span th:text="${@money.fmt(o.subtotal) + (o.priceTbd ? ' + custom' : '')}">$26</span></div>
+    <div th:if="${o.priority}"><span>Priority (1-day)</span><span th:text="${@money.fmt(o.priorityFee)}">$5</span></div>
+    <div th:if="${o.delivery}"><span>Delivery<span th:if="${o.depositRequired}"> (paid up front as a deposit)</span></span>
+      <span th:text="${o.deliveryFee != null ? @money.fmt(o.deliveryFee) : 'Quoted by Madeline'}">$6</span></div>
+    <div th:if="${o.adjustment != null and o.adjustment.signum() != 0}"><span th:text="${o.adjustmentNote != null ? o.adjustmentNote : 'Adjustment'}">Custom design</span><span th:text="${@money.fmt(o.adjustment)}">$2</span></div>
+    <div class="grand"><span>Total</span><span th:text="${@money.fmt(o.total) + (o.priceTbd ? ' + custom' : '') + (o.delivery and o.deliveryFee == null ? ' + delivery' : '')}">$26</span></div>
+  </div>
+</div>

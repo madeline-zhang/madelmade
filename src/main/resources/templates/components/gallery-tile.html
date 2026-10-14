@@ -1,0 +1,4 @@
+<figure th:fragment="tile(g)" class="gallery-tile">
+  <img th:src="@{/photos/{id}(id=${g.photoId})}" th:alt="${g.caption != null ? g.caption : 'A MadelMade loaf'}" loading="lazy">
+  <figcaption th:if="${g.caption != null}" th:text="${g.caption}">Miriam's double leaf</figcaption>
+</figure>

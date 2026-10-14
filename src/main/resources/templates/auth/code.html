@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>Enter your code · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="signin-card">
+      <div class="page-head" style="margin-bottom: 0">
+        <div class="t-eyebrow">Check your email</div>
+        <h1 class="t-page-title">Enter your code</h1>
+        <p class="t-subtitle" style="font-size: 1rem">We sent a 6-digit code to <strong th:text="${email}">you@example.com</strong>. It works for 10 minutes.</p>
+      </div>
+      <div class="dev-code" th:if="${devCode != null}">Preview mode: email isn't connected yet, so here is the code: <strong th:text="${devCode}">123456</strong></div>
+      <div class="alert alert-error" th:if="${error != null}" th:text="${error}">Wrong code</div>
+      <form method="post" th:action="@{/signin/code}" class="stack">
+        <div class="field"><label for="code">6-digit code</label>
+          <input type="text" id="code" name="code" class="code-input" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus></div>
+        <button type="submit" class="btn">Sign in</button>
+      </form>
+      <form method="post" th:action="@{/signin/email}">
+        <input type="hidden" name="email" th:value="${email}">
+        <input type="hidden" name="next" th:value="${next}">
+        <button type="submit" class="link-btn">Send a new code</button>
+        <a class="link-btn" th:href="@{/signin(next=${next})}">Use a different email</a>
+      </form>
+    </div>
+  </div>
+</main>
+</body>
+</html>

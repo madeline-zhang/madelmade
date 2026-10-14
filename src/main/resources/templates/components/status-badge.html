@@ -1,0 +1,3 @@
+<!-- Status badge. "customer" switches to the friendlier customer wording. -->
+<span th:fragment="badge(status, customer)" class="badge" th:classappend="${'badge-' + status.badge}"
+      th:text="${customer} ? ${status.customerLabel} : ${status.label}">Needs review</span>

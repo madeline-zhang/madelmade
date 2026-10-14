@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>Checkout · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="signin-card card">
+      <h1 class="t-title">How would you like to check out?</h1>
+      <p class="t-small muted" style="margin: 0">Signing in saves your details and lets you reorder a favorite in one tap.</p>
+      <a th:if="${googleEnabled}" class="google-btn" th:href="@{/signin/google(next='/checkout')}">
+        <svg th:replace="~{components/icons :: google}"></svg> Continue with Google
+      </a>
+      <a class="btn btn-secondary" th:href="@{/signin(next='/checkout')}">Email me a sign-in code</a>
+      <div class="or-line">or</div>
+      <a class="btn" th:href="@{/checkout}">Continue as guest</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

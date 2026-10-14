@@ -1,0 +1,9 @@
+<!-- One message in an order conversation. "viewer" is MADELINE or CUSTOMER, so "me" sits on the right. -->
+<div th:fragment="bubble(m, viewer)" class="bubble"
+     th:classappend="${m.author.name() == 'LOG'} ? 'is-log' : (${m.author.name() == viewer} ? 'from-me')">
+  <span class="bubble-text" th:text="${m.body}">Saturday is full, is Sunday OK?</span>
+  <div class="bubble-meta">
+    <span th:text="${m.author.name() == 'MADELINE'} ? 'Madeline' : (${m.author.name() == 'LOG'} ? 'Note from a text or WhatsApp chat' : 'Customer')">Madeline</span>
+    · <span th:text="${@fmt.stamp(m.createdAt)}">Oct 7 at 9:14 AM</span>
+  </div>
+</div>

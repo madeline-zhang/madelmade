@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>Your cart · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap page-narrow">
+    <div class="page-head"><h1 class="t-page-title">Your order</h1></div>
+    <div class="card">
+      <div th:replace="~{components/order-summary :: cartLines(true)}"></div>
+      <div class="stack" style="margin-top: 16px" th:if="${!cart.empty}">
+        <div class="total-row"><span>Total</span><strong th:text="${@money.fmt(cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</strong></div>
+        <a class="btn" th:href="${signedIn} ? @{/checkout} : @{/checkout/start}">Checkout</a>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

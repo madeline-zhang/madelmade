@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, ${section})}">
+<head><title>Photo editor · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <a class="back-link" th:href="${target.back}">←&nbsp;&nbsp;Back</a>
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Photo editor</div><h1 th:text="${target.title}">Classic Loaf</h1></div>
+  </div>
+
+  <div class="editor" data-editor
+       th:data-target="${target.key}"
+       th:data-original="${photo != null ? '/admin/photos/' + photo.id + '/original' : ''}"
+       th:data-rotate="${defaultRotate}" th:data-tilt="${defaultTilt}" th:data-crop="${defaultCrop}"
+       th:data-warmth="${defaultWarmth}" th:data-brightness="${defaultBrightness}">
+    <div class="stack">
+      <div class="editor-stage">
+        <canvas data-canvas width="800" height="800" aria-label="Photo preview"></canvas>
+        <p class="muted" data-empty th:if="${photo == null}">Choose a photo to start.</p>
+      </div>
+      <div class="compare">
+        <button type="button" class="btn btn-secondary btn-small" data-hold-original>Hold to see the original</button>
+      </div>
+    </div>
+
+    <div class="editor-controls card">
+      <div class="field">
+        <label for="file" th:text="${photo == null ? 'Choose a photo' : 'Replace with a new photo'}">Choose a photo</label>
+        <input type="file" id="file" accept="image/jpeg,image/png,image/webp" data-file>
+        <div class="help">JPEG or PNG from your phone or computer. The original is always kept.</div>
+      </div>
+
+      <div class="field">
+        <span class="label">Rotate</span>
+        <div class="action-row">
+          <button type="button" class="btn btn-secondary btn-small" data-rotate="-90">↺ Left</button>
+          <button type="button" class="btn btn-secondary btn-small" data-rotate="90">Right ↻</button>
+        </div>
+      </div>
+
+      <div class="range-row">
+        <div class="top"><label for="tilt">Fine tilt</label><span data-out="tilt">0°</span></div>
+        <input type="range" id="tilt" min="-10" max="10" step="0.5" data-input="tilt">
+      </div>
+
+      <div class="field">
+        <span class="label">Crop</span>
+        <div class="segmented" role="radiogroup" aria-label="Crop">
+          <label><input type="radio" name="crop" value="original" data-crop-choice><span class="pill">Original</span></label>
+          <label><input type="radio" name="crop" value="square" data-crop-choice><span class="pill">Square</span></label>
+          <label><input type="radio" name="crop" value="portrait" data-crop-choice><span class="pill">4:5</span></label>
+          <label><input type="radio" name="crop" value="landscape" data-crop-choice><span class="pill">4:3</span></label>
+        </div>
+        <div class="help">Menu cards and swatches show square photos.</div>
+      </div>
+
+      <div class="range-row">
+        <div class="top"><label for="warmth">Warmth</label><span data-out="warmth">6 of 10</span></div>
+        <input type="range" id="warmth" min="0" max="10" step="1" data-input="warmth">
+      </div>
+      <div class="range-row">
+        <div class="top"><label for="brightness">Brightness</label><span data-out="brightness">5 of 10</span></div>
+        <input type="range" id="brightness" min="0" max="10" step="1" data-input="brightness">
+      </div>
+
+      <div class="field" th:if="${target.key.startsWith('gallery')}">
+        <label for="caption">Caption</label>
+        <input type="text" id="caption" maxlength="200" data-caption placeholder="e.g. Miriam's double leaf">
+      </div>
+
+      <div class="alert alert-error hidden" role="alert" data-error></div>
+      <button type="button" class="btn" data-save>Save photo</button>
+      <a class="btn btn-secondary" th:href="${target.back}">Cancel</a>
+    </div>
+  </div>
+
+  <form method="post" th:action="@{/admin/photos/remove}" th:if="${photo != null}" data-confirm="Remove this photo?">
+    <input type="hidden" name="target" th:value="${target.key}">
+    <button type="submit" class="link-btn" th:text="${target.key.startsWith('gallery') ? 'Remove from gallery' : 'Remove photo'}">Remove photo</button>
+  </form>
+  <script th:src="@{/js/photo-editor.js}" defer></script>
+</main>
+</body>
+</html>

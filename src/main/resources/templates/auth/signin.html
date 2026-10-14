@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>Sign in · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="signin-card">
+      <div class="page-head" style="margin-bottom: 0">
+        <div class="t-eyebrow">Welcome</div>
+        <h1 class="t-page-title">Sign in</h1>
+        <p class="t-subtitle" style="font-size: 1rem">Save your contact details, see every request and its status, and reorder a favorite loaf in one tap.</p>
+      </div>
+      <div class="alert alert-info" th:if="${denied}">That account can't open this page. Sign in with Madeline's account to manage orders.</div>
+      <div class="alert alert-error" th:if="${error != null}" th:text="${error}">Problem</div>
+
+      <a th:if="${googleEnabled}" class="google-btn" th:href="@{/signin/google(next=${next})}">
+        <svg th:replace="~{components/icons :: google}"></svg> Continue with Google
+      </a>
+      <div class="or-line" th:if="${googleEnabled}">or</div>
+
+      <form method="post" th:action="@{/signin/email}" class="stack">
+        <input type="hidden" name="next" th:value="${next}">
+        <div class="field"><label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required th:value="${email}"></div>
+        <button type="submit" class="btn btn-secondary">Email me a sign-in code</button>
+      </form>
+      <p class="t-small muted" style="margin: 0">No passwords either way. With email, we send a 6-digit code that works for 10 minutes.</p>
+
+      <div class="card t-small" style="padding: 16px 18px">
+        <strong>Just ordering once?</strong> <a th:href="@{/#menu}">Continue as a guest</a> and you can still follow your order by its link.
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'customers')}">
+<head><title>Customers · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Everyone who has ordered</div><h1>Customers</h1></div>
+    <div class="admin-tools">
+      <form class="search" method="get" th:action="@{/admin/customers}" role="search">
+        <svg th:replace="~{components/icons :: search}"></svg>
+        <input type="search" name="q" th:value="${q}" placeholder="Search name, email or phone" aria-label="Search customers">
+      </form>
+    </div>
+  </div>
+  <div class="empty" th:if="${rows.isEmpty()}" th:text="${q.isEmpty() ? 'No customers yet. They show up here after their first request.' : 'No one matches that search.'}">No customers yet.</div>
+  <div class="table-wrap" th:unless="${rows.isEmpty()}">
+    <table class="table">
+      <thead><tr><th>Name</th><th>Contact</th><th>Prefers</th><th>Orders</th><th>Spent</th><th>Last order</th></tr></thead>
+      <tbody>
+      <tr th:each="r : ${rows}">
+        <td><strong th:text="${r.name != null and !r.name.isBlank() ? r.name : 'No name yet'}">Sarah Kim</strong> <span class="tag" th:if="${r.hasAccount}">Account</span></td>
+        <td><a th:href="${'mailto:' + r.email}" th:text="${r.email}">sarah@example.com</a><div class="t-small muted" th:if="${r.phone != null}" th:text="${r.phone}">615…</div></td>
+        <td th:text="${r.contact}">Text</td>
+        <td th:text="${r.orders}">2</td>
+        <td th:text="${@money.fmt(r.spent)}">$26</td>
+        <td><a th:if="${r.lastOrderId != null}" th:href="@{/admin/orders/{id}(id=${r.lastOrderId},tab='all')}" th:text="${@fmt.ago(r.lastOrder)}">2h ago</a><span th:if="${r.lastOrderId == null}" class="muted">None yet</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

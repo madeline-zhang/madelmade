@@ -1,0 +1,30 @@
+<!--
+  Option picker: photo swatches for score and design styles, plain buttons for everything else
+  (size, flavor, hot or iced, beans, milk). site.js updates the preview and live price.
+-->
+<div th:fragment="picker(product, selected)" class="stack" style="gap: 30px">
+  <fieldset class="option-group" th:each="g : ${product.optionGroups}" th:if="${!g.activeChoices.isEmpty()}" data-group>
+    <legend>
+      <span class="t-label" th:text="${g.name}">Size</span>
+      <span class="chosen" data-chosen></span>
+    </legend>
+    <div class="choices" th:classappend="${g.swatches} ? 'swatches'">
+      <label th:each="c : ${g.activeChoices}" th:title="${g.swatches} ? ${c.name}">
+        <input th:type="${g.multiple} ? 'checkbox' : 'radio'" th:name="${'opt-' + g.id}" th:value="${c.id}"
+               th:checked="${selected != null and !selected.isEmpty()} ? ${selected.contains(c.id)} : ${c.defaultChoice}"
+               th:data-name="${c.name}" th:data-price="${c.priceChange}" th:data-halves="${c.halvesPrice}" th:data-tbd="${c.priceTbd}" th:data-custom="${c.custom}" th:data-text-limit="${c.textLimit}" th:data-desc="${c.description}" th:data-photo="${c.photoId != null ? '/photos/' + c.photoId : ''}" th:data-group-name="${g.name}">
+        <span th:if="${g.swatches}" class="swatch">
+          <img th:if="${c.photoId != null}" th:src="@{/photos/{id}(id=${c.photoId})}" alt="" loading="lazy">
+          <span th:unless="${c.photoId != null}" class="swatch-blank" th:text="${c.name}">Custom</span>
+        </span>
+        <span th:if="${g.swatches}" class="visually-hidden" th:text="${c.name}">Double leaf</span>
+        <span th:unless="${g.swatches}" class="pill">
+          <span th:text="${c.name}">Rosemary garlic</span>
+          <span class="pill-note" th:if="${c.halvesPrice}">½ price</span>
+          <span class="pill-note" th:if="${c.priceChange.signum() != 0}" th:text="${@money.change(c.priceChange)}">+$2</span>
+          <span class="pill-note" th:if="${c.priceTbd}">price discussed</span>
+        </span>
+      </label>
+    </div>
+  </fieldset>
+</div>

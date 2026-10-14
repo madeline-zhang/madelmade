@@ -1,0 +1,16 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/frame :: frame(~{::content})}">
+<th:block th:fragment="content">
+  <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:24px;margin:0 0 12px;">Good morning, Madeline</h1>
+  <p style="margin:0 0 6px;font-weight:700;" th:text="${'Today, ' + fmt.longDay(today)}">Today</p>
+  <p th:if="${todays.isEmpty()}" style="margin:0 0 14px;color:#5C5A50;">Nothing due today.</p>
+  <ul style="margin:0 0 16px;padding-left:18px;">
+    <li th:each="o : ${todays}" th:text="${o.contactName + ': ' + o.itemsSummary + ' (' + o.fulfillment.label + ')'}"></li>
+  </ul>
+  <p style="margin:0 0 6px;font-weight:700;">Tomorrow</p>
+  <p th:if="${tomorrows.isEmpty()}" style="margin:0 0 14px;color:#5C5A50;">Nothing due tomorrow.</p>
+  <ul style="margin:0 0 16px;padding-left:18px;">
+    <li th:each="o : ${tomorrows}" th:text="${o.contactName + ': ' + o.itemsSummary + ' (' + o.fulfillment.label + ')'}"></li>
+  </ul>
+  <a th:href="${dashboardUrl}" style="display:inline-block;background:#263028;color:#ffffff;text-decoration:none;padding:13px 22px;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;">Open dashboard</a>
+</th:block>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'styleguide')}">
+<head><title>Style guide · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">The pieces the site is built from</div><h1>Style guide</h1></div></div>
+
+  <section class="card stack">
+    <h2 class="card-title">Colors</h2>
+    <div class="settings-grid" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))">
+      <div class="stack" style="gap: 6px" th:each="c : ${ {'Cream|#F4EFE4|page', 'Crumb|#FBF8F1|cards', 'Rye ink|#263028|text', 'Terracotta|#A4502F|buttons', 'Crust|#7A4A2B|prices', 'Linen|#DDD5C4|lines', 'Logo|#936D51|logo'} }"
+           th:with="p=${#strings.arraySplit(c, '|')}">
+        <div class="styleguide-swatch" th:style="${'background:' + p[1]}"></div>
+        <strong th:text="${p[0]}">Cream</strong><span class="t-small muted" th:text="${p[1] + ' · ' + p[2]}">#F4EFE4</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card stack">
+    <h2 class="card-title">Type</h2>
+    <div style="font-family: var(--font-display); font-size: 3rem; line-height: 1">Made to make you <em>smile</em></div>
+    <div class="t-small muted">Cormorant Garamond: hero and big headings</div>
+    <div style="font-family: var(--font-title); font-weight: 800; font-size: 1.75rem">Stencil Loaf</div>
+    <div class="t-small muted">Nunito 800: product names and page titles</div>
+    <p style="margin: 0">DM Sans for everything else. Naturally leavened, slow fermented, baked the morning you pick it up.</p>
+    <div class="t-eyebrow">Eyebrow label</div>
+  </section>
+
+  <section class="card stack">
+    <h2 class="card-title">Buttons</h2>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+      <a class="btn" href="#">Add to cart</a>
+      <a class="btn btn-secondary" href="#">Continue as guest</a>
+      <a class="btn btn-danger" href="#">Decline</a>
+      <a class="btn btn-quiet" href="#">Back to menu</a>
+    </div>
+  </section>
+
+  <section class="card stack">
+    <h2 class="card-title">Order statuses</h2>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      <span class="badge badge-review">Needs review</span>
+      <span class="badge badge-changes">Waiting on customer</span>
+      <span class="badge badge-approved">Approved</span>
+      <span class="badge badge-baked">Baked</span>
+      <span class="badge badge-completed">Completed</span>
+      <span class="badge badge-declined">Declined</span>
+      <span class="tag">Custom</span><span class="tag">Priority</span><span class="flag">Over capacity</span>
+    </div>
+  </section>
+
+  <section class="card stack" style="max-width: 640px">
+    <h2 class="card-title">Form fields</h2>
+    <div class="field"><label for="sg-name">Your name</label><input type="text" id="sg-name" value="Sarah Kim"><div class="help">Help text sits under the field.</div></div>
+    <div class="toggle-row"><div><div class="t">A setting</div><div class="d">Toggles save with the page.</div></div>
+      <label class="switch"><input type="checkbox" checked aria-label="Example toggle"><span></span></label></div>
+  </section>
+</main>
+</body>
+</html>

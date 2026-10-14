@@ -1,0 +1,17 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/frame :: frame(~{::content})}">
+<th:block th:fragment="content">
+  <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:24px;line-height:1.2;margin:0 0 12px;" th:text="${heading}">New request</h1>
+  <p style="margin:0 0 14px;" th:text="${intro}">Intro</p>
+  <div th:if="${!note.isEmpty()}" style="background:#F4EFE4;border-radius:10px;padding:14px 16px;margin:0 0 14px;white-space:pre-wrap;" th:text="${note}">Note</div>
+  <p style="margin:0;font-size:14px;color:#5C5A50;">
+    <strong style="color:#263028;" th:text="${order.contactName}">Sarah</strong>
+    · <span th:text="${order.fulfillment.label + ' ' + fmt.day(order.requestedDate)}">Pickup Sat</span>
+    <span th:if="${order.priority}"> · Priority</span>
+    · prefers <span th:text="${order.contactPref.label}">Text</span>
+  </p>
+  <table th:replace="~{email/lines :: lines(${order})}"></table>
+  <p style="margin:18px 0 0;">
+    <a th:href="${reviewUrl}" style="display:inline-block;background:#263028;color:#ffffff;text-decoration:none;padding:13px 22px;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;">Review in dashboard</a>
+  </p>
+</th:block>
+</html>

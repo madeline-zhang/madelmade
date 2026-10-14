@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="frame(content)">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>MadelMade</title></head>
+<body style="margin:0;padding:0;background:#F4EFE4;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4EFE4;">
+  <tr><td align="center" style="padding:28px 12px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+      <tr><td align="center" style="padding:0 0 18px;">
+        <img th:src="${logoUrl}" width="44" alt="" style="display:block;margin:0 auto 6px;">
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:600;color:#263028;">MadelMade</div>
+      </td></tr>
+      <tr><td style="background:#FBF8F1;border:1px solid #E8E1D2;border-radius:14px;padding:28px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#263028;">
+        <th:block th:replace="${content}"></th:block>
+      </td></tr>
+      <tr><td align="center" style="padding:18px 8px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#5C5A50;">
+        MadelMade · Brentwood, TN · <a th:href="${siteUrl}" style="color:#5C5A50;">madelmade.com</a><br>
+        Questions? Reply to this email or write to <a th:href="${'mailto:' + contactEmail}" th:text="${contactEmail}" style="color:#5C5A50;">madelmadewithlove@gmail.com</a>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

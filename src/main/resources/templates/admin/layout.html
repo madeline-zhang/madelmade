@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, content, section)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <title th:replace="${title}">Admin · MadelMade</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/img/madelmade-logo-simple.svg}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Nunito:wght@800&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/site.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="admin-body">
+  <nav th:replace="~{admin/nav :: side(${section})}"></nav>
+  <nav th:replace="~{admin/nav :: top(${section})}"></nav>
+  <div th:replace="~{components/flash :: flash}"></div>
+  <main id="main" th:replace="${content}"></main>
+</div>
+<script th:src="@{/js/site.js}" defer></script>
+<script th:src="@{/js/admin.js}" defer></script>
+</body>
+</html>

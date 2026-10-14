@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title th:text="${item.certName + '''s birth certificate · MadelMade'}">Certificate</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap stack" style="gap: 24px; align-items: center">
+    <article class="certificate" aria-label="Certificate of birth">
+      <h2>Certificate of Birth</h2>
+      <dl>
+        <dt>Name</dt><dd th:text="${item.certName}">Jacob</dd>
+        <dt>Date</dt><dd th:text="${item.certBakedAt != null ? item.certBakedAt : 'Bake day'}">4/1/25 13:47</dd>
+        <dt>Weight</dt><dd th:text="${item.certWeight != null ? item.certWeight : '·'}">2 lbs 8 oz</dd>
+        <dt>Labor</dt><dd th:text="${item.certLabor != null ? item.certLabor : '·'}">23 hr</dd>
+        <dt>Starter</dt><dd th:text="${item.certStarter != null ? item.certStarter : settings.defaultStarter()}">Manna</dd>
+      </dl>
+      <img th:if="${photoId != null}" th:src="@{/photos/{id}(id=${photoId})}" th:alt="${item.certName}">
+      <p class="verse" th:if="${item.certMessage != null}" th:text="${item.certMessage}">Genesis 32:28</p>
+    </article>
+    <div class="action-row no-print">
+      <button type="button" class="btn" data-print>Print or save</button>
+      <a class="btn btn-secondary" th:href="@{/o/{t}(t=${order.statusToken})}">Back to your order</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

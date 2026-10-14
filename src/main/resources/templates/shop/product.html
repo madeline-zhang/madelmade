@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title th:text="${product.name + ' · MadelMade'}">Classic Loaf · MadelMade</title></head>
+<body>
+<main id="main" class="product-page">
+  <div class="wrap">
+    <a class="back-link top-back" th:href="@{/#menu}">←&nbsp;&nbsp;Back to menu</a>
+    <form class="product-layout" method="post" th:action="@{/cart/add}" data-product-form
+          th:data-base="${product.basePrice}" th:data-cert-price="${certPrice}">
+      <input type="hidden" name="productId" th:value="${product.id}">
+
+      <div class="product-media">
+        <img class="main-photo" data-preview-img
+             th:src="${product.photoId != null} ? @{/photos/{id}(id=${product.photoId})} : @{/img/madelmade-logo-simple.svg}"
+             th:data-default="${product.photoId != null ? '/photos/' + product.photoId : ''}"
+             th:alt="${product.name}" width="700" height="700">
+        <div class="stack" style="gap: 4px" data-preview-text hidden>
+          <div class="preview-name" data-preview-name></div>
+          <div class="preview-desc" data-preview-desc></div>
+        </div>
+      </div>
+
+      <div class="product-info">
+        <div class="product-head">
+          <a class="back-link side-back" th:href="@{/#menu}">←&nbsp;&nbsp;Back to menu</a>
+          <h1 class="t-page-title" th:text="${product.name}">Classic Loaf</h1>
+          <div class="price-row">
+            <div class="t-price" data-price-text th:text="${@money.fmt(product.basePrice)}">$10</div>
+            <div class="t-small muted" data-tbd-note hidden>+ custom price to be discussed</div>
+            <span class="tag" th:if="${product.badge != null}" th:text="${product.badge}">Not sourdough</span>
+          </div>
+          <p class="t-subtitle" style="font-size: 1rem; max-width: 520px" th:text="${product.description}">Our everyday sourdough.</p>
+          <div class="alert alert-info" th:if="${product.soldOut}">Sold out for now. Check back soon!</div>
+        </div>
+
+        <div th:replace="~{components/option-picker :: picker(${product}, ${selected})}"></div>
+
+        <div class="field letters-box" data-letters-box hidden>
+          <label for="letters">Your letters</label>
+          <input type="text" id="letters" name="letters" maxlength="40" autocomplete="off" th:value="${form_letters}" placeholder="e.g. HAPPY 40">
+          <div class="char-count" data-char-count></div>
+        </div>
+
+        <div class="field custom-box">
+          <label for="notes" data-notes-label>Anything special? (optional)</label>
+          <textarea id="notes" name="notes" rows="3" maxlength="1000" th:text="${form_notes}"
+                    placeholder="e.g. Happy birthday Miriam scored on top"></textarea>
+        </div>
+
+        <div class="stack" style="gap: 14px" th:if="${product.allowsBirthCertificate and settings.certificatesEnabled()}">
+          <label class="check-row">
+            <input type="checkbox" name="cert" value="true" data-cert-toggle th:checked="${form_cert}">
+            <span>Add a birth certificate <span class="t-price" style="font-size: 1rem" th:text="${'+' + @money.fmt(settings.certificatePrice())}">+$1</span></span>
+          </label>
+          <div class="cert-box" data-cert-box th:hidden="${!form_cert}">
+            <img th:src="@{/img/certificate-example.jpg}" alt="Example birth certificate for a loaf named Jacob" loading="lazy">
+            <div class="t-small muted">Madeline hand-draws your loaf, adds your description and fills in the date, weight and labor time on bake day.</div>
+            <div class="field">
+              <label for="certName">Bread's name</label>
+              <input type="text" id="certName" name="certName" maxlength="60" placeholder="e.g. Jacob" th:value="${form_certName}">
+            </div>
+            <div class="field">
+              <label for="certMessage">Description</label>
+              <textarea id="certMessage" name="certMessage" rows="3" maxlength="400" placeholder="e.g. Genesis 32:28, or a few words for the occasion" th:text="${form_certMessage}"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="add-bar">
+          <div class="qty" title="Quantity">
+            <button type="button" aria-label="One fewer" data-qty="-1">−</button>
+            <input type="number" name="quantity" value="1" min="1" max="6" aria-label="Quantity" data-qty-input>
+            <button type="button" aria-label="One more" data-qty="1">+</button>
+          </div>
+          <button type="submit" class="btn" th:disabled="${product.soldOut or !settings.ordersOpen()}">
+            Add to cart&nbsp;&nbsp;·&nbsp;&nbsp;<span data-price-button th:text="${@money.fmt(product.basePrice)}">$10</span>
+          </button>
+          <div class="t-small muted add-note">Nothing is charged now. Madeline confirms every order.</div>
+        </div>
+      </div>
+    </form>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,8 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/frame :: frame(~{::content})}">
+<th:block th:fragment="content">
+  <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:26px;margin:0 0 12px;">Your sign-in code</h1>
+  <p style="margin:0 0 18px;">Hi! Enter this code on madelmade.com to sign in. It works for 10 minutes.</p>
+  <div style="font-family:Helvetica,Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:.35em;text-align:center;background:#F4EFE4;border-radius:12px;padding:18px 0;color:#263028;" th:text="${code}">482913</div>
+  <p style="margin:18px 0 0;font-size:13px;color:#5C5A50;">Didn't ask for this? You can ignore this email; nobody can sign in without the code.</p>
+</th:block>
+</html>

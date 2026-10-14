@@ -1,0 +1,26 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/frame :: frame(~{::content})}">
+<th:block th:fragment="content">
+  <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:26px;line-height:1.2;margin:0 0 12px;" th:text="${heading}">Your order is confirmed</h1>
+  <p style="margin:0 0 14px;">Hi <span th:text="${order.customer.firstName}">Sarah</span>,</p>
+  <p style="margin:0 0 14px;" th:text="${intro}">Intro</p>
+  <div th:if="${!note.isEmpty()}" style="background:#F4EFE4;border-radius:10px;padding:14px 16px;margin:0 0 14px;">
+    <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#5C5A50;margin-bottom:4px;">From Madeline</div>
+    <div style="white-space:pre-wrap;" th:text="${note}">Note</div>
+  </div>
+  <div th:if="${pickupAddress != null and !pickupAddress.isEmpty()}" style="margin:0 0 14px;">
+    <strong>Pickup address:</strong> <span th:text="${pickupAddress}"></span>
+  </div>
+  <th:block th:if="${showSummary}">
+    <p style="margin:0;font-size:14px;color:#5C5A50;">
+      <strong style="color:#263028;" th:text="${order.fulfillment.label}">Pickup</strong>
+      <span th:text="${' · ' + fmt.longDay(order.requestedDate)}"></span><span th:if="${order.requestedTime != null}" th:text="${', ' + order.requestedTime.toLowerCase()}"></span>
+      · Order <span th:text="${order.number}">#1042</span>
+    </p>
+    <table th:replace="~{email/lines :: lines(${order})}"></table>
+  </th:block>
+  <p style="margin:18px 0 6px;">
+    <a th:href="${statusUrl}" style="display:inline-block;background:#A4502F;color:#ffffff;text-decoration:none;padding:13px 22px;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;">View your order</a>
+  </p>
+  <p style="margin:10px 0 0;font-size:13px;color:#5C5A50;">Reply on your order page and it goes straight to Madeline.</p>
+</th:block>
+</html>
