@@ -6,15 +6,17 @@ Java 21 · Spring Boot 4 · Thymeleaf · PostgreSQL. Hosted on Railway.
 
 ## Run it locally
 
-You need Java 21, Maven and a local Postgres with a `madelmade` user, password and database.
+You need Java 21 and Maven. Nothing else: the site brings its own small Postgres.
 
 ```
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+mvn spring-boot:test-run
 ```
 
-Open http://localhost:8080. The starting menu and gallery load on an empty database. In the `dev` profile, sign-in codes are shown on screen instead of emailed, so you can sign in to `/admin` as any admin email.
+The first run downloads a few things and takes a minute or two. When you see `Started LocalMadelMade`, open http://localhost:8080. Stop it with Ctrl+C.
 
-Tests run against a database named `madelmade_test`: `mvn test`.
+The starting menu and gallery load the first time. Your test orders and changes are kept in `~/.madelmade-local` between runs; delete that folder to start fresh. Sign-in codes show on screen instead of being emailed, so you can open the dashboard at http://localhost:8080/admin by signing in with madelmadewithlove@gmail.com.
+
+Run the tests with `mvn test`; they also bring their own throwaway Postgres.
 
 ## Settings on Railway
 

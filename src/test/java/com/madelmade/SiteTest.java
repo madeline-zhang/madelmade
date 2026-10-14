@@ -17,15 +17,36 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
+import java.io.IOException;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Runs against a local Postgres database named madelmade_test (seeded with the starting menu). */
+/** Runs against a fresh throwaway Postgres, seeded with the starting menu. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class SiteTest {
+    static final EmbeddedPostgres PG = start();
+
+    static EmbeddedPostgres start() {
+        try {
+            return EmbeddedPostgres.start();
+        } catch (IOException e) {
+            throw new IllegalStateException("Couldn't start the test database", e);
+        }
+    }
+
+    @DynamicPropertySource
+    static void database(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", () -> PG.getJdbcUrl("postgres", "postgres"));
+        registry.add("spring.datasource.username", () -> "postgres");
+        registry.add("spring.datasource.password", () -> "");
+    }
+
     @Autowired MockMvc mvc;
     @Autowired ProductRepository products;
     @Autowired PricingService pricing;
