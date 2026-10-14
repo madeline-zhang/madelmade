@@ -1,0 +1,92 @@
+package com.madelmade;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.madelmade.domain.OptionChoice;
+import com.madelmade.domain.Product;
+import com.madelmade.repo.ProductRepository;
+import com.madelmade.service.PricingService;
+import java.math.BigDecimal;
+import java.util.List;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+/** Runs against a local Postgres database named madelmade_test (seeded with the starting menu). */
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+class SiteTest {
+    @Autowired MockMvc mvc;
+    @Autowired ProductRepository products;
+    @Autowired PricingService pricing;
+
+    @Test
+    void homeShowsTheMenu() throws Exception {
+        mvc.perform(get("/")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Stencil Loaf")))
+                .andExpect(content().string(Matchers.containsString("Cookie Butter Latte")));
+    }
+
+    @Test
+    void productPageRenders() throws Exception {
+        mvc.perform(get("/p/stencil-loaf")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Add a birth certificate")));
+    }
+
+    @Test
+    void dashboardNeedsSignIn() throws Exception {
+        mvc.perform(get("/admin/orders")).andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/signin?next=%2Fadmin%2Forders"));
+    }
+
+    @Test
+    void unknownOrderIsNotFound() throws Exception {
+        mvc.perform(get("/o/not-a-real-token")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Transactional
+    void stencilWithLettersFlavorAndCertificateIsPricedRight() {
+        Product stencil = products.findBySlug("stencil-loaf").orElseThrow();
+        List<Long> ids = stencil.getOptionGroups().stream()
+                .flatMap(g -> g.getActiveChoices().stream())
+                .filter(c -> List.of("Whole", "Rosemary garlic", "Letters").contains(c.getName()))
+                .map(OptionChoice::getId).toList();
+        PricingService.Quote q = pricing.quote(stencil,
+                new PricingService.Selection(ids, "HAPPY 40", null, true, "Hazel", null));
+        assertThat(q.errors()).isEmpty();
+        assertThat(q.unitPrice()).isEqualByComparingTo(new BigDecimal("16"));
+    }
+
+    @Test
+    @Transactional
+    void halfLoafHalvesThePriceAndLettersHaveALimit() {
+        Product classic = products.findBySlug("classic-loaf").orElseThrow();
+        List<Long> half = classic.getOptionGroups().stream()
+                .flatMap(g -> g.getActiveChoices().stream())
+                .filter(c -> c.getName().equals("Half") || c.isDefaultChoice() && !c.getName().equals("Whole"))
+                .map(OptionChoice::getId).toList();
+        PricingService.Quote q = pricing.quote(classic, new PricingService.Selection(half, null, null, false, null, null));
+        assertThat(q.errors()).isEmpty();
+        assertThat(q.unitPrice()).isEqualByComparingTo(new BigDecimal("5"));
+
+        Product stencil = products.findBySlug("stencil-loaf").orElseThrow();
+        List<Long> letters = stencil.getOptionGroups().stream()
+                .flatMap(g -> g.getActiveChoices().stream())
+                .filter(c -> c.isDefaultChoice() && !c.getName().equals("Butterfly") || c.getName().equals("Letters"))
+                .map(OptionChoice::getId).toList();
+        PricingService.Quote tooLong = pricing.quote(stencil,
+                new PricingService.Selection(letters, "HAPPY BIRTHDAY MIRIAM", null, false, null, null));
+        assertThat(tooLong.errors()).anyMatch(e -> e.contains("up to 15"));
+    }
+}

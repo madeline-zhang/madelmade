@@ -1,0 +1,28 @@
+<th:block th:fragment="links(section)">
+  <a th:href="@{/admin/orders}" th:classappend="${section == 'orders'} ? 'is-on'">Orders<span class="pill-count" th:if="${needsReviewCount > 0}" th:text="${needsReviewCount}">3</span></a>
+  <a th:href="@{/admin/calendar}" th:classappend="${section == 'calendar'} ? 'is-on'">Calendar</a>
+  <a th:href="@{/admin/products}" th:classappend="${section == 'products'} ? 'is-on'">Products</a>
+  <a th:href="@{/admin/gallery}" th:classappend="${section == 'gallery'} ? 'is-on'">Gallery</a>
+  <a th:href="@{/admin/customers}" th:classappend="${section == 'customers'} ? 'is-on'">Customers</a>
+  <a th:href="@{/admin/settings}" th:classappend="${section == 'settings'} ? 'is-on'">Settings</a>
+  <a th:href="@{/admin/emails}" th:classappend="${section == 'emails'} ? 'is-on'">Emails</a>
+</th:block>
+
+<nav th:fragment="side(section)" class="admin-side" aria-label="Dashboard">
+  <a class="admin-brand" th:href="@{/admin}"><span class="name">MadelMade</span><span class="sub">Admin</span></a>
+  <div class="admin-nav"><th:block th:replace="~{admin/nav :: links(${section})}"></th:block></div>
+  <div class="admin-foot">
+    <a th:href="@{/admin/styleguide}">Style guide</a>
+    <a th:href="@{/}" target="_blank" rel="noopener">View site&nbsp;&nbsp;↗</a>
+    <div th:text="${'Signed in as ' + userEmail}">Signed in as Madeline</div>
+    <form method="post" th:action="@{/signout}"><button type="submit">Sign out</button></form>
+  </div>
+</nav>
+
+<nav th:fragment="top(section)" class="admin-topbar" aria-label="Dashboard">
+  <div class="bar">
+    <a class="admin-brand" th:href="@{/admin}"><span class="name">MadelMade</span><span class="sub">Admin</span></a>
+    <a th:href="@{/}" style="color: #E9E2D3; font-size: .875rem; text-decoration: none">View site ↗</a>
+  </div>
+  <div class="admin-nav"><th:block th:replace="~{admin/nav :: links(${section})}"></th:block></div>
+</nav>

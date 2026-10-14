@@ -1,0 +1,10 @@
+spring:
+  thymeleaf:
+    cache: false
+  web:
+    resources:
+      cache:
+        period: 0
+app:
+  mail:
+    show-codes-on-screen: true

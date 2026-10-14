@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, true)}">
+<head><title>MadelMade · Custom sourdough in Brentwood, TN</title></head>
+<body>
+<main id="main">
+  <section class="hero" aria-label="Welcome">
+    <picture>
+      <source media="(max-width: 760px)" th:srcset="@{/img/hero-phone.jpg}">
+      <img class="hero-img" th:src="@{/img/hero.jpg}" alt="Miriam's sourdough loaf with a diagonal leaf score" fetchpriority="high">
+    </picture>
+    <div class="wrap hero-content">
+      <div class="hero-eyebrow">Home-baked in Brentwood, TN</div>
+      <h1>Made to make you <em>smile</em></h1>
+      <p class="hero-lead">Customized sourdough loaves for any occasion, scored and named just for you.</p>
+      <a class="btn" href="#menu">Order a loaf&nbsp;&nbsp;→</a>
+    </div>
+    <a class="scroll-cue" href="#menu" aria-label="Scroll to the menu">
+      <span>SCROLL</span>
+      <svg th:replace="~{components/icons :: down}"></svg>
+    </a>
+  </section>
+
+  <section id="menu" class="menu-section" aria-labelledby="menu-title">
+    <div class="wrap">
+      <h2 id="menu-title" class="t-section section-title">Menu</h2>
+      <div class="paused-note" th:if="${!settings.ordersOpen()}" th:text="${settings.get('orders.pausedNote')}">Taking a short break.</div>
+      <div class="menu-tabs" role="group" aria-label="Filter the menu" th:if="${categories.size() > 1}" data-menu-tabs>
+        <button type="button" class="pill is-on" aria-pressed="true" data-filter="all">All</button>
+        <button type="button" class="pill" aria-pressed="false" th:each="c : ${categories}" th:data-filter="${c.slug}" th:text="${c.name}">Bread</button>
+      </div>
+      <div class="product-grid" data-menu-grid>
+        <th:block th:each="p : ${products}"><a th:replace="~{components/product-card :: card(${p})}"></a></th:block>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

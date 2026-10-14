@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>About &amp; FAQ · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap stack" style="gap: 72px">
+    <section class="about-hero">
+      <div class="stack" style="gap: 18px">
+        <div class="t-eyebrow">About MadelMade</div>
+        <h1 class="t-page-title">It started with <em>a starter</em></h1>
+        <p class="t-subtitle">I'm Madeline, a home baker in Brentwood, Tennessee. Someone gave me a sourdough starter, and I didn't want to kill it, so I kept baking.</p>
+        <p class="t-subtitle">One loaf turned into many, and plain loaves turned into designs: leaves, butterflies, names and birthday messages, each scored by hand.</p>
+        <p class="t-subtitle">Every loaf is made to order and made to make you smile.</p>
+        <p><a class="btn" th:href="@{/#menu}">See the menu&nbsp;&nbsp;→</a></p>
+      </div>
+      <img class="logo-large" th:src="@{/img/madelmade-logo-detailed.svg}" alt="MadelMade monstera leaf logo">
+    </section>
+
+    <section class="stack" style="gap: 24px" aria-labelledby="how">
+      <h2 id="how" class="t-section section-title">How ordering works</h2>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="t-title" style="font-size: 1.125rem">Build your loaf</div><p class="muted t-small">Pick a size, flavor and score, and add a birth certificate if you like.</p></div>
+        <div class="step"><div class="step-num">2</div><div class="t-title" style="font-size: 1.125rem">Send a request</div><p class="muted t-small">Choose pickup or delivery and a date. Nothing is charged.</p></div>
+        <div class="step"><div class="step-num">3</div><div class="t-title" style="font-size: 1.125rem">Madeline confirms</div><p class="muted t-small">She approves, or messages you about changes, by your preferred contact.</p></div>
+        <div class="step"><div class="step-num">4</div><div class="t-title" style="font-size: 1.125rem">Bake day</div><p class="muted t-small">You get a note when it's baked, then pick it up or have it delivered.</p></div>
+      </div>
+    </section>
+
+    <section class="stack page-narrow" style="gap: 12px" aria-labelledby="faq">
+      <h2 id="faq" class="t-section section-title">Frequently asked questions</h2>
+      <p class="muted">Anything else? Email <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
+      <div class="faq">
+        <details open><summary>How much notice do you need?</summary>
+          <p th:text="${'About ' + settings.noticeDays() + ' days for most loaves.' + (settings.priorityEnabled() ? ' Need it sooner? Priority gets it ready in ' + settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's') + ' for an extra ' + @money.fmt(settings.priorityFee()) + ', when there''s room.' : '')}">Three days for most loaves.</p></details>
+        <details><summary>Where do I pick up?</summary>
+          <p th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once your order is approved.'}">Pickup is in the Brentwood and Nolensville area.</p></details>
+        <details><summary>Do you deliver?</summary>
+          <p>Yes, nearby. Madeline quotes the delivery fee when she approves your order, and it's paid up front as a deposit.</p></details>
+        <details><summary>How do I pay?</summary>
+          <p>Nothing is charged online. You pay at pickup or delivery with cash, Venmo or Zelle.</p></details>
+        <details><summary>What about allergens?</summary>
+          <p>Every loaf contains wheat. Rosemary garlic asiago contains dairy. Mom's Best is not sourdough. Ask if you have other allergies.</p></details>
+        <details><summary>How should I store it?</summary>
+          <p>To enjoy it later, slice it and freeze the slices.</p></details>
+        <details><summary>Best way to reheat?</summary>
+          <p>Toast it and butter it up!</p></details>
+      </div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

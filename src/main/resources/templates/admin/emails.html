@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'emails')}">
+<head><title>Emails · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">Recent site emails</div><h1>Emails</h1></div></div>
+  <div class="paused-note" th:unless="${live}">Email isn't connected yet, so nothing is actually sent. Each email the site would have sent is listed here so you can check the wording. Once Brevo is set up, this list shows what went out.</div>
+  <div class="empty" th:if="${emails.isEmpty()}">No emails since the site last restarted.</div>
+  <div class="table-wrap" th:unless="${emails.isEmpty()}">
+    <table class="table">
+      <thead><tr><th>When</th><th>To</th><th>Subject</th><th>Result</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="e, i : ${emails}">
+        <td th:text="${@fmt.stamp(e.at)}">Oct 14 at 9:02 AM</td>
+        <td th:text="${e.to}">sarah@example.com</td>
+        <td th:text="${e.subject}">Your order is confirmed</td>
+        <td class="t-small" th:text="${e.result}">Sent</td>
+        <td><a class="btn btn-secondary btn-small" th:href="@{/admin/emails/{n}(n=${i.index})}" target="_blank" rel="noopener">View</a></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

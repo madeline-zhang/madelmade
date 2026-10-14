@@ -1,0 +1,14 @@
+<footer th:fragment="footer" class="site-footer">
+  <div class="wrap">
+    <div class="stack" style="gap: 4px">
+      <div class="footer-brand">MadelMade</div>
+      <div>Customized sourdough, home-baked in <span th:text="${settings.pickupArea()}">Brentwood, TN</span>.</div>
+    </div>
+    <nav aria-label="Footer">
+      <a th:href="@{/#menu}">Menu</a>
+      <a th:href="@{/gallery}">Gallery</a>
+      <a th:href="@{/about}">About &amp; FAQ</a>
+      <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>
+    </nav>
+  </div>
+</footer>

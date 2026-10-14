@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>Your profile · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="page-head" style="flex-direction: row; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px">
+      <div class="stack" style="gap: 8px">
+        <div class="t-eyebrow">Your profile</div>
+        <h1 class="t-page-title">Hi, <span th:text="${customer.firstName}">Sarah</span></h1>
+      </div>
+      <form method="post" th:action="@{/signout}"><button type="submit" class="btn btn-secondary btn-small">Sign out</button></form>
+    </div>
+
+    <div class="two-col">
+      <section class="stack" style="gap: 16px" aria-labelledby="orders-title">
+        <h2 id="orders-title" class="t-title">Your orders</h2>
+        <p class="muted" th:if="${orders.isEmpty()}">No orders yet. <a th:href="@{/#menu}">Order your first loaf</a>.</p>
+        <article class="card stack" style="gap: 10px" th:each="o : ${orders}">
+          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
+            <strong th:text="${o.fulfillment.label + ' ' + @fmt.day(o.requestedDate)}">Pickup Sat, Oct 11</strong>
+            <span th:replace="~{components/status-badge :: badge(${o.status}, true)}"></span>
+          </div>
+          <div class="t-small" th:text="${o.itemsSummary}">Stencil Loaf, Classic Loaf</div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
+            <span class="t-price" th:text="${@money.fmt(o.total) + (o.priceTbd ? ' + custom' : '')}">$26</span>
+            <div class="action-row" style="flex: 0 0 auto">
+              <a class="btn btn-secondary btn-small" th:href="@{/o/{t}(t=${o.statusToken})}" th:text="${o.status.closed ? 'Details' : 'View status'}">View status</a>
+              <form method="post" th:action="@{/profile/reorder/{id}(id=${o.id})}" class="inline-form">
+                <button type="submit" class="btn btn-small">Reorder</button>
+              </form>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <form method="post" th:action="@{/profile}" class="card stack" th:object="${customer}">
+        <h2 class="card-title">Contact details</h2>
+        <div class="field"><label for="name">Name</label><input type="text" id="name" name="name" th:value="*{name}" autocomplete="name"></div>
+        <div class="field"><span class="label">Email</span><div th:text="*{email}">sarah@example.com</div></div>
+        <div class="field"><label for="phone">Phone</label><input type="tel" id="phone" name="phone" th:value="*{phone}" autocomplete="tel"></div>
+        <div class="field">
+          <span class="label" id="pref">How should Madeline reach you?</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="pref">
+            <label th:each="p : ${contactPrefs}"><input type="radio" name="contactPref" th:value="${p}" th:checked="${customer.contactPref == p}"><span class="pill" th:text="${p.label}">Email</span></label>
+          </div>
+        </div>
+        <div class="field"><label for="address">Delivery address <span class="muted">(optional)</span></label>
+          <textarea id="address" name="address" rows="2" th:text="*{address}" autocomplete="street-address"></textarea>
+          <div class="help">Only shared with Madeline.</div></div>
+        <button type="submit" class="btn">Save changes</button>
+      </form>
+    </div>
+  </div>
+</main>
+</body>
+</html>

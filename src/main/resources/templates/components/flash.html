@@ -1,0 +1,6 @@
+<div th:fragment="flash" class="flash-area" th:if="${ok != null or (errors != null and !errors.isEmpty())}" data-flash>
+  <div class="alert alert-ok" role="status" th:if="${ok != null}" th:text="${ok}">Saved.</div>
+  <div class="alert alert-error" role="alert" th:if="${errors != null and !errors.isEmpty()}">
+    <ul><li th:each="e : ${errors}" th:text="${e}">Problem</li></ul>
+  </div>
+</div>

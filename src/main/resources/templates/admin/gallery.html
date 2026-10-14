@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'gallery')}">
+<head><title>Gallery · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Past loaves</div><h1>Gallery</h1></div>
+    <a class="btn" th:href="@{/admin/photos/edit(target='gallery-new')}">Add a photo</a>
+  </div>
+  <div class="gallery-grid">
+    <div class="card stack" style="padding: 14px; gap: 10px" th:each="g : ${photos}">
+      <a th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}" title="Edit photo"><img th:src="@{/photos/{id}(id=${g.photoId})}" alt="" style="width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px"></a>
+      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px">
+        <div class="field"><label th:for="${'cap-' + g.id}">Caption</label><input type="text" th:id="${'cap-' + g.id}" name="caption" th:value="${g.caption}"></div>
+        <div style="display: flex; gap: 8px; align-items: end">
+          <div class="field" style="width: 80px"><label th:for="${'ord-' + g.id}">Order</label><input type="number" th:id="${'ord-' + g.id}" name="displayOrder" th:value="${g.displayOrder}"></div>
+          <button type="submit" class="btn btn-secondary btn-small">Save</button>
+          <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}">Edit photo</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="empty" th:if="${photos.isEmpty()}">No gallery photos yet.</div>
+</main>
+</body>
+</html>

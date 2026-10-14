@@ -1,0 +1,6 @@
+<!-- Form field: label, input, help text. -->
+<div th:fragment="text(name, label, value, type, help)" class="field">
+  <label th:for="${name}" th:text="${label}">Name</label>
+  <input th:type="${type}" th:id="${name}" th:name="${name}" th:value="${value}">
+  <div class="help" th:if="${help != null}" th:text="${help}">Help</div>
+</div>

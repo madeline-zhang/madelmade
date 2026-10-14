@@ -1,0 +1,33 @@
+<div th:fragment="drawer">
+  <div class="scrim hidden" data-scrim></div>
+  <aside class="drawer" th:classappend="${openCart} ? 'is-open'" id="cart" aria-label="Your cart" data-drawer
+         th:aria-hidden="${openCart ? 'false' : 'true'}">
+    <div class="drawer-head">
+      <h2 class="t-title">Your order</h2>
+      <button type="button" class="icon-btn" aria-label="Close cart" data-cart-close>
+        <svg th:replace="~{components/icons :: close}"></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <div th:replace="~{components/order-summary :: cartLines(true)}"></div>
+    </div>
+    <div class="drawer-foot" th:if="${!cart.empty}">
+      <div class="total-row"><span>Total</span><strong th:text="${@money.fmt(cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</strong></div>
+      <div class="t-small muted">Nothing is charged now. Madeline confirms every order, and you pay at pickup or delivery.</div>
+      <a th:if="${signedIn}" class="btn btn-block" th:href="@{/checkout}">Checkout</a>
+      <button th:unless="${signedIn}" type="button" class="btn btn-block" data-checkout-popup>Checkout</button>
+    </div>
+  </aside>
+
+  <div class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkout-title" data-checkout-modal th:unless="${signedIn}">
+    <h2 id="checkout-title" class="t-title">How would you like to check out?</h2>
+    <p class="t-small muted" style="margin: 0">Signing in saves your details and lets you reorder a favorite in one tap.</p>
+    <a th:if="${googleEnabled}" class="google-btn" th:href="@{/signin/google(next='/checkout')}">
+      <svg th:replace="~{components/icons :: google}"></svg> Continue with Google
+    </a>
+    <a class="btn btn-secondary" th:href="@{/signin(next='/checkout')}">Email me a sign-in code</a>
+    <div class="or-line">or</div>
+    <a class="btn" th:href="@{/checkout}">Continue as guest</a>
+    <button type="button" class="link-btn" data-modal-close>Not yet, keep browsing</button>
+  </div>
+</div>

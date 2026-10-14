@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: madelmade
+  datasource:
+    url: jdbc:postgresql://${PGHOST:localhost}:${PGPORT:5432}/${PGDATABASE:madelmade}
+    username: ${PGUSER:madelmade}
+    password: ${PGPASSWORD:madelmade}
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 30MB
+  thymeleaf:
+    cache: ${THYMELEAF_CACHE:true}
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      timeout: 7d
+      cookie:
+        max-age: 7d
+        same-site: lax
+  compression:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  # Public address of the site, used in email links.
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  zone: America/Chicago
+  # Google accounts that always open the admin pages, even before Settings is saved.
+  admin-emails: ${ADMIN_EMAILS:madelmadewithlove@gmail.com}
+  mail:
+    brevo-api-key: ${BREVO_API_KEY:}
+    from-email: ${MAIL_FROM:orders@madelmade.com}
+    from-name: MadelMade
+    reply-to: ${MAIL_REPLY_TO:madelmadewithlove@gmail.com}
+    # Shows email sign-in codes on screen. Only for local previews, never in production.
+    show-codes-on-screen: ${SHOW_CODES_ON_SCREEN:false}

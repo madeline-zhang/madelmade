@@ -1,0 +1,58 @@
+/* MadelMade design tokens. Change a value here and the whole site follows. */
+:root {
+  --color-cream: #F4EFE4;      /* flour cream: page background */
+  --color-crumb: #FBF8F1;      /* crumb: cards */
+  --color-ink: #263028;        /* rye ink: text */
+  --color-ink-soft: #3D3F36;
+  --color-muted: #5C5A50;
+  --color-terracotta: #A4502F; /* buttons */
+  --color-terracotta-dark: #7A3A20;
+  --color-crust: #7A4A2B;      /* prices */
+  --color-linen: #DDD5C4;      /* lines */
+  --color-line: #CFC6B3;
+  --color-card-line: #E8E1D2;
+  --color-placeholder: #E6DCCB;
+  --color-logo: #936D51;
+  --color-white: #FFFFFF;
+  --color-hero-text: #F6EFE4;
+  --color-hero-eyebrow: #F1E6D6;
+
+  --badge-review-bg: #F6E7C8;    --badge-review-fg: #7A4F00;
+  --badge-changes-bg: #E4E0F0;   --badge-changes-fg: #3F3770;
+  --badge-approved-bg: #DCE8D8;  --badge-approved-fg: #2F5D3A;
+  --badge-baked-bg: #EFDCCB;     --badge-baked-fg: #6B3F22;
+  --badge-completed-bg: #E6E2D8; --badge-completed-fg: #263028;
+  --badge-declined-bg: #F3D9D5;  --badge-declined-fg: #8E2F2F;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-title: 'Nunito', 'Trebuchet MS', sans-serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --text-hero: clamp(2.7rem, 7.6vw, 7rem);
+  --text-page-title: clamp(2.4rem, 4.5vw, 4rem);
+  --text-section: clamp(2rem, 3.2vw, 2.75rem);
+  --text-subtitle: 1.25rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-eyebrow: 0.8125rem;
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-24: 96px;
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --page-gutter: clamp(20px, 4.5vw, 64px);
+  --page-max: 1440px;
+  --header-height: 88px;
+  --tap: 44px;
+  --shadow-card: 0 2px 10px rgba(38, 48, 40, 0.10);
+  --shadow-sheet: 0 10px 40px rgba(38, 48, 40, 0.25);
+}
+
+@media (max-width: 760px) {
+  :root { --header-height: 60px; }
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'calendar')}">
+<head><title>Calendar · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Bake days</div><h1 th:text="${monthTitle}">October 2026</h1></div>
+    <div class="admin-tools">
+      <a class="btn btn-secondary btn-small" th:href="@{/admin/calendar(month=${prev})}" aria-label="Previous month">←</a>
+      <a class="btn btn-secondary btn-small" th:href="@{/admin/calendar}">Today</a>
+      <a class="btn btn-secondary btn-small" th:href="@{/admin/calendar(month=${next})}" aria-label="Next month">→</a>
+    </div>
+  </div>
+
+  <div class="calendar">
+    <div class="dow" th:each="d : ${ {'Sun','Mon','Tue','Wed','Thu','Fri','Sat'} }" th:text="${d}">Sun</div>
+    <div class="day" th:each="d : ${days}" th:classappend="${(d.inMonth ? '' : ' is-other') + (d.today ? ' is-today' : '') + (d.off ? ' is-off' : '')}">
+      <div class="num"><span th:text="${d.date.dayOfMonth}">12</span>
+        <span class="load" th:if="${d.loaves > 0}" th:text="${d.loaves + (d.loaves == 1 ? ' loaf' : ' loaves')}">2 loaves</span>
+        <span class="muted" th:if="${d.off and d.loaves == 0}">Off</span></div>
+      <a th:each="o : ${d.orders}" class="ev" th:classappend="${'badge-' + o.status.badge}" th:href="@{/admin/orders/{id}(id=${o.id},tab='all')}"
+         th:text="${o.contactName + ' · ' + o.itemsSummary}" th:title="${o.status.label}">Sarah · Stencil</a>
+    </div>
+  </div>
+
+  <section class="stack" style="gap: 12px">
+    <h2 class="card-title">Coming up</h2>
+    <div class="empty" th:if="${upcoming.isEmpty()}">Nothing planned for the rest of this month.</div>
+    <a th:each="o : ${upcoming}" class="order-card" th:href="@{/admin/orders/{id}(id=${o.id},tab='all')}">
+      <div class="row"><span class="who" th:text="${o.contactName}">Sarah Kim</span>
+        <span th:replace="~{components/status-badge :: badge(${o.status}, false)}"></span></div>
+      <div class="what" th:text="${o.itemsSummary}">Stencil Loaf</div>
+      <div class="row"><span class="meta" th:text="${o.fulfillment.label + ' · ' + @fmt.longDay(o.requestedDate)}">Pickup · Saturday</span>
+        <span class="amount" th:text="${@money.fmt(o.total)}">$16</span></div>
+    </a>
+  </section>
+</main>
+</body>
+</html>

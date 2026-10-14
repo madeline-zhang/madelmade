@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>Gallery · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="t-eyebrow">Gallery</div>
+      <h1 class="t-page-title">Loaves that made someone <em>smile</em></h1>
+      <p class="t-subtitle">Past loaves to spark an idea for yours. See something you love? Mention it in your order.</p>
+    </div>
+    <div class="gallery-grid">
+      <th:block th:each="g : ${photos}"><figure th:replace="~{components/gallery-tile :: tile(${g})}"></figure></th:block>
+    </div>
+    <p th:if="${photos.isEmpty()}" class="muted">Photos coming soon.</p>
+    <p style="margin-top: 40px"><a class="btn" th:href="@{/#menu}">Order a loaf&nbsp;&nbsp;→</a></p>
+  </div>
+</main>
+</body>
+</html>

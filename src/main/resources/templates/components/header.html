@@ -1,0 +1,33 @@
+<header th:fragment="header(overHero)" class="site-header" th:classappend="${overHero} ? 'is-over-hero'" data-header>
+  <div class="wrap">
+    <button type="button" class="icon-btn menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
+      <svg th:replace="~{components/icons :: menu}"></svg>
+    </button>
+    <a class="wordmark" th:href="@{/}" aria-label="MadelMade home">
+      <img th:src="@{/img/madelmade-logo-simple.svg}" alt="" width="35" height="32">MadelMade
+    </a>
+    <nav class="main-nav" aria-label="Main">
+      <a th:href="@{/#menu}">Menu</a>
+      <a th:href="@{/gallery}">Gallery</a>
+      <a th:href="@{/about}">About</a>
+    </nav>
+    <div class="header-actions">
+      <a th:if="${!signedIn}" class="header-signin" th:href="@{/signin}">Sign in</a>
+      <a th:if="${signedIn and isAdmin}" class="header-signin" th:href="@{/admin}">Admin</a>
+      <a th:if="${signedIn and !isAdmin}" class="header-signin" th:href="@{/profile}">Profile</a>
+      <a class="icon-btn" th:href="@{/cart}" data-cart-open
+         th:aria-label="${'Cart, ' + cart.count + (cart.count == 1 ? ' item' : ' items')}">
+        <svg th:replace="~{components/icons :: cart}"></svg>
+        <span class="cart-count" th:if="${cart.count > 0}" th:text="${cart.count}">2</span>
+      </a>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Main" data-mobile-nav>
+    <a th:href="@{/#menu}">Menu</a>
+    <a th:href="@{/gallery}">Gallery</a>
+    <a th:href="@{/about}">About</a>
+    <a th:if="${!signedIn}" th:href="@{/signin}">Sign in</a>
+    <a th:if="${signedIn}" th:href="@{/profile}">Your profile</a>
+    <a th:if="${isAdmin}" th:href="@{/admin}">Admin</a>
+  </nav>
+</header>

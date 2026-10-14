@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'orders')}">
+<head><title>Orders · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px">
+      <div class="t-eyebrow" th:text="${todayText}">Tuesday, Oct 7</div>
+      <h1>Orders</h1>
+    </div>
+    <div class="admin-tools">
+      <div class="t-small muted">Loaves in progress: <strong style="color: var(--color-ink)" th:text="${inProgress + ' of ' + settings.maxLoaves()}">2 of 3</strong></div>
+      <form class="search" method="get" th:action="@{/admin/orders}" role="search">
+        <svg th:replace="~{components/icons :: search}"></svg>
+        <input type="hidden" name="tab" th:value="${tab}">
+        <input type="search" name="q" th:value="${q}" placeholder="Search name, email or product" aria-label="Search orders">
+      </form>
+      <a class="btn btn-secondary btn-small" th:href="@{/admin/orders/export.csv}">Export CSV</a>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Order status">
+    <a th:each="t : ${tabs}" class="pill" th:classappend="${t.key == tab} ? 'is-on'" th:href="@{/admin/orders(tab=${t.key},q=${q})}"
+       th:aria-selected="${t.key == tab}" role="tab">
+      <span th:text="${t.label}">Needs review</span>
+      <span th:if="${t.key == 'review' and t.count > 0}" class="pill-count" th:text="${t.count}">3</span>
+      <span th:unless="${t.key == 'review' and t.count > 0}" class="n" th:text="${t.count}">4</span>
+    </a>
+  </div>
+
+  <div class="orders-split" th:classappend="${selected != null} ? 'has-detail'">
+    <div class="order-list">
+      <div class="empty" th:if="${orders.isEmpty()}" th:text="${q != null and !q.isEmpty() ? 'No orders match that search.' : 'Nothing here right now.'}">Nothing here.</div>
+      <a th:each="o : ${orders}" class="order-card" th:classappend="${selected != null and selected.id == o.id} ? 'is-on'"
+         th:href="@{/admin/orders/{id}(id=${o.id},tab=${tab},q=${q})}">
+        <div class="row"><span class="who" th:text="${o.contactName}">Sarah Kim</span><span class="when" th:text="${@fmt.ago(o.createdAt)}">2h ago</span></div>
+        <div class="what" th:text="${o.itemsSummary}">Stencil Loaf, Classic Loaf</div>
+        <div class="row">
+          <span class="meta">
+            <span th:text="${o.fulfillment.label + ' · ' + @fmt.day(o.requestedDate)}">Pickup · Sat, Oct 11</span>
+            <span class="tag" th:if="${o.priceTbd}">Custom</span>
+            <span class="tag" th:if="${o.priority}">Priority</span>
+            <span class="flag" th:if="${o.overCapacity and !o.status.closed}">Over capacity</span>
+            <th:block th:if="${tab == 'review' and o.status.name() == 'CHANGES_REQUESTED'}"><span th:replace="~{components/status-badge :: badge(${o.status}, false)}"></span></th:block>
+          </span>
+          <span class="amount" th:text="${@money.fmt(o.total) + (o.delivery and o.deliveryFee == null ? ' + delivery' : '')}">$26</span>
+        </div>
+      </a>
+    </div>
+
+    <th:block th:if="${selected != null}"><section th:replace="~{admin/order-detail :: detail(${selected})}"></section></th:block>
+    <div th:if="${selected == null and !orders.isEmpty()}" class="empty" style="align-self: start">Pick an order to see it in full.</div>
+  </div>
+</main>
+</body>
+</html>

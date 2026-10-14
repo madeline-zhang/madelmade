@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'settings')}">
+<head><title>Settings · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">How orders work</div><h1>Settings</h1></div></div>
+
+  <form method="post" th:action="@{/admin/settings}" class="stack" style="gap: 24px">
+    <div class="settings-grid">
+      <div class="stack" style="gap: 24px">
+        <section class="card stack">
+          <h2 class="card-title">Taking orders</h2>
+          <div class="toggle-row"><div><div class="t">Accepting orders</div><div class="d">Turn off to pause the shop. The menu still shows, with your note below.</div></div>
+            <label class="switch"><input type="checkbox" name="orders.open" th:checked="${settings.flag('orders.open')}" aria-label="Accepting orders"><span></span></label></div>
+          <div class="field"><label for="pausedNote">Note while paused</label><textarea id="pausedNote" name="orders.pausedNote" rows="2" th:text="${settings.get('orders.pausedNote')}"></textarea></div>
+        </section>
+
+        <section class="card stack">
+          <h2 class="card-title">Order rules</h2>
+          <div class="field-row">
+            <div class="field"><label for="noticeDays">Days of notice</label><input type="number" min="0" max="60" id="noticeDays" name="rules.noticeDays" th:value="${settings.get('rules.noticeDays')}"></div>
+            <div class="field"><label for="maxLoaves">Loaves at a time</label><input type="number" min="1" max="50" id="maxLoaves" name="rules.maxLoaves" th:value="${settings.get('rules.maxLoaves')}">
+              <div class="help">Approved and baked loaves count. Also the most loaves in one order.</div></div>
+          </div>
+          <div class="toggle-row"><div><div class="t">Offer priority</div><div class="d">Customers can pay extra for shorter notice.</div></div>
+            <label class="switch"><input type="checkbox" name="rules.priorityEnabled" th:checked="${settings.flag('rules.priorityEnabled')}" aria-label="Offer priority"><span></span></label></div>
+          <div class="field-row">
+            <div class="field"><label for="priorityNoticeDays">Priority notice (days)</label><input type="number" min="0" max="30" id="priorityNoticeDays" name="rules.priorityNoticeDays" th:value="${settings.get('rules.priorityNoticeDays')}"></div>
+            <div class="field"><label for="priorityFee">Priority fee</label><div class="price-input">$ <input type="text" inputmode="decimal" id="priorityFee" name="rules.priorityFee" th:value="${settings.get('rules.priorityFee')}"></div></div>
+          </div>
+        </section>
+
+        <section class="card stack" id="days-off">
+          <h2 class="card-title">Days off</h2>
+          <p class="t-small muted" style="margin: 0">Customers can't pick these days at checkout.</p>
+          <div class="stack" style="gap: 8px" th:unless="${daysOff.isEmpty()}">
+            <div class="toggle-row" th:each="d : ${daysOff}">
+              <span th:text="${#strings.replace(d, '..', ' to ')}">2026-11-26 to 2026-11-28</span>
+              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/remove(entry=${d})}" formnovalidate>Remove</button>
+            </div>
+          </div>
+          <div class="field-row" style="align-items: end">
+            <div class="field"><label for="offFrom">From</label><input type="date" id="offFrom" name="from"></div>
+            <div class="field"><label for="offTo">To (optional)</label><input type="date" id="offTo" name="to"></div>
+            <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/add}">Add</button>
+          </div>
+        </section>
+
+        <section class="card stack">
+          <h2 class="card-title">Pickup and delivery</h2>
+          <div class="field"><label for="pickupArea">Pickup area (shown to everyone)</label><input type="text" id="pickupArea" name="pickup.area" th:value="${settings.get('pickup.area')}"></div>
+          <div class="field"><label for="pickupAddress">Pickup address (private)</label><textarea id="pickupAddress" name="pickup.address" rows="2" th:text="${settings.get('pickup.address')}"></textarea>
+            <div class="help">Only sent in the approval email for pickup orders. Never shown on the site.</div></div>
+          <div class="toggle-row"><div><div class="t">Offer delivery</div><div class="d">You quote the delivery fee on each order before approving.</div></div>
+            <label class="switch"><input type="checkbox" name="delivery.enabled" th:checked="${settings.flag('delivery.enabled')}" aria-label="Offer delivery"><span></span></label></div>
+        </section>
+      </div>
+
+      <div class="stack" style="gap: 24px">
+        <section class="card stack">
+          <h2 class="card-title">Birth certificates</h2>
+          <div class="toggle-row"><div><div class="t">Offer birth certificates</div><div class="d">Shows the add-on on loaves that allow it.</div></div>
+            <label class="switch"><input type="checkbox" name="cert.enabled" th:checked="${settings.flag('cert.enabled')}" aria-label="Offer birth certificates"><span></span></label></div>
+          <div class="field-row">
+            <div class="field"><label for="certPrice">Price</label><div class="price-input">$ <input type="text" inputmode="decimal" id="certPrice" name="cert.price" th:value="${settings.get('cert.price')}"></div></div>
+            <div class="field"><label for="certStarter">Starter name</label><input type="text" id="certStarter" name="cert.starter" th:value="${settings.get('cert.starter')}"></div>
+          </div>
+        </section>
+
+        <section class="card stack">
+          <h2 class="card-title">Alerts to you</h2>
+          <div class="field"><label for="notifyEmail">Send alerts to</label><input type="email" id="notifyEmail" name="notify.email" th:value="${settings.get('notify.email')}"></div>
+          <div class="toggle-row"><div><div class="t">New request</div><div class="d">An email each time someone sends a request.</div></div>
+            <label class="switch"><input type="checkbox" name="notify.newRequest" th:checked="${settings.flag('notify.newRequest')}" aria-label="Email me new requests"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">Customer replies</div><div class="d">An email when a customer answers or cancels.</div></div>
+            <label class="switch"><input type="checkbox" name="notify.customerReply" th:checked="${settings.flag('notify.customerReply')}" aria-label="Email me customer replies"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">Morning summary</div><div class="d">At 7am, what's due today and what needs review.</div></div>
+            <label class="switch"><input type="checkbox" name="notify.morningSummary" th:checked="${settings.flag('notify.morningSummary')}" aria-label="Morning summary"><span></span></label></div>
+        </section>
+
+        <section class="card stack">
+          <h2 class="card-title">Who can use this dashboard</h2>
+          <div class="field"><label for="adminEmails">Admin emails</label><textarea id="adminEmails" name="admin.emails" rows="2" th:text="${settings.get('admin.emails')}"></textarea>
+            <div class="help">Separate with commas. They sign in with Google or an emailed code.</div></div>
+        </section>
+
+        <section class="card stack">
+          <h2 class="card-title">Photo look</h2>
+          <p class="t-small muted" style="margin: 0">Where the editor starts for new photos (5 is no change).</p>
+          <div class="field-row">
+            <div class="field"><label for="warmth">Warmth</label><input type="number" min="0" max="10" id="warmth" name="photos.warmth" th:value="${settings.get('photos.warmth')}"></div>
+            <div class="field"><label for="brightness">Brightness</label><input type="number" min="0" max="10" id="brightness" name="photos.brightness" th:value="${settings.get('photos.brightness')}"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card stack">
+      <h2 class="card-title">Email wording</h2>
+      <p class="t-small muted" style="margin: 0">The subject and opening line of each customer email. Order details are added below automatically.</p>
+      <div class="subtle-box" th:each="w : ${wordings}">
+        <h3 th:text="${w.label}">Approved</h3>
+        <div class="field"><label th:for="${'s-' + w.key()}">Subject</label><input type="text" th:id="${'s-' + w.key()}" th:name="${w.subjectKey()}" th:value="${settings.get(w.subjectKey())}"></div>
+        <div class="field"><label th:for="${'i-' + w.key()}">Opening</label><textarea rows="2" th:id="${'i-' + w.key()}" th:name="${w.introKey()}" th:text="${settings.get(w.introKey())}"></textarea></div>
+      </div>
+    </section>
+
+    <div class="save-bar"><button type="submit" class="btn">Save settings</button></div>
+  </form>
+</main>
+</body>
+</html>

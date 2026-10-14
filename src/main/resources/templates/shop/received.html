@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>Request received · MadelMade</title></head>
+<body>
+<main id="main" class="page">
+  <div class="wrap page-narrow stack" style="gap: 24px">
+    <div class="page-head" style="margin-bottom: 0">
+      <div class="t-eyebrow" th:text="${'Request ' + order.number}">Request #1042</div>
+      <h1 class="t-page-title">Thanks, <span th:text="${order.customer.firstName}">Sarah</span>! Madeline will confirm <em>soon</em>.</h1>
+      <p class="t-subtitle">We emailed a confirmation to <strong th:text="${order.contactEmail}">you</strong> with a private link to follow your order. Nothing is charged now.</p>
+    </div>
+    <div class="card">
+      <div th:replace="~{components/order-summary :: order(${order}, false)}"></div>
+    </div>
+    <div class="action-row">
+      <a class="btn" th:href="@{/o/{t}(t=${order.statusToken})}">Follow your order</a>
+      <a class="btn btn-secondary" th:href="@{/}">Back to the menu</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<!-- Buttons: primary (terracotta), secondary (outlined) and danger. Styles live in site.css (.btn). -->
+<a th:fragment="primary(label, href)" class="btn" th:href="${href}" th:text="${label}">Order a loaf</a>
+<a th:fragment="secondary(label, href)" class="btn btn-secondary" th:href="${href}" th:text="${label}">Continue</a>
+<button th:fragment="submit(label)" type="submit" class="btn" th:text="${label}">Save</button>
+<button th:fragment="danger(label)" type="submit" class="btn btn-danger" th:text="${label}">Decline</button>
