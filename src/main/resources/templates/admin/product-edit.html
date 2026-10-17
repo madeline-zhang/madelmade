@@ -25,7 +25,7 @@
           <div class="field"><label for="basePrice">Price</label><div class="price-input">$ <input type="number" step="0.01" min="0" id="basePrice" name="basePrice" th:value="${@money.plain(product.basePrice)}"></div>
             <div class="help">For a loaf with options, the whole-loaf price before add-ons.</div></div>
           <div class="field"><label for="leadTimeDays">Days of notice</label><input type="number" min="0" max="60" id="leadTimeDays" name="leadTimeDays" th:value="${product.leadTimeDays}" th:placeholder="${'Standard (' + settings.noticeDays() + ')'}">
-            <div class="help">Leave blank for the standard notice. Coffee might be 1.</div></div>
+            <div class="help">Leave blank for the standard notice. Use 0 for same day, like lattes.</div></div>
         </div>
         <div class="field"><label for="shortDescription">Short line</label><input type="text" id="shortDescription" name="shortDescription" maxlength="200" th:value="${product.shortDescription}" placeholder="e.g. Hot or iced"></div>
         <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="3" th:text="${product.description}"></textarea></div>
@@ -33,8 +33,8 @@
           <div class="help">Most to least by weight. Tennessee's home food law requires this on the product page for anything sold online.</div></div>
         <div class="field"><label for="allergens">Allergens</label><input type="text" id="allergens" name="allergens" maxlength="300" th:value="${product.allergens}" placeholder="e.g. Wheat. Or: None of the major allergens">
           <div class="help">The major ones: milk, eggs, wheat, soy, peanuts, tree nuts, fish, shellfish, sesame.</div></div>
-        <div class="field"><label for="notesHint">Example in "Anything special?"</label><input type="text" id="notesHint" name="notesHint" maxlength="120" th:value="${product.notesHint}" placeholder="e.g. Higher hydration, if possible">
-          <div class="help">Light grey example text customers see in the notes box.</div></div>
+        <div class="field"><label for="notesHint">Example in "Anything special?"</label><input type="text" id="notesHint" name="notesHint" maxlength="120" th:value="${product.notesHint}" placeholder="Higher hydration, if possible">
+          <div class="help">Light grey example text customers see in the notes box. "e.g." is added in front for you.</div></div>
         <div class="field-row">
           <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Yeast-risen"></div>
           <div class="field"><label for="displayOrder">Order on menu</label><input type="number" id="displayOrder" name="displayOrder" th:value="${product.displayOrder}"></div>

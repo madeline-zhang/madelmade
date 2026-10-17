@@ -20,6 +20,7 @@
       <div class="field"><label for="new-exp">Last day it works</label><input type="date" id="new-exp" name="expiresOn"><div class="help">Optional.</div></div>
     </div>
     <div class="field"><label for="new-note">Note to yourself</label><input type="text" id="new-note" name="note" maxlength="200" placeholder="e.g. For church friends"></div>
+    <label class="check-row"><input type="checkbox" name="oncePerCustomer" value="true"> <span>One use per customer (checked by email, signed in or not)</span></label>
     <button type="submit" class="btn" style="align-self: flex-start">Create code</button>
   </form>
 
@@ -32,6 +33,7 @@
           <div class="t-small muted">
             <strong th:text="${p.label}" style="color: var(--color-ink)">50% off</strong>
             · <span th:text="${'Used ' + p.timesUsed + (p.maxUses != null ? ' of ' + p.maxUses : (p.timesUsed == 1 ? ' time' : ' times'))}">Used 2 times</span>
+            <span th:if="${p.oncePerCustomer}"> · One per customer</span>
             <span th:if="${p.expiresOn != null}" th:text="${' · Works through ' + @fmt.day(p.expiresOn)}"></span>
             <span th:if="${p.note != null}" th:text="${' · ' + p.note}"></span>
           </div>
@@ -58,6 +60,7 @@
             <div class="field"><label th:for="${'exp-' + p.id}">Last day it works</label><input type="date" th:id="${'exp-' + p.id}" name="expiresOn" th:value="${p.expiresOn}"></div>
           </div>
           <div class="field"><label th:for="${'note-' + p.id}">Note to yourself</label><input type="text" th:id="${'note-' + p.id}" name="note" maxlength="200" th:value="${p.note}"></div>
+          <label class="check-row"><input type="checkbox" name="oncePerCustomer" value="true" th:checked="${p.oncePerCustomer}"> <span>One use per customer (checked by email, signed in or not)</span></label>
           <div style="display: flex; gap: 10px; flex-wrap: wrap">
             <button type="submit" class="btn btn-small">Save</button>
           </div>

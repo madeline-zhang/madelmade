@@ -38,7 +38,8 @@ public class AdminPromosController {
     public String save(@RequestParam(required = false) Long id, @RequestParam String code,
                        @RequestParam String kind, @RequestParam(required = false) String percentOff,
                        @RequestParam(required = false) String maxUses, @RequestParam(required = false) String expiresOn,
-                       @RequestParam(required = false) String note, RedirectAttributes flash) {
+                       @RequestParam(required = false) String note,
+                       @RequestParam(defaultValue = "false") boolean oncePerCustomer, RedirectAttributes flash) {
         PromoCode p = id == null ? new PromoCode() : codes.findById(id).orElseThrow(NotFoundException::new);
         List<String> errors = new ArrayList<>();
         String clean = PromoService.normalize(code);
@@ -80,6 +81,7 @@ public class AdminPromosController {
         p.setMaxUses(uses);
         p.setExpiresOn(expires);
         p.setNote(note == null || note.isBlank() ? null : note.trim());
+        p.setOncePerCustomer(oncePerCustomer);
         codes.save(p);
         flash.addFlashAttribute("ok", id == null ? clean + " is ready to share." : "Saved " + clean + ".");
         return "redirect:/admin/promos";

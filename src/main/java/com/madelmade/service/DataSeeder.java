@@ -139,7 +139,7 @@ public class DataSeeder implements ApplicationRunner {
         p.setPickupOnly(true);
         p.setNotesHint("Less ice");
         p.setAllowsBirthCertificate(false);
-        p.setLeadTimeDays(1);
+        p.setLeadTimeDays(0);
         OptionGroup temp = group(p, "Hot or iced", OptionGroup.STYLE_BUTTONS, 0);
         button(temp, "Hot", 0, false).setDefaultChoice(true);
         button(temp, "Iced", 0, false);

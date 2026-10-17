@@ -70,7 +70,8 @@ public class CheckoutController {
             return "redirect:/order/received/" + o.getStatusToken();
         } catch (UserFacingException e) {
             CurrentUser.email().ifPresent(form::setEmail);
-            return show(model, form, e.getMessages());
+            model.addAttribute("fieldErrors", e.getByField());
+            return show(model, form, e.getByField().isEmpty() ? e.getMessages() : List.of());
         }
     }
 
@@ -95,7 +96,7 @@ public class CheckoutController {
         model.addAttribute("form", form);
         model.addAttribute("formErrors", errors);
         try {
-            PromoCode promo = promos.check(form.getPromoCode());
+            PromoCode promo = promos.check(form.getPromoCode(), CurrentUser.email().orElse(form.getEmail()));
             if (promo != null) {
                 form.setPromoCode(promo.getCode());
                 model.addAttribute("promo", promo);

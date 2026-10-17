@@ -380,3 +380,6 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .label-info dt { font-weight: 600; }
 .label-info dd { margin: 0; color: var(--color-ink-soft, inherit); }
 .home-kitchen-section p { margin: 0; }
+
+/* An error shown right beside the part of the form it's about. */
+.field-error { background: var(--badge-declined-bg); color: var(--badge-declined-fg); border-radius: 10px; padding: 10px 14px; font-size: 0.875rem; display: grid; gap: 4px; }

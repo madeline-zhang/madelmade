@@ -18,6 +18,7 @@ public class PromoCode {
     private int timesUsed;
     private LocalDate expiresOn;
     private String note;
+    private boolean oncePerCustomer;
     private Instant createdAt = Instant.now();
 
     /** Why the code can't be used today, or null when it can. */
@@ -28,6 +29,8 @@ public class PromoCode {
         return null;
     }
 
+    public boolean isOncePerCustomer() { return oncePerCustomer; }
+    public void setOncePerCustomer(boolean oncePerCustomer) { this.oncePerCustomer = oncePerCustomer; }
     public boolean isFree() { return percentOff >= 100; }
 
     public String getLabel() { return isFree() ? "Free" : percentOff + "% off"; }

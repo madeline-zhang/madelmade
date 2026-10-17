@@ -221,10 +221,20 @@
   try {
     var saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || 'null');
     sessionStorage.removeItem(SCROLL_KEY);
-    if (saved && Date.now() - saved.at < 30000 && (saved.from === location.pathname || saved.to === location.pathname)) {
-      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-      window.scrollTo(0, saved.y);
-      requestAnimationFrame(function () { window.scrollTo(0, saved.y); });
+    var fieldError = $('[data-field-error]');
+    var jumpTo = function (y) {
+      // Jump straight there: no smooth scrolling, which can feel dizzying after a save.
+      var root = document.documentElement;
+      root.style.scrollBehavior = 'auto';
+      window.scrollTo(0, y);
+      requestAnimationFrame(function () { window.scrollTo(0, y); root.style.scrollBehavior = ''; });
+    };
+    if ('scrollRestoration' in history && saved) history.scrollRestoration = 'manual';
+    if (fieldError) {
+      // A problem with the form: show it beside the field it's about.
+      jumpTo(Math.max(0, fieldError.getBoundingClientRect().top + window.scrollY - window.innerHeight / 3));
+    } else if (saved && Date.now() - saved.at < 30000 && (saved.from === location.pathname || saved.to === location.pathname)) {
+      jumpTo(saved.y);
     }
   } catch (err) { /* ignore */ }
 

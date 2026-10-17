@@ -14,6 +14,9 @@
     <div class="alert alert-error" role="alert" th:if="${formErrors != null and !formErrors.isEmpty()}" style="margin-bottom: 24px">
       <ul><li th:each="e : ${formErrors}" th:text="${e}">Problem</li></ul>
     </div>
+    <div class="alert alert-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('cart')}" style="margin-bottom: 24px">
+      <ul><li th:each="e : ${fieldErrors.get('cart')}" th:text="${e}">Problem</li></ul>
+    </div>
 
     <div class="two-col">
       <form method="post" th:action="@{/checkout}" th:object="${form}" class="stack" style="gap: 28px" data-checkout-form
@@ -36,6 +39,9 @@
             </div>
             <div class="help">You'll always get email updates too.</div>
           </div>
+          <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('contact')}">
+            <div th:each="e : ${fieldErrors.get('contact')}" th:text="${e}">Problem</div>
+          </div>
         </section>
 
         <section class="card stack">
@@ -50,6 +56,9 @@
             <label for="address">Delivery address</label>
             <textarea id="address" th:field="*{address}" rows="2" autocomplete="street-address" placeholder="Street, city, ZIP"></textarea>
             <div class="help">Only Madeline sees this. She'll quote the delivery fee with her approval; it's paid up front as a deposit.</div>
+          </div>
+          <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('fulfillment')}">
+            <div th:each="e : ${fieldErrors.get('fulfillment')}" th:text="${e}">Problem</div>
           </div>
         </section>
 
@@ -71,6 +80,9 @@
               </select>
             </div>
           </div>
+          <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('date')}">
+            <div th:each="e : ${fieldErrors.get('date')}" th:text="${e}">Problem</div>
+          </div>
           <div class="help" th:if="${!daysOff.isEmpty()}" th:text="${'Madeline isn''t baking on: ' + #strings.listJoin(daysOffText, ', ')}">Days off</div>
           <div class="help">Madeline confirms the exact time with you in messages.</div>
         </section>
@@ -78,7 +90,7 @@
         <section class="card stack">
           <h2 class="card-title">Anything else?</h2>
           <div class="field"><label for="note">Note for Madeline <span class="muted">(optional)</span></label>
-            <textarea id="note" th:field="*{note}" rows="3" placeholder="It's for my daughter's birthday, she loves butterflies!"></textarea></div>
+            <textarea id="note" th:field="*{note}" rows="3" placeholder="e.g. It's for my daughter's birthday, she loves butterflies!"></textarea></div>
           <div class="field" id="promo">
             <label for="promoCode">Promo code <span class="muted">(optional)</span></label>
             <div class="promo-row">
