@@ -29,6 +29,10 @@
         </div>
         <div class="field"><label for="shortDescription">Short line</label><input type="text" id="shortDescription" name="shortDescription" maxlength="200" th:value="${product.shortDescription}" placeholder="e.g. Hot or iced"></div>
         <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="3" th:text="${product.description}"></textarea></div>
+        <div class="field"><label for="ingredients">Ingredients</label><textarea id="ingredients" name="ingredients" rows="2" th:text="${product.ingredients}" placeholder="e.g. Bread flour, water, salt, sourdough starter"></textarea>
+          <div class="help">Most to least by weight. Tennessee's home food law requires this on the product page for anything sold online.</div></div>
+        <div class="field"><label for="allergens">Allergens</label><input type="text" id="allergens" name="allergens" maxlength="300" th:value="${product.allergens}" placeholder="e.g. Wheat. Or: None of the major allergens">
+          <div class="help">The major ones: milk, eggs, wheat, soy, peanuts, tree nuts, fish, shellfish, sesame.</div></div>
         <div class="field-row">
           <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Yeast-risen"></div>
           <div class="field"><label for="displayOrder">Order on menu</label><input type="number" id="displayOrder" name="displayOrder" th:value="${product.displayOrder}"></div>

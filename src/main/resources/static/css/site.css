@@ -366,3 +366,9 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .notice-box strong { font-weight: 700; }
 .home-kitchen { margin: 0; font-style: italic; }
 .pill-disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Ingredients and allergens on the product page (required by Tennessee's home food law) */
+.label-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 4px 0 0; max-width: 520px; }
+.label-info dt { font-weight: 600; }
+.label-info dd { margin: 0; color: var(--color-ink-soft, inherit); }
+.home-kitchen-section p { margin: 0; }

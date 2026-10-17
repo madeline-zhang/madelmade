@@ -41,8 +41,9 @@
       </div>
     </section>
 
-    <section class="page-narrow" aria-label="Home kitchen notice">
-      <p th:replace="~{components/notices :: homeKitchen}"></p>
+    <section class="stack page-narrow home-kitchen-section" style="gap: 10px" aria-labelledby="home-kitchen">
+      <h2 id="home-kitchen" class="t-section section-title" th:text="${settings.get('about.homeTitle')}">Made in my home kitchen</h2>
+      <p th:text="${settings.get('about.homeBody')}">MadelMade is a home bakery.</p>
     </section>
 
     <section class="about-signoff">

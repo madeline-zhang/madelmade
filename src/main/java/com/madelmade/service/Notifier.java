@@ -58,6 +58,10 @@ public class Notifier {
         // Madeline's address is only ever shared privately, once she has approved a pickup.
         boolean shareAddress = wording == EmailWording.APPROVED && !o.isDelivery();
         vars.put("pickupAddress", shareAddress ? settings.get("pickup.address") : "");
+        // Tennessee's home food law asks for the producer's name and phone with the order.
+        vars.put("producerName", wording == EmailWording.APPROVED ? settings.get("producer.name") : "");
+        vars.put("producerPhone", wording == EmailWording.APPROVED ? settings.get("producer.phone") : "");
+        vars.put("homeKitchen", settings.get("notice.homeKitchen"));
         String html = render("email/order", vars);
         mail.send(o.getContactEmail(), o.getContactName(), settings.subject(wording) + " (" + o.getNumber() + ")", html);
     }

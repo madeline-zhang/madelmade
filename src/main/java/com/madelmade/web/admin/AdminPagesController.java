@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/pages")
 public class AdminPagesController {
-    static final List<String> KEYS = List.of("about.title", "about.titleAccent", "about.body", "about.faq", "about.signoff",
+    static final List<String> KEYS = List.of("about.title", "about.titleAccent", "about.body", "about.faq", "about.signoff", "about.homeTitle", "about.homeBody",
             "gallery.title", "gallery.titleAccent", "gallery.intro", "gallery.otherTitle", "gallery.otherIntro",
             "notice.pickupOnly", "notice.homeKitchen");
 

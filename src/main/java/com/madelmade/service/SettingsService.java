@@ -35,6 +35,8 @@ public class SettingsService {
         DEFAULTS.put("admin.emails", "madelmadewithlove@gmail.com");
         DEFAULTS.put("pickup.area", "Brentwood / Nolensville, TN");
         DEFAULTS.put("pickup.address", "");
+        DEFAULTS.put("producer.name", "Madeline");
+        DEFAULTS.put("producer.phone", "");
         DEFAULTS.put("delivery.enabled", "true");
         DEFAULTS.put("notify.email", "madelmadewithlove@gmail.com");
         DEFAULTS.put("notify.newRequest", "true");
@@ -55,8 +57,10 @@ public class SettingsService {
                 + "What about allergens?\nEvery loaf contains wheat. Rosemary garlic asiago contains dairy. Mom's Best is yeast-risen, not sourdough. Ask if you have other allergies.\n\n"
                 + "How should I store it?\nTo enjoy it later, slice it and freeze the slices.\n\n"
                 + "Best way to reheat?\nToast it and butter it up!");
-        DEFAULTS.put("notice.pickupOnly", "Lattes are pickup only. Under Tennessee's home food rules (see the UT Extension summary), anything made with milk has to be picked up in person and can't be delivered. If you'd like your bread delivered, order your latte separately for pickup.");
-        DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection.");
+        DEFAULTS.put("notice.pickupOnly", "Drinks made with milk, like lattes, have to stay cold, so Tennessee's home food law only allows them to be sold in person. That makes lattes pickup only. You can pick one up when you collect your bread, or switch this order to pickup.");
+        DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens.");
+        DEFAULTS.put("about.homeTitle", "Made in my home kitchen");
+        DEFAULTS.put("about.homeBody", "MadelMade is a home bakery. Everything is made in my kitchen in Tennessee under the state's Food Freedom Act. This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens. Each product page lists its ingredients and allergens. Drinks made with milk are pickup only.");
         DEFAULTS.put("gallery.title", "Loaves that made someone");
         DEFAULTS.put("gallery.titleAccent", "smile");
         DEFAULTS.put("gallery.intro", "Past loaves to spark an idea for yours. See something you love? Mention it in your order.");
