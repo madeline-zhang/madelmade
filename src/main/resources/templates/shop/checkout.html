@@ -42,8 +42,9 @@
           <h2 class="card-title">Pickup or delivery</h2>
           <div class="segmented" role="radiogroup" aria-label="Pickup or delivery">
             <label><input type="radio" th:field="*{fulfillment}" value="PICKUP" data-fulfillment><span class="pill">Pickup <span class="pill-note">free</span></span></label>
-            <label th:if="${settings.deliveryEnabled()}"><input type="radio" th:field="*{fulfillment}" value="DELIVERY" data-fulfillment><span class="pill">Delivery <span class="pill-note">fee quoted</span></span></label>
+            <label th:if="${settings.deliveryEnabled()}" th:classappend="${cart.pickupOnly} ? 'pill-disabled'"><input type="radio" th:field="*{fulfillment}" value="DELIVERY" data-fulfillment th:disabled="${cart.pickupOnly}"><span class="pill">Delivery <span class="pill-note" th:text="${cart.pickupOnly ? 'not available' : 'fee quoted'}">fee quoted</span></span></label>
           </div>
+          <div th:replace="~{components/notices :: pickupOnly}"></div>
           <p class="t-small muted" style="margin: 0" data-pickup-note th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once Madeline approves.'}">Pickup info</p>
           <div class="field" data-address-field>
             <label for="address">Delivery address</label>
@@ -78,6 +79,15 @@
           <h2 class="card-title">Anything else?</h2>
           <div class="field"><label for="note">Note for Madeline <span class="muted">(optional)</span></label>
             <textarea id="note" th:field="*{note}" rows="3" placeholder="It's for my daughter's birthday, she loves butterflies!"></textarea></div>
+          <div class="field" id="promo">
+            <label for="promoCode">Promo code <span class="muted">(optional)</span></label>
+            <div class="promo-row">
+              <input type="text" id="promoCode" th:field="*{promoCode}" autocomplete="off" autocapitalize="characters" maxlength="40">
+              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/checkout/promo}" formnovalidate>Apply</button>
+            </div>
+            <div class="help promo-ok" th:if="${promo != null}" th:text="${promo.free ? promo.code + ' applied: your items are free.' : promo.code + ' applied: ' + promo.percentOff + '% off your items.'}">FRIENDS50 applied</div>
+            <div class="help promo-error" th:if="${promoError != null}" th:text="${promoError}" role="alert">That code has expired.</div>
+          </div>
         </section>
 
         <button type="submit" class="btn btn-block" th:disabled="${!settings.ordersOpen()}">Submit request</button>
@@ -87,10 +97,15 @@
         <h2 class="card-title">Your order</h2>
         <div th:replace="~{components/order-summary :: cartLines(false)}"></div>
         <div class="summary-totals">
-          <div class="grand"><span>Total</span><span th:text="${@money.fmt(cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</span></div>
+          <th:block th:if="${promo != null}">
+            <div><span>Items</span><span th:text="${@money.fmt(cart.total)}">$26</span></div>
+            <div class="discount"><span th:text="${'Promo ' + promo.code}">Promo FRIENDS50</span><span th:text="${'−' + @money.fmt(promoDiscount)}">−$13</span></div>
+          </th:block>
+          <div class="grand"><span>Total</span><span th:text="${@money.fmt(promo != null ? promoTotal : cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</span></div>
           <div class="t-small muted">Plus priority or delivery fees if chosen. You pay at pickup or delivery.</div>
         </div>
         <p style="margin: 16px 0 0"><a th:href="@{/cart}" class="t-small">Edit cart</a></p>
+        <div style="margin-top: 16px"><p th:replace="~{components/notices :: homeKitchen}"></p></div>
       </aside>
     </div>
   </div>

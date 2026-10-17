@@ -13,6 +13,7 @@
     </div>
     <div class="drawer-foot" th:if="${!cart.empty}">
       <div class="total-row"><span>Total</span><strong th:text="${@money.fmt(cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</strong></div>
+      <div th:replace="~{components/notices :: pickupOnly}"></div>
       <div class="t-small muted">Nothing is charged now. Madeline confirms every order, and you pay at pickup or delivery.</div>
       <a th:if="${signedIn}" class="btn btn-block" th:href="@{/checkout}">Checkout</a>
       <button th:unless="${signedIn}" type="button" class="btn btn-block" data-checkout-popup>Checkout</button>

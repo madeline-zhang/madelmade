@@ -39,6 +39,9 @@ public class CustomerOrder {
     /** Custom price or discount Madeline adds before approving. */
     private BigDecimal adjustment = BigDecimal.ZERO;
     private String adjustmentNote;
+    private String promoCode;
+    private Integer promoPercent;
+    private BigDecimal discount = BigDecimal.ZERO;
     private BigDecimal total = BigDecimal.ZERO;
     private boolean paid;
     private boolean priceTbd;
@@ -100,7 +103,12 @@ public class CustomerOrder {
         }
         subtotal = sub;
         priceTbd = tbd;
-        BigDecimal t = sub.add(priorityFee == null ? BigDecimal.ZERO : priorityFee)
+        BigDecimal fee = priorityFee == null ? BigDecimal.ZERO : priorityFee;
+        // A promo code takes its percentage off the items and the priority fee, not delivery.
+        discount = promoPercent == null ? BigDecimal.ZERO
+                : sub.add(fee).multiply(BigDecimal.valueOf(promoPercent))
+                        .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+        BigDecimal t = sub.add(fee).subtract(discount)
                 .add(adjustment == null ? BigDecimal.ZERO : adjustment);
         if (deliveryFee != null) t = t.add(deliveryFee);
         total = t;
@@ -177,6 +185,16 @@ public class CustomerOrder {
     public BigDecimal getSubtotal() { return subtotal; }
     public BigDecimal getAdjustment() { return adjustment; }
     public void setAdjustment(BigDecimal adjustment) { this.adjustment = adjustment; }
+    public String getPromoCode() { return promoCode; }
+    public void setPromoCode(String promoCode) { this.promoCode = promoCode; }
+    public Integer getPromoPercent() { return promoPercent; }
+    public void setPromoPercent(Integer promoPercent) { this.promoPercent = promoPercent; }
+    public BigDecimal getDiscount() { return discount; }
+    public boolean isHasDiscount() { return discount != null && discount.signum() > 0; }
+    public String getPromoLabel() {
+        if (promoCode == null) return null;
+        return promoCode + (promoPercent != null && promoPercent >= 100 ? " (free)" : " (" + promoPercent + "% off)");
+    }
     public String getAdjustmentNote() { return adjustmentNote; }
     public void setAdjustmentNote(String adjustmentNote) { this.adjustmentNote = adjustmentNote; }
     public BigDecimal getTotal() { return total; }

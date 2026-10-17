@@ -27,7 +27,8 @@
           <div class="price-row">
             <div class="t-price" data-price-text th:text="${@money.fmt(product.basePrice)}">$10</div>
             <div class="t-small muted" data-tbd-note hidden>+ custom price to be discussed</div>
-            <span class="tag" th:if="${product.badge != null}" th:text="${product.badge}">Not sourdough</span>
+            <span class="tag" th:if="${product.badge != null}" th:text="${product.badge}">Yeast-risen</span>
+            <span class="tag" th:if="${product.pickupOnly}">Pickup only</span>
           </div>
           <p class="t-subtitle" style="font-size: 1rem; max-width: 520px" th:text="${product.description}">Our everyday sourdough.</p>
           <div class="alert alert-info" th:if="${product.soldOut}">Sold out for now. Check back soon!</div>

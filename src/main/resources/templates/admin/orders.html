@@ -40,6 +40,7 @@
             <span th:text="${o.fulfillment.label + ' · ' + @fmt.day(o.requestedDate)}">Pickup · Sat, Oct 11</span>
             <span class="tag" th:if="${o.priceTbd}">Custom</span>
             <span class="tag" th:if="${o.priority}">Priority</span>
+            <span class="tag" th:if="${o.promoCode != null}" th:text="${o.promoCode}">FRIENDS50</span>
             <span class="flag" th:if="${o.overCapacity and !o.status.closed}">Over capacity</span>
             <th:block th:if="${tab == 'review' and o.status.name() == 'CHANGES_REQUESTED'}"><span th:replace="~{components/status-badge :: badge(${o.status}, false)}"></span></th:block>
           </span>

@@ -30,7 +30,7 @@
         <div class="field"><label for="shortDescription">Short line</label><input type="text" id="shortDescription" name="shortDescription" maxlength="200" th:value="${product.shortDescription}" placeholder="e.g. Hot or iced"></div>
         <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="3" th:text="${product.description}"></textarea></div>
         <div class="field-row">
-          <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Not sourdough"></div>
+          <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Yeast-risen"></div>
           <div class="field"><label for="displayOrder">Order on menu</label><input type="number" id="displayOrder" name="displayOrder" th:value="${product.displayOrder}"></div>
         </div>
         <div>
@@ -40,6 +40,8 @@
             <label class="switch"><input type="checkbox" name="soldOut" value="true" th:checked="${product.soldOut}" aria-label="Sold out"><span></span></label></div>
           <div class="toggle-row"><div><div class="t">Counts as a loaf</div><div class="d">Counts toward your loaf limit. Turn off for coffee.</div></div>
             <label class="switch"><input type="checkbox" name="countsAsLoaf" value="true" th:checked="${product.id == null or product.countsAsLoaf}" aria-label="Counts as a loaf"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">Pickup only</div><div class="d">Can't be delivered. Turn on for anything made with milk, like lattes.</div></div>
+            <label class="switch"><input type="checkbox" name="pickupOnly" value="true" th:checked="${product.pickupOnly}" aria-label="Pickup only"><span></span></label></div>
           <div class="toggle-row"><div><div class="t">Offer a birth certificate</div><div class="d">Shows the certificate add-on on this item.</div></div>
             <label class="switch"><input type="checkbox" name="allowsBirthCertificate" value="true" th:checked="${product.allowsBirthCertificate}" aria-label="Offer a birth certificate"><span></span></label></div>
         </div>

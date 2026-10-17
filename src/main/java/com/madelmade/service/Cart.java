@@ -19,6 +19,13 @@ public class Cart implements Serializable {
 
     public boolean isEmpty() { return lines.isEmpty(); }
 
+    /** Names of items that can't be delivered (anything made with milk), for the pickup notice. */
+    public List<String> getPickupOnlyNames() {
+        return lines.stream().filter(CartLine::isPickupOnly).map(CartLine::getProductName).distinct().toList();
+    }
+
+    public boolean isPickupOnly() { return lines.stream().anyMatch(CartLine::isPickupOnly); }
+
     public int getCount() {
         return lines.stream().mapToInt(CartLine::getQuantity).sum();
     }

@@ -42,6 +42,26 @@ public class SettingsService {
         DEFAULTS.put("notify.morningSummary", "false");
         DEFAULTS.put("photos.warmth", "6");
         DEFAULTS.put("photos.brightness", "5");
+        // Page text Madeline edits under Pages.
+        DEFAULTS.put("about.title", "It started with");
+        DEFAULTS.put("about.titleAccent", "a starter");
+        DEFAULTS.put("about.body", "I'm Madeline, a home baker in Brentwood, Tennessee. Someone gave me a sourdough starter, and I didn't want to kill it, so I kept baking.\n\n"
+                + "One loaf turned into many, and plain loaves turned into designs: leaves, butterflies, names and birthday messages, each scored by hand.\n\n"
+                + "Every loaf is made to order and made to make you smile.");
+        DEFAULTS.put("about.photoId", "");
+        DEFAULTS.put("about.signoff", "Made with love, Madeline");
+        DEFAULTS.put("about.faq", "Do you deliver?\nYes, nearby. Madeline quotes the delivery fee when she approves your order, and it's paid up front as a deposit.\n\n"
+                + "How do I pay?\nNothing is charged online. You pay at pickup or delivery with cash, Venmo or Zelle.\n\n"
+                + "What about allergens?\nEvery loaf contains wheat. Rosemary garlic asiago contains dairy. Mom's Best is yeast-risen, not sourdough. Ask if you have other allergies.\n\n"
+                + "How should I store it?\nTo enjoy it later, slice it and freeze the slices.\n\n"
+                + "Best way to reheat?\nToast it and butter it up!");
+        DEFAULTS.put("notice.pickupOnly", "Lattes are pickup only. Under Tennessee's home food rules (see the UT Extension summary), anything made with milk has to be picked up in person and can't be delivered. If you'd like your bread delivered, order your latte separately for pickup.");
+        DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection.");
+        DEFAULTS.put("gallery.title", "Loaves that made someone");
+        DEFAULTS.put("gallery.titleAccent", "smile");
+        DEFAULTS.put("gallery.intro", "Past loaves to spark an idea for yours. See something you love? Mention it in your order.");
+        DEFAULTS.put("gallery.otherTitle", "Not just bread");
+        DEFAULTS.put("gallery.otherIntro", "A few other things I've baked. If any of these interest you, send me an email and we can talk about it ;)");
         for (EmailWording w : EmailWording.values()) {
             DEFAULTS.put(w.subjectKey(), w.defaultSubject);
             DEFAULTS.put(w.introKey(), w.defaultIntro);
@@ -156,6 +176,33 @@ public class SettingsService {
 
     public List<String> daysOffEntries() {
         return Arrays.stream(get("orders.daysOff").split("[,\\n]+")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+    }
+
+    public record Faq(String question, String answer) {}
+
+    /** FAQ entries typed as blocks: a question line, then its answer, with a blank line between entries. */
+    public List<Faq> faqs() {
+        List<Faq> out = new ArrayList<>();
+        for (String block : get("about.faq").replace("\r", "").split("\n\\s*\n")) {
+            String b = block.trim();
+            if (b.isEmpty()) continue;
+            int nl = b.indexOf('\n');
+            out.add(nl < 0 ? new Faq(b, "") : new Faq(b.substring(0, nl).trim(), b.substring(nl + 1).trim()));
+        }
+        return out;
+    }
+
+    /** Text typed with blank lines between paragraphs. */
+    public List<String> paragraphs(String key) {
+        return Arrays.stream(get(key).replace("\r", "").split("\n\\s*\n")).map(String::trim).filter(p -> !p.isEmpty()).toList();
+    }
+
+    public Long aboutPhotoId() {
+        try {
+            return Long.valueOf(get("about.photoId").trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public String subject(EmailWording w) { return get(w.subjectKey()); }

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'pages')}">
+<head><title>Pages · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">Words and photos on the site</div><h1>Pages</h1></div></div>
+
+  <form method="post" th:action="@{/admin/pages}" class="stack" style="gap: 24px">
+    <div class="settings-grid">
+      <section class="card stack">
+        <h2 class="card-title">About page</h2>
+        <div class="field-row">
+          <div class="field"><label for="aboutTitle">Headline</label><input type="text" id="aboutTitle" name="about.title" maxlength="80" th:value="${settings.get('about.title')}"></div>
+          <div class="field"><label for="aboutAccent">Headline, in italics</label><input type="text" id="aboutAccent" name="about.titleAccent" maxlength="60" th:value="${settings.get('about.titleAccent')}"></div>
+        </div>
+        <div class="field"><label for="aboutBody">Your story</label><textarea id="aboutBody" name="about.body" rows="9" th:text="${settings.get('about.body')}"></textarea>
+          <div class="help">Leave a blank line between paragraphs.</div></div>
+        <div class="field"><label for="aboutFaq">Questions and answers</label><textarea id="aboutFaq" name="about.faq" rows="14" th:text="${settings.get('about.faq')}"></textarea>
+          <div class="help">Write each question on its own line with the answer underneath, and a blank line before the next question. Notice days and pickup area are added at the top automatically from Settings.</div></div>
+        <div class="field"><label for="aboutSignoff">Sign-off under the logo</label><input type="text" id="aboutSignoff" name="about.signoff" maxlength="80" th:value="${settings.get('about.signoff')}"></div>
+      </section>
+
+      <div class="stack" style="gap: 24px">
+        <section class="card stack">
+          <h2 class="card-title">Your photo</h2>
+          <div class="about-photo-admin">
+            <img th:if="${settings.aboutPhotoId() != null}" th:src="@{/photos/{id}(id=${settings.aboutPhotoId()})}" alt="Your photo on the About page">
+            <div th:unless="${settings.aboutPhotoId() != null}" class="photo-placeholder">No photo yet</div>
+          </div>
+          <a class="btn btn-secondary btn-small" style="align-self: flex-start" th:href="@{/admin/photos/edit(target='about-photo')}"
+             th:text="${settings.aboutPhotoId() != null ? 'Change photo' : 'Add a photo'}">Add a photo</a>
+          <p class="t-small muted" style="margin: 0">Shows beside your story on the About page. A portrait photo works best.</p>
+        </section>
+
+        <section class="card stack">
+          <h2 class="card-title">Gallery page</h2>
+          <div class="field-row">
+            <div class="field"><label for="galTitle">Headline</label><input type="text" id="galTitle" name="gallery.title" maxlength="80" th:value="${settings.get('gallery.title')}"></div>
+            <div class="field"><label for="galAccent">Headline, in italics</label><input type="text" id="galAccent" name="gallery.titleAccent" maxlength="60" th:value="${settings.get('gallery.titleAccent')}"></div>
+          </div>
+          <div class="field"><label for="galIntro">Intro</label><textarea id="galIntro" name="gallery.intro" rows="2" th:text="${settings.get('gallery.intro')}"></textarea></div>
+          <div class="field"><label for="otherTitle">"Other bakes" heading</label><input type="text" id="otherTitle" name="gallery.otherTitle" maxlength="80" th:value="${settings.get('gallery.otherTitle')}"></div>
+          <div class="field"><label for="otherIntro">"Other bakes" note</label><textarea id="otherIntro" name="gallery.otherIntro" rows="3" th:text="${settings.get('gallery.otherIntro')}"></textarea>
+            <div class="help">An email button to madelmadewithlove@gmail.com sits under this note.</div></div>
+          <a class="t-small" th:href="@{/admin/gallery}">Add or change gallery photos</a>
+        </section>
+
+        <section class="card stack">
+          <h2 class="card-title">Notices</h2>
+          <div class="field"><label for="noticePickup">Pickup-only notice</label><textarea id="noticePickup" name="notice.pickupOnly" rows="4" th:text="${settings.get('notice.pickupOnly')}"></textarea>
+            <div class="help">Shown in the cart and at checkout when the order has a pickup-only item. Mark items pickup only under Products.</div></div>
+          <div class="field"><label for="noticeHome">Home kitchen notice</label><textarea id="noticeHome" name="notice.homeKitchen" rows="3" th:text="${settings.get('notice.homeKitchen')}"></textarea>
+            <div class="help">Shown on the About page and at checkout.</div></div>
+        </section>
+      </div>
+    </div>
+    <div class="save-bar"><a class="btn btn-secondary" th:href="@{/about}" target="_blank" rel="noopener">View About ↗</a><button type="submit" class="btn">Save pages</button></div>
+  </form>
+</main>
+</body>
+</html>

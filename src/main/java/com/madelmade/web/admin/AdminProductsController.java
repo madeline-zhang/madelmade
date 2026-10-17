@@ -72,6 +72,7 @@ public class AdminProductsController {
                        @RequestParam(required = false) Integer leadTimeDays, @RequestParam(defaultValue = "0") int displayOrder,
                        @RequestParam(defaultValue = "false") boolean active, @RequestParam(defaultValue = "false") boolean soldOut,
                        @RequestParam(defaultValue = "false") boolean countsAsLoaf,
+                       @RequestParam(defaultValue = "false") boolean pickupOnly,
                        @RequestParam(defaultValue = "false") boolean allowsBirthCertificate,
                        @RequestParam(required = false) String badge, RedirectAttributes flash) {
         if (name == null || name.isBlank()) {
@@ -90,6 +91,7 @@ public class AdminProductsController {
         p.setActive(active);
         p.setSoldOut(soldOut);
         p.setCountsAsLoaf(countsAsLoaf);
+        p.setPickupOnly(pickupOnly);
         p.setAllowsBirthCertificate(allowsBirthCertificate);
         p.setBadge(blank(badge));
         p.setUpdatedAt(Instant.now());

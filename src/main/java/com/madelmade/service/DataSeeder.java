@@ -79,7 +79,7 @@ public class DataSeeder implements ApplicationRunner {
         Product moms = product(bread, "Mom's Best", "moms-best", 8, "jonah.jpg", 4,
                 "Whole, cranberry walnut, simple score.",
                 "Cranberry walnut bread with a simple score. This one is not sourdough.");
-        moms.setBadge("Not sourdough");
+        moms.setBadge("Yeast-risen");
         products.save(moms);
 
         latte(coffee, "Latte", "latte", 4, 0, "A double shot over milk.", true);
@@ -135,6 +135,7 @@ public class DataSeeder implements ApplicationRunner {
         p.setShortDescription("Hot or iced");
         p.setDescription(description + " One size, same price hot or iced.");
         p.setCountsAsLoaf(false);
+        p.setPickupOnly(true);
         p.setAllowsBirthCertificate(false);
         p.setLeadTimeDays(1);
         OptionGroup temp = group(p, "Hot or iced", OptionGroup.STYLE_BUTTONS, 0);

@@ -26,6 +26,7 @@ public class Product {
     private boolean soldOut;
     private int displayOrder;
     private boolean countsAsLoaf = true;
+    private boolean pickupOnly;
     private boolean allowsBirthCertificate;
     private String badge;
     private Long photoId;
@@ -66,6 +67,8 @@ public class Product {
     public void setDisplayOrder(int displayOrder) { this.displayOrder = displayOrder; }
     public boolean isCountsAsLoaf() { return countsAsLoaf; }
     public void setCountsAsLoaf(boolean countsAsLoaf) { this.countsAsLoaf = countsAsLoaf; }
+    public boolean isPickupOnly() { return pickupOnly; }
+    public void setPickupOnly(boolean pickupOnly) { this.pickupOnly = pickupOnly; }
     public boolean isAllowsBirthCertificate() { return allowsBirthCertificate; }
     public void setAllowsBirthCertificate(boolean allowsBirthCertificate) { this.allowsBirthCertificate = allowsBirthCertificate; }
     public String getBadge() { return badge; }

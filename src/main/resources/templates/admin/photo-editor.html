@@ -63,7 +63,7 @@
         <input type="range" id="brightness" min="0" max="10" step="1" data-input="brightness">
       </div>
 
-      <div class="field" th:if="${target.key.startsWith('gallery')}">
+      <div class="field" th:if="${target.key.startsWith('gallery') or target.key.startsWith('other')}">
         <label for="caption">Caption</label>
         <input type="text" id="caption" maxlength="200" data-caption placeholder="e.g. Miriam's double leaf">
       </div>

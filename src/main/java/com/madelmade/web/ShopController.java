@@ -53,7 +53,8 @@ public class ShopController {
 
     @GetMapping("/gallery")
     public String gallery(Model model) {
-        model.addAttribute("photos", gallery.findAllByOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("photos", gallery.findBySectionOrderByDisplayOrderAscIdAsc(com.madelmade.domain.GalleryPhoto.LOAVES));
+        model.addAttribute("otherPhotos", gallery.findBySectionOrderByDisplayOrderAscIdAsc(com.madelmade.domain.GalleryPhoto.OTHER));
         return "shop/gallery";
     }
 

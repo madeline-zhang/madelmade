@@ -6,14 +6,32 @@
   <div class="wrap">
     <div class="page-head">
       <div class="t-eyebrow">Gallery</div>
-      <h1 class="t-page-title">Loaves that made someone <em>smile</em></h1>
-      <p class="t-subtitle">Past loaves to spark an idea for yours. See something you love? Mention it in your order.</p>
+      <h1 class="t-page-title"><span th:text="${settings.get('gallery.title')}">Loaves that made someone</span> <em th:text="${settings.get('gallery.titleAccent')}">smile</em></h1>
+      <p class="t-subtitle" th:text="${settings.get('gallery.intro')}">Past loaves to spark an idea for yours.</p>
     </div>
     <div class="gallery-grid">
       <th:block th:each="g : ${photos}"><figure th:replace="~{components/gallery-tile :: tile(${g})}"></figure></th:block>
     </div>
     <p th:if="${photos.isEmpty()}" class="muted">Photos coming soon.</p>
     <p style="margin-top: 40px"><a class="btn" th:href="@{/#menu}">Order a loaf&nbsp;&nbsp;→</a></p>
+
+    <section class="gallery-other" id="other-bakes" aria-labelledby="other-title">
+      <div class="page-head">
+        <h2 id="other-title" class="t-section section-title" th:text="${settings.get('gallery.otherTitle')}">Not just bread</h2>
+        <p class="t-subtitle" th:text="${settings.get('gallery.otherIntro')}">A few other things I've baked.</p>
+      </div>
+      <div class="gallery-grid">
+        <th:block th:each="g : ${otherPhotos}"><figure th:replace="~{components/gallery-tile :: tile(${g})}"></figure></th:block>
+        <th:block th:if="${otherPhotos.isEmpty()}">
+          <figure class="gallery-tile is-placeholder" th:each="n : ${ {1, 2, 3} }">
+            <div class="ph"><img th:src="@{/img/madelmade-logo-simple.svg}" alt=""></div>
+            <figcaption class="muted">Photo coming soon</figcaption>
+          </figure>
+        </th:block>
+      </div>
+      <p><a class="btn btn-secondary" href="mailto:madelmadewithlove@gmail.com?subject=Other%20bakes">Email Madeline</a>
+        <span class="t-small muted" style="margin-left: 12px">madelmadewithlove@gmail.com</span></p>
+    </section>
   </div>
 </main>
 </body>

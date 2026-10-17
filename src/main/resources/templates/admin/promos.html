@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'promos')}">
+<head><title>Promo codes · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">For friends and family</div><h1>Promo codes</h1></div></div>
+
+  <form class="card stack" method="post" th:action="@{/admin/promos/save}" style="max-width: 760px">
+    <h2 class="card-title">New code</h2>
+    <p class="t-small muted" style="margin: 0">Customers type the code at checkout. It takes the discount off their items and the priority fee; delivery fees aren't discounted.</p>
+    <div class="field-row">
+      <div class="field"><label for="new-code">Code</label><input type="text" id="new-code" name="code" maxlength="40" placeholder="e.g. FRIENDS50" required style="text-transform: uppercase"></div>
+      <div class="field"><label for="new-kind">Discount</label>
+        <select id="new-kind" name="kind"><option value="percent">Percent off</option><option value="free">Free</option></select></div>
+      <div class="field"><label for="new-pct">Percent off</label><div class="price-input"><input type="number" id="new-pct" name="percentOff" min="1" max="100" value="50"> %</div>
+        <div class="help">Ignored when Free is picked.</div></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label for="new-uses">How many orders can use it</label><input type="number" id="new-uses" name="maxUses" min="1" placeholder="No limit"></div>
+      <div class="field"><label for="new-exp">Last day it works</label><input type="date" id="new-exp" name="expiresOn"><div class="help">Optional.</div></div>
+    </div>
+    <div class="field"><label for="new-note">Note to yourself</label><input type="text" id="new-note" name="note" maxlength="200" placeholder="e.g. For church friends"></div>
+    <button type="submit" class="btn" style="align-self: flex-start">Create code</button>
+  </form>
+
+  <div class="empty" th:if="${codes.isEmpty()}">No promo codes yet.</div>
+  <div class="stack" style="gap: 14px" th:unless="${codes.isEmpty()}">
+    <div class="promo-card" th:each="p : ${codes}" th:classappend="${p.active ? '' : 'is-off'}">
+      <div class="promo-top">
+        <div class="stack" style="gap: 4px">
+          <div class="promo-code" th:text="${p.code}">FRIENDS50</div>
+          <div class="t-small muted">
+            <strong th:text="${p.label}" style="color: var(--color-ink)">50% off</strong>
+            · <span th:text="${'Used ' + p.timesUsed + (p.maxUses != null ? ' of ' + p.maxUses : (p.timesUsed == 1 ? ' time' : ' times'))}">Used 2 times</span>
+            <span th:if="${p.expiresOn != null}" th:text="${' · Works through ' + @fmt.day(p.expiresOn)}"></span>
+            <span th:if="${p.note != null}" th:text="${' · ' + p.note}"></span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center">
+          <span class="badge badge-approved" th:if="${p.active and p.problem(@fmt.today()) == null}">Working</span>
+          <span class="badge badge-review" th:if="${p.active and p.problem(@fmt.today()) != null}" th:text="${p.expiresOn != null and @fmt.today().isAfter(p.expiresOn) ? 'Expired' : 'Used up'}">Used up</span>
+          <span class="badge badge-completed" th:unless="${p.active}">Off</span>
+          <form method="post" th:action="@{/admin/promos/{id}/toggle(id=${p.id})}"><button type="submit" class="btn btn-secondary btn-small" th:text="${p.active ? 'Turn off' : 'Turn on'}">Turn off</button></form>
+        </div>
+      </div>
+      <details>
+        <summary>Edit</summary>
+        <form method="post" th:action="@{/admin/promos/save}" class="stack" style="gap: 12px; margin-top: 12px">
+          <input type="hidden" name="id" th:value="${p.id}">
+          <div class="field-row">
+            <div class="field"><label th:for="${'code-' + p.id}">Code</label><input type="text" th:id="${'code-' + p.id}" name="code" maxlength="40" th:value="${p.code}" required></div>
+            <div class="field"><label th:for="${'kind-' + p.id}">Discount</label>
+              <select th:id="${'kind-' + p.id}" name="kind"><option value="percent" th:selected="${!p.free}">Percent off</option><option value="free" th:selected="${p.free}">Free</option></select></div>
+            <div class="field"><label th:for="${'pct-' + p.id}">Percent off</label><div class="price-input"><input type="number" th:id="${'pct-' + p.id}" name="percentOff" min="1" max="100" th:value="${p.percentOff}"> %</div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label th:for="${'uses-' + p.id}">How many orders can use it</label><input type="number" th:id="${'uses-' + p.id}" name="maxUses" min="1" th:value="${p.maxUses}" placeholder="No limit"></div>
+            <div class="field"><label th:for="${'exp-' + p.id}">Last day it works</label><input type="date" th:id="${'exp-' + p.id}" name="expiresOn" th:value="${p.expiresOn}"></div>
+          </div>
+          <div class="field"><label th:for="${'note-' + p.id}">Note to yourself</label><input type="text" th:id="${'note-' + p.id}" name="note" maxlength="200" th:value="${p.note}"></div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap">
+            <button type="submit" class="btn btn-small">Save</button>
+          </div>
+        </form>
+        <form method="post" th:action="@{/admin/promos/{id}/delete(id=${p.id})}" data-confirm="Delete this promo code?" style="margin-top: 10px">
+          <button type="submit" class="link-btn">Delete code</button>
+        </form>
+      </details>
+    </div>
+  </div>
+</main>
+</body>
+</html>

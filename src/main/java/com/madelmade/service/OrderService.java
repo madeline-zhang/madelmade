@@ -31,11 +31,12 @@ public class OrderService {
     private final SettingsService settings;
     private final Notifier notifier;
     private final Formats formats;
+    private final PromoService promos;
     private final SecureRandom random = new SecureRandom();
 
     public OrderService(OrderRepository orders, ProductRepository products, CustomerRepository customerRepo,
                         CustomerService customers, PricingService pricing, SettingsService settings,
-                        Notifier notifier, Formats formats) {
+                        Notifier notifier, Formats formats, PromoService promos) {
         this.orders = orders;
         this.products = products;
         this.customerRepo = customerRepo;
@@ -44,6 +45,7 @@ public class OrderService {
         this.settings = settings;
         this.notifier = notifier;
         this.formats = formats;
+        this.promos = promos;
     }
 
     // ---- Dates and capacity ----
@@ -129,6 +131,16 @@ public class OrderService {
                 continue;
             }
             items.add(toItem(p.get(), line, q));
+            line.setPickupOnly(p.get().isPickupOnly());
+            if (p.get().isPickupOnly() && f.getFulfillment() == Fulfillment.DELIVERY) {
+                errors.add(p.get().getName() + " is pickup only and can't be delivered. Please choose pickup, or order it separately.");
+            }
+        }
+        com.madelmade.domain.PromoCode promo = null;
+        try {
+            promo = promos.check(f.getPromoCode());
+        } catch (UserFacingException e) {
+            errors.addAll(e.getMessages());
         }
         if (!errors.isEmpty()) throw new UserFacingException(errors);
 
@@ -154,11 +166,16 @@ public class OrderService {
         o.setPriorityFee(priority ? settings.priorityFee() : BigDecimal.ZERO);
         o.setCustomerNote(trim(f.getNote()));
         o.setStatusToken(newToken());
+        if (promo != null) {
+            o.setPromoCode(promo.getCode());
+            o.setPromoPercent(promo.getPercentOff());
+        }
         items.forEach(o::addItem);
         o.recalculate();
         o.setOverCapacity(loavesInProgress() + o.getLoafCount() > settings.maxLoaves());
         o.changeStatus(OrderStatus.NEEDS_REVIEW, "Request submitted");
         orders.save(o);
+        if (promo != null) promos.recordUse(promo);
 
         cart.clear();
         notifier.toCustomer(o, EmailWording.RECEIVED, null);
@@ -254,6 +271,7 @@ public class OrderService {
         l.setQuantity(Math.max(1, Math.min(qty, 6)));
         l.setPriceTbd(q.priceTbd());
         l.setCountsAsLoaf(p.isCountsAsLoaf());
+        l.setPickupOnly(p.isPickupOnly());
         return l;
     }
 
