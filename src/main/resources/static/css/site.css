@@ -233,13 +233,21 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 
 /* ---- Cart drawer and checkout popup ---- */
 .scrim { position: fixed; inset: 0; z-index: 60; background: rgba(38,48,40,0.38); }
-.drawer { position: fixed; z-index: 61; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--color-cream); box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .25s ease; visibility: hidden; }
-.drawer.is-open { transform: none; visibility: visible; }
+.drawer { position: fixed; z-index: 61; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--color-cream); box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .3s ease, visibility 0s linear .3s; visibility: hidden; }
+.drawer.is-open { transform: none; visibility: visible; transition: transform .3s ease, visibility 0s; }
+/* Opened by the server right after "Add to cart": slide in instead of appearing. */
+.drawer.is-open.drawer-enter { animation: drawer-in .3s ease both; }
+@keyframes drawer-up { from { transform: translateY(100%); } to { transform: none; } }
+.scrim:not(.hidden) { animation: scrim-in .3s ease both; }
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .drawer, .drawer.is-open { transition: none; } .drawer.is-open.drawer-enter { animation: none; } }
 .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--color-linen); }
 .drawer-body { flex: 1; overflow-y: auto; padding: 8px 20px; }
 .drawer-foot { border-top: 1px solid var(--color-linen); padding: 18px 20px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
 @media (max-width: 760px) {
   .drawer { top: auto; left: 0; width: 100%; height: 100%; border-radius: 0; transform: translateY(100%); }
+  .drawer.is-open.drawer-enter { animation-name: drawer-up; }
 }
 .cart-line { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--color-linen); }
 .cart-line img, .cart-line .thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--color-placeholder); }

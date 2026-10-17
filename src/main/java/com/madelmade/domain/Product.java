@@ -30,6 +30,7 @@ public class Product {
     @Column(columnDefinition = "text")
     private String ingredients;
     private String allergens;
+    private String notesHint;
     private boolean allowsBirthCertificate;
     private String badge;
     private Long photoId;
@@ -75,6 +76,8 @@ public class Product {
     public String getIngredients() { return ingredients; }
     public void setIngredients(String ingredients) { this.ingredients = ingredients; }
     public String getAllergens() { return allergens; }
+    public String getNotesHint() { return notesHint; }
+    public void setNotesHint(String notesHint) { this.notesHint = notesHint; }
     public void setAllergens(String allergens) { this.allergens = allergens; }
     /** Tennessee's home food law needs ingredients and allergens listed for anything sold online. */
     public boolean isMissingLabelInfo() { return ingredients == null || allergens == null; }

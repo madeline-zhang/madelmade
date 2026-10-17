@@ -1,6 +1,6 @@
 <div th:fragment="drawer">
   <div class="scrim hidden" data-scrim></div>
-  <aside class="drawer" th:classappend="${openCart} ? 'is-open'" id="cart" aria-label="Your cart" data-drawer
+  <aside class="drawer" th:classappend="${openCart} ? 'is-open drawer-enter'" id="cart" aria-label="Your cart" data-drawer
          th:aria-hidden="${openCart ? 'false' : 'true'}">
     <div class="drawer-head">
       <h2 class="t-title">Your order</h2>

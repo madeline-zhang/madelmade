@@ -33,6 +33,8 @@
           <div class="help">Most to least by weight. Tennessee's home food law requires this on the product page for anything sold online.</div></div>
         <div class="field"><label for="allergens">Allergens</label><input type="text" id="allergens" name="allergens" maxlength="300" th:value="${product.allergens}" placeholder="e.g. Wheat. Or: None of the major allergens">
           <div class="help">The major ones: milk, eggs, wheat, soy, peanuts, tree nuts, fish, shellfish, sesame.</div></div>
+        <div class="field"><label for="notesHint">Example in "Anything special?"</label><input type="text" id="notesHint" name="notesHint" maxlength="120" th:value="${product.notesHint}" placeholder="e.g. Higher hydration, if possible">
+          <div class="help">Light grey example text customers see in the notes box.</div></div>
         <div class="field-row">
           <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Yeast-risen"></div>
           <div class="field"><label for="displayOrder">Order on menu</label><input type="number" id="displayOrder" name="displayOrder" th:value="${product.displayOrder}"></div>
@@ -78,10 +80,10 @@
             <form method="post" th:action="@{/admin/choices/{id}(id=${c.id})}" th:id="${'choice-' + c.id}" style="display: contents">
               <div class="field"><label class="visually-hidden" th:for="${'c-n-' + c.id}">Name</label><input type="text" th:id="${'c-n-' + c.id}" name="name" th:value="${c.name}"></div>
               <div class="field"><label class="visually-hidden" th:for="${'c-p-' + c.id}">Price change</label><div class="price-input">+$<input type="number" step="0.01" th:id="${'c-p-' + c.id}" name="priceChange" th:value="${@money.plain(c.priceChange)}" style="width: 72px !important"></div></div>
-              <div class="field desc"><label class="visually-hidden" th:for="${'c-d-' + c.id}">Description</label><input type="text" th:id="${'c-d-' + c.id}" name="description" th:value="${c.description}" placeholder="Short description (shown with photo swatches)"></div>
               <div class="row-actions" style="display: flex; gap: 6px">
                 <button type="submit" class="btn btn-secondary btn-small">Save</button>
               </div>
+              <div class="field desc"><label class="visually-hidden" th:for="${'c-d-' + c.id}">Description</label><textarea th:id="${'c-d-' + c.id}" name="description" rows="2" th:text="${c.description}" placeholder="Short description (shown with photo swatches)"></textarea></div>
               <div class="flags">
                 <label><input type="checkbox" name="active" value="true" th:checked="${c.active}"> Offered</label>
                 <label><input type="checkbox" name="defaultChoice" value="true" th:checked="${c.defaultChoice}"> Picked by default</label>

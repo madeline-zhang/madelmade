@@ -20,7 +20,6 @@
         <span th:if="${g.swatches}" class="visually-hidden" th:text="${c.name}">Double leaf</span>
         <span th:unless="${g.swatches}" class="pill">
           <span th:text="${c.name}">Rosemary garlic</span>
-          <span class="pill-note" th:if="${c.halvesPrice}">½ price</span>
           <span class="pill-note" th:if="${c.priceChange.signum() != 0}" th:text="${@money.change(c.priceChange)}">+$2</span>
           <span class="pill-note" th:if="${c.priceTbd}">price discussed</span>
         </span>

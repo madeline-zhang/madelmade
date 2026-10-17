@@ -35,13 +35,15 @@
           <p class="t-small muted" style="margin: 0">Customers can't pick these days at checkout.</p>
           <div class="stack" style="gap: 8px" th:unless="${daysOff.isEmpty()}">
             <div class="toggle-row" th:each="d : ${daysOff}">
-              <span th:text="${#strings.replace(d, '..', ' to ')}">2026-11-26 to 2026-11-28</span>
-              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/remove(entry=${d})}" formnovalidate>Remove</button>
+              <div><div class="t" th:text="${@fmt.range(d.from, d.to)}">Dec 20 – Jan 2</div>
+                <div class="d" th:if="${!d.note.isEmpty()}" th:text="${d.note}">Christmas break</div></div>
+              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/remove(entry=${d.raw})}" formnovalidate>Remove</button>
             </div>
           </div>
           <div class="field-row" style="align-items: end">
             <div class="field"><label for="offFrom">From</label><input type="date" id="offFrom" name="from"></div>
             <div class="field"><label for="offTo">To (optional)</label><input type="date" id="offTo" name="to"></div>
+            <div class="field"><label for="offNote">Why (just for you)</label><input type="text" id="offNote" name="note" maxlength="80" placeholder="e.g. Christmas break"></div>
             <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/add}">Add</button>
           </div>
         </section>

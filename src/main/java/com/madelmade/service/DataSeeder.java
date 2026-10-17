@@ -121,6 +121,7 @@ public class DataSeeder implements ApplicationRunner {
         p.setDescription(description);
         p.setCountsAsLoaf(true);
         p.setAllowsBirthCertificate(true);
+        p.setNotesHint("Higher hydration, if possible");
         if (photo != null) p.setPhotoId(photos.fromClasspath(SEED + photo).getId());
         return p;
     }
@@ -136,6 +137,7 @@ public class DataSeeder implements ApplicationRunner {
         p.setDescription(description + " One size, same price hot or iced.");
         p.setCountsAsLoaf(false);
         p.setPickupOnly(true);
+        p.setNotesHint("Less ice");
         p.setAllowsBirthCertificate(false);
         p.setLeadTimeDays(1);
         OptionGroup temp = group(p, "Hot or iced", OptionGroup.STYLE_BUTTONS, 0);

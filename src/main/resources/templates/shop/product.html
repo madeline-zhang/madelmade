@@ -50,7 +50,7 @@
         <div class="field custom-box">
           <label for="notes" data-notes-label>Anything special? (optional)</label>
           <textarea id="notes" name="notes" rows="3" maxlength="1000" th:text="${form_notes}"
-                    placeholder="e.g. Happy birthday Miriam scored on top"></textarea>
+                    th:placeholder="${product.notesHint}"></textarea>
         </div>
 
         <div class="stack" style="gap: 14px" th:if="${product.allowsBirthCertificate and settings.certificatesEnabled()}">

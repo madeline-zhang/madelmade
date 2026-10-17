@@ -112,7 +112,8 @@ public class CheckoutController {
         model.addAttribute("contactPrefs", ContactPref.values());
         List<LocalDate> off = settings.daysOff().stream().filter(d -> !d.isBefore(formats.today())).limit(12).toList();
         model.addAttribute("daysOff", off);
-        model.addAttribute("daysOffText", off.stream().map(formats::day).toList());
+        model.addAttribute("daysOffText", settings.upcomingDayOffRanges(formats.today()).stream()
+                .limit(6).map(r -> formats.range(r[0], r[1])).toList());
         return "shop/checkout";
     }
 

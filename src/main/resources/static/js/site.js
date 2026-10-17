@@ -43,6 +43,8 @@
     if (scrim) scrim.classList.add('hidden');
   }
   if (drawer && drawer.classList.contains('is-open')) scrim.classList.remove('hidden');
+  // Once the slide-in after "Add to cart" ends, closing uses the normal slide-out.
+  if (drawer) drawer.addEventListener('animationend', function () { drawer.classList.remove('drawer-enter'); });
   $$('[data-cart-open]').forEach(function (el) {
     el.addEventListener('click', function (e) { e.preventDefault(); openDrawer(); });
   });
@@ -204,7 +206,38 @@
 
   $$('[data-print]').forEach(function (b) { b.addEventListener('click', function () { window.print(); }); });
 
-  // Flash messages fade after a few seconds.
+  // After saving, land back where you were instead of at the top of the page.
+  var SCROLL_KEY = 'mm-scroll';
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form || (form.method || '').toLowerCase() !== 'post') return;
+    var action = e.submitter && e.submitter.getAttribute('formaction') || form.getAttribute('action') || location.pathname;
+    try {
+      sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
+        from: location.pathname, to: new URL(action, location.href).pathname, y: window.scrollY, at: Date.now()
+      }));
+    } catch (err) { /* storage blocked: fall back to the browser's default */ }
+  });
+  try {
+    var saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || 'null');
+    sessionStorage.removeItem(SCROLL_KEY);
+    if (saved && Date.now() - saved.at < 30000 && (saved.from === location.pathname || saved.to === location.pathname)) {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      window.scrollTo(0, saved.y);
+      requestAnimationFrame(function () { window.scrollTo(0, saved.y); });
+    }
+  } catch (err) { /* ignore */ }
+
+  // Messages float at the top. Confirmations fade; problems stay until clicked.
   var flash = $('[data-flash]');
-  if (flash) setTimeout(function () { flash.style.transition = 'opacity .4s'; flash.style.opacity = '0'; setTimeout(function () { flash.remove(); }, 450); }, 6000);
+  if (flash) {
+    $$('.alert-error', flash).forEach(function (el) {
+      el.title = 'Click to dismiss';
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', function () { el.remove(); });
+    });
+    $$('.alert-ok', flash).forEach(function (el) {
+      setTimeout(function () { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(function () { el.remove(); }, 450); }, 5000);
+    });
+  }
 })();

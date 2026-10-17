@@ -72,14 +72,20 @@ public class AdminSettingsController {
     }
 
     @PostMapping("/daysoff/add")
-    public String addDayOff(@RequestParam String from, @RequestParam(required = false) String to, RedirectAttributes flash) {
+    public String addDayOff(@RequestParam String from, @RequestParam(required = false) String to,
+                            @RequestParam(required = false) String note, RedirectAttributes flash) {
         try {
             LocalDate a = LocalDate.parse(from);
             LocalDate b = to == null || to.isBlank() ? a : LocalDate.parse(to);
             if (b.isBefore(a)) { LocalDate t = a; a = b; b = t; }
-            List<String> entries = new ArrayList<>(settings.daysOffEntries());
-            entries.add(a.equals(b) ? a.toString() : a + ".." + b);
-            settings.putAll(Map.of("orders.daysOff", String.join(",", entries)));
+            LocalDate first = a, last = b;
+            // Adding the same days again just updates the note.
+            List<String> entries = new ArrayList<>(settings.daysOffEntries().stream()
+                    .filter(d -> !(d.from().equals(first) && d.to().equals(last)))
+                    .map(SettingsService.DayOff::raw).toList());
+            String why = note == null ? "" : note.replaceAll("[\\r\\n|]+", " ").trim();
+            entries.add((a.equals(b) ? a.toString() : a + ".." + b) + (why.isEmpty() ? "" : "|" + why));
+            settings.putAll(Map.of("orders.daysOff", String.join("\n", entries)));
             flash.addFlashAttribute("ok", "Day off added. Customers can't pick it at checkout.");
         } catch (DateTimeParseException e) {
             flash.addFlashAttribute("errors", List.of("Please pick a date."));
@@ -89,9 +95,9 @@ public class AdminSettingsController {
 
     @PostMapping("/daysoff/remove")
     public String removeDayOff(@RequestParam String entry, RedirectAttributes flash) {
-        List<String> entries = new ArrayList<>(settings.daysOffEntries());
+        List<String> entries = new ArrayList<>(settings.daysOffEntries().stream().map(SettingsService.DayOff::raw).toList());
         entries.remove(entry);
-        settings.putAll(Map.of("orders.daysOff", String.join(",", entries)));
+        settings.putAll(Map.of("orders.daysOff", String.join("\n", entries)));
         flash.addFlashAttribute("ok", "Day off removed.");
         return "redirect:/admin/settings#days-off";
     }

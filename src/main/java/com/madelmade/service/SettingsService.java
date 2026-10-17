@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,30 +157,56 @@ public class SettingsService {
         return out;
     }
 
-    /** Days off as single dates; "2026-11-26..2026-11-28" ranges are expanded. */
+    /** A stretch of days off, with Madeline's private note on why. */
+    public record DayOff(LocalDate from, LocalDate to, String note, String raw) {}
+
+    /**
+     * Days off are stored one per line as "2026-12-20..2027-01-02|Christmas break".
+     * Older entries were comma separated with no note.
+     */
+    public List<DayOff> daysOffEntries() {
+        List<DayOff> out = new ArrayList<>();
+        for (String line : get("orders.daysOff").replace("\r", "").split("\n")) {
+            List<String> parts = line.contains("|") ? List.of(line) : Arrays.asList(line.split(","));
+            for (String part : parts) {
+                String raw = part.trim();
+                if (raw.isEmpty()) continue;
+                int bar = raw.indexOf('|');
+                String spec = bar < 0 ? raw : raw.substring(0, bar).trim();
+                String note = bar < 0 ? "" : raw.substring(bar + 1).trim();
+                try {
+                    String[] ends = spec.split("\\.\\.");
+                    LocalDate a = LocalDate.parse(ends[0].trim());
+                    LocalDate b = ends.length > 1 ? LocalDate.parse(ends[1].trim()) : a;
+                    out.add(new DayOff(a, b, note, raw));
+                } catch (RuntimeException ignored) {
+                    // A badly typed date is skipped rather than breaking checkout.
+                }
+            }
+        }
+        out.sort(Comparator.comparing(DayOff::from));
+        return out;
+    }
+
+    /** Days off as single dates, with ranges expanded. */
     public List<LocalDate> daysOff() {
         List<LocalDate> out = new ArrayList<>();
-        for (String part : get("orders.daysOff").split("[,\\n]+")) {
-            String p = part.trim();
-            if (p.isEmpty()) continue;
-            try {
-                if (p.contains("..")) {
-                    String[] ends = p.split("\\.\\.");
-                    LocalDate a = LocalDate.parse(ends[0].trim());
-                    LocalDate b = LocalDate.parse(ends[1].trim());
-                    for (LocalDate d = a; !d.isAfter(b) && out.size() < 400; d = d.plusDays(1)) out.add(d);
-                } else {
-                    out.add(LocalDate.parse(p));
-                }
-            } catch (RuntimeException ignored) {
-                // A badly typed date is skipped rather than breaking checkout.
-            }
+        for (DayOff d : daysOffEntries()) {
+            for (LocalDate x = d.from(); !x.isAfter(d.to()) && out.size() < 400; x = x.plusDays(1)) out.add(x);
         }
         return out;
     }
 
-    public List<String> daysOffEntries() {
-        return Arrays.stream(get("orders.daysOff").split("[,\\n]+")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+    /** Upcoming days off merged into ranges, e.g. Dec 20 to Jan 2. Each entry is {first, last}. */
+    public List<LocalDate[]> upcomingDayOffRanges(LocalDate today) {
+        List<LocalDate> days = daysOff().stream().filter(d -> !d.isBefore(today)).distinct().sorted().toList();
+        List<LocalDate[]> out = new ArrayList<>();
+        for (LocalDate d : days) {
+            LocalDate[] last = out.isEmpty() ? null : out.get(out.size() - 1);
+            if (last != null && last[1].plusDays(1).equals(d)) last[1] = d;
+            else out.add(new LocalDate[] { d, d });
+        }
+        return out;
     }
 
     public record Faq(String question, String answer) {}
