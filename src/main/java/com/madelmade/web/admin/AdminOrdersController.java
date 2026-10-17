@@ -222,13 +222,14 @@ public class AdminOrdersController {
 
     @GetMapping("/orders/export.csv")
     public ResponseEntity<String> export() {
-        StringBuilder sb = new StringBuilder("Order,Created,Status,Name,Email,Phone,Fulfillment,Date,Items,Subtotal,Priority fee,Delivery fee,Adjustment,Total,Paid\n");
+        StringBuilder sb = new StringBuilder("Order,Created,Status,Name,Email,Phone,Fulfillment,Date,Items,Subtotal,Priority fee,Delivery fee,Promo code,Discount,Adjustment,Total,Paid\n");
         for (CustomerOrder o : orders.findAllByOrderByCreatedAtDesc()) {
             sb.append(String.join(",", List.of(
                     o.getNumber(), formats.stamp(o.getCreatedAt()), o.getStatus().getLabel(), o.getContactName(),
                     o.getContactEmail(), o.getContactPhone() == null ? "" : o.getContactPhone(), o.getFulfillment().getLabel(),
                     o.getRequestedDate().toString(), o.getItemsSummary(), money.plain(o.getSubtotal()), money.plain(o.getPriorityFee()),
-                    o.getDeliveryFee() == null ? "" : money.plain(o.getDeliveryFee()), money.plain(o.getAdjustment()),
+                    o.getDeliveryFee() == null ? "" : money.plain(o.getDeliveryFee()),
+                    o.getPromoCode() == null ? "" : o.getPromoCode(), money.plain(o.getDiscount()), money.plain(o.getAdjustment()),
                     money.plain(o.getTotal()), o.isPaid() ? "yes" : "no").stream().map(AdminOrdersController::csv).toList()));
             sb.append('\n');
         }

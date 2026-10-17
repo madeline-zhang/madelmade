@@ -23,7 +23,8 @@ public class AdminGalleryController {
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("photos", gallery.findAllByOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("photos", gallery.findBySectionOrderByDisplayOrderAscIdAsc(GalleryPhoto.LOAVES));
+        model.addAttribute("otherPhotos", gallery.findBySectionOrderByDisplayOrderAscIdAsc(GalleryPhoto.OTHER));
         return "admin/gallery";
     }
 
@@ -35,6 +36,6 @@ public class AdminGalleryController {
         g.setDisplayOrder(displayOrder);
         gallery.save(g);
         flash.addFlashAttribute("ok", "Saved.");
-        return "redirect:/admin/gallery";
+        return "redirect:/admin/gallery" + (g.isOther() ? "#other" : "");
     }
 }

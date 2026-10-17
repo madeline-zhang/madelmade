@@ -17,6 +17,7 @@ public class CheckoutForm {
     private String time;
     private boolean priority;
     private String note;
+    private String promoCode;
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -38,4 +39,6 @@ public class CheckoutForm {
     public void setPriority(boolean priority) { this.priority = priority; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
+    public String getPromoCode() { return promoCode; }
+    public void setPromoCode(String promoCode) { this.promoCode = promoCode; }
 }

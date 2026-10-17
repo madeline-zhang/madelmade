@@ -26,6 +26,11 @@ public class Product {
     private boolean soldOut;
     private int displayOrder;
     private boolean countsAsLoaf = true;
+    private boolean pickupOnly;
+    @Column(columnDefinition = "text")
+    private String ingredients;
+    private String allergens;
+    private String notesHint;
     private boolean allowsBirthCertificate;
     private String badge;
     private Long photoId;
@@ -66,6 +71,16 @@ public class Product {
     public void setDisplayOrder(int displayOrder) { this.displayOrder = displayOrder; }
     public boolean isCountsAsLoaf() { return countsAsLoaf; }
     public void setCountsAsLoaf(boolean countsAsLoaf) { this.countsAsLoaf = countsAsLoaf; }
+    public boolean isPickupOnly() { return pickupOnly; }
+    public void setPickupOnly(boolean pickupOnly) { this.pickupOnly = pickupOnly; }
+    public String getIngredients() { return ingredients; }
+    public void setIngredients(String ingredients) { this.ingredients = ingredients; }
+    public String getAllergens() { return allergens; }
+    public String getNotesHint() { return notesHint; }
+    public void setNotesHint(String notesHint) { this.notesHint = notesHint; }
+    public void setAllergens(String allergens) { this.allergens = allergens; }
+    /** Tennessee's home food law needs ingredients and allergens listed for anything sold online. */
+    public boolean isMissingLabelInfo() { return ingredients == null || allergens == null; }
     public boolean isAllowsBirthCertificate() { return allowsBirthCertificate; }
     public void setAllowsBirthCertificate(boolean allowsBirthCertificate) { this.allowsBirthCertificate = allowsBirthCertificate; }
     public String getBadge() { return badge; }

@@ -72,8 +72,12 @@ public class AdminProductsController {
                        @RequestParam(required = false) Integer leadTimeDays, @RequestParam(defaultValue = "0") int displayOrder,
                        @RequestParam(defaultValue = "false") boolean active, @RequestParam(defaultValue = "false") boolean soldOut,
                        @RequestParam(defaultValue = "false") boolean countsAsLoaf,
+                       @RequestParam(defaultValue = "false") boolean pickupOnly,
                        @RequestParam(defaultValue = "false") boolean allowsBirthCertificate,
-                       @RequestParam(required = false) String badge, RedirectAttributes flash) {
+                       @RequestParam(required = false) String badge,
+                       @RequestParam(required = false) String ingredients, @RequestParam(required = false) String allergens,
+                       @RequestParam(required = false) String notesHint,
+                       RedirectAttributes flash) {
         if (name == null || name.isBlank()) {
             flash.addFlashAttribute("errors", List.of("Give the product a name."));
             return id == null ? "redirect:/admin/products/new" : "redirect:/admin/products/" + id;
@@ -90,8 +94,12 @@ public class AdminProductsController {
         p.setActive(active);
         p.setSoldOut(soldOut);
         p.setCountsAsLoaf(countsAsLoaf);
+        p.setPickupOnly(pickupOnly);
         p.setAllowsBirthCertificate(allowsBirthCertificate);
         p.setBadge(blank(badge));
+        p.setIngredients(blank(ingredients));
+        p.setAllergens(blank(allergens));
+        p.setNotesHint(blank(notesHint));
         p.setUpdatedAt(Instant.now());
         products.save(p);
         flash.addFlashAttribute("ok", id == null ? "Product added. Now add its options and photo." : "Saved.");

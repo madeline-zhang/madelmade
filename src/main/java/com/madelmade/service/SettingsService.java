@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ public class SettingsService {
         DEFAULTS.put("admin.emails", "madelmadewithlove@gmail.com");
         DEFAULTS.put("pickup.area", "Brentwood / Nolensville, TN");
         DEFAULTS.put("pickup.address", "");
+        DEFAULTS.put("producer.name", "Madeline");
+        DEFAULTS.put("producer.phone", "");
         DEFAULTS.put("delivery.enabled", "true");
         DEFAULTS.put("notify.email", "madelmadewithlove@gmail.com");
         DEFAULTS.put("notify.newRequest", "true");
@@ -42,6 +45,28 @@ public class SettingsService {
         DEFAULTS.put("notify.morningSummary", "false");
         DEFAULTS.put("photos.warmth", "6");
         DEFAULTS.put("photos.brightness", "5");
+        // Page text Madeline edits under Pages.
+        DEFAULTS.put("about.title", "It started with");
+        DEFAULTS.put("about.titleAccent", "a starter");
+        DEFAULTS.put("about.body", "I'm Madeline, a home baker in Brentwood, Tennessee. Someone gave me a sourdough starter, and I didn't want to kill it, so I kept baking.\n\n"
+                + "One loaf turned into many, and plain loaves turned into designs: leaves, butterflies, names and birthday messages, each scored by hand.\n\n"
+                + "Every loaf is made to order and made to make you smile.");
+        DEFAULTS.put("about.photoId", "");
+        DEFAULTS.put("about.signoff", "Made with love, Madeline");
+        DEFAULTS.put("about.faq", "Do you deliver?\nYes, nearby. Madeline quotes the delivery fee when she approves your order, and it's paid up front as a deposit.\n\n"
+                + "How do I pay?\nNothing is charged online. You pay at pickup or delivery with cash, Venmo or Zelle.\n\n"
+                + "What about allergens?\nEvery loaf contains wheat. Rosemary garlic asiago contains dairy. Mom's Best is yeast-risen, not sourdough. Ask if you have other allergies.\n\n"
+                + "How should I store it?\nTo enjoy it later, slice it and freeze the slices.\n\n"
+                + "Best way to reheat?\nToast it and butter it up!");
+        DEFAULTS.put("notice.pickupOnly", "Drinks made with milk, like lattes, have to stay cold, so Tennessee's home food law only allows them to be sold in person. That makes lattes pickup only. You can pick one up when you collect your bread, or switch this order to pickup.");
+        DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens.");
+        DEFAULTS.put("about.homeTitle", "Made in my home kitchen");
+        DEFAULTS.put("about.homeBody", "MadelMade is a home bakery. Everything is made in my kitchen in Tennessee under the state's Food Freedom Act. This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens. Each product page lists its ingredients and allergens. Drinks made with milk are pickup only.");
+        DEFAULTS.put("gallery.title", "Loaves that made someone");
+        DEFAULTS.put("gallery.titleAccent", "smile");
+        DEFAULTS.put("gallery.intro", "Past loaves to spark an idea for yours. See something you love? Mention it in your order.");
+        DEFAULTS.put("gallery.otherTitle", "Not just bread");
+        DEFAULTS.put("gallery.otherIntro", "A few other things I've baked. If any of these interest you, send me an email and we can talk about it ;)");
         for (EmailWording w : EmailWording.values()) {
             DEFAULTS.put(w.subjectKey(), w.defaultSubject);
             DEFAULTS.put(w.introKey(), w.defaultIntro);
@@ -132,30 +157,83 @@ public class SettingsService {
         return out;
     }
 
-    /** Days off as single dates; "2026-11-26..2026-11-28" ranges are expanded. */
+    /** A stretch of days off, with Madeline's private note on why. */
+    public record DayOff(LocalDate from, LocalDate to, String note, String raw) {}
+
+    /**
+     * Days off are stored one per line as "2026-12-20..2027-01-02|Christmas break".
+     * Older entries were comma separated with no note.
+     */
+    public List<DayOff> daysOffEntries() {
+        List<DayOff> out = new ArrayList<>();
+        for (String line : get("orders.daysOff").replace("\r", "").split("\n")) {
+            List<String> parts = line.contains("|") ? List.of(line) : Arrays.asList(line.split(","));
+            for (String part : parts) {
+                String raw = part.trim();
+                if (raw.isEmpty()) continue;
+                int bar = raw.indexOf('|');
+                String spec = bar < 0 ? raw : raw.substring(0, bar).trim();
+                String note = bar < 0 ? "" : raw.substring(bar + 1).trim();
+                try {
+                    String[] ends = spec.split("\\.\\.");
+                    LocalDate a = LocalDate.parse(ends[0].trim());
+                    LocalDate b = ends.length > 1 ? LocalDate.parse(ends[1].trim()) : a;
+                    out.add(new DayOff(a, b, note, raw));
+                } catch (RuntimeException ignored) {
+                    // A badly typed date is skipped rather than breaking checkout.
+                }
+            }
+        }
+        out.sort(Comparator.comparing(DayOff::from));
+        return out;
+    }
+
+    /** Days off as single dates, with ranges expanded. */
     public List<LocalDate> daysOff() {
         List<LocalDate> out = new ArrayList<>();
-        for (String part : get("orders.daysOff").split("[,\\n]+")) {
-            String p = part.trim();
-            if (p.isEmpty()) continue;
-            try {
-                if (p.contains("..")) {
-                    String[] ends = p.split("\\.\\.");
-                    LocalDate a = LocalDate.parse(ends[0].trim());
-                    LocalDate b = LocalDate.parse(ends[1].trim());
-                    for (LocalDate d = a; !d.isAfter(b) && out.size() < 400; d = d.plusDays(1)) out.add(d);
-                } else {
-                    out.add(LocalDate.parse(p));
-                }
-            } catch (RuntimeException ignored) {
-                // A badly typed date is skipped rather than breaking checkout.
-            }
+        for (DayOff d : daysOffEntries()) {
+            for (LocalDate x = d.from(); !x.isAfter(d.to()) && out.size() < 400; x = x.plusDays(1)) out.add(x);
         }
         return out;
     }
 
-    public List<String> daysOffEntries() {
-        return Arrays.stream(get("orders.daysOff").split("[,\\n]+")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+    /** Upcoming days off merged into ranges, e.g. Dec 20 to Jan 2. Each entry is {first, last}. */
+    public List<LocalDate[]> upcomingDayOffRanges(LocalDate today) {
+        List<LocalDate> days = daysOff().stream().filter(d -> !d.isBefore(today)).distinct().sorted().toList();
+        List<LocalDate[]> out = new ArrayList<>();
+        for (LocalDate d : days) {
+            LocalDate[] last = out.isEmpty() ? null : out.get(out.size() - 1);
+            if (last != null && last[1].plusDays(1).equals(d)) last[1] = d;
+            else out.add(new LocalDate[] { d, d });
+        }
+        return out;
+    }
+
+    public record Faq(String question, String answer) {}
+
+    /** FAQ entries typed as blocks: a question line, then its answer, with a blank line between entries. */
+    public List<Faq> faqs() {
+        List<Faq> out = new ArrayList<>();
+        for (String block : get("about.faq").replace("\r", "").split("\n\\s*\n")) {
+            String b = block.trim();
+            if (b.isEmpty()) continue;
+            int nl = b.indexOf('\n');
+            out.add(nl < 0 ? new Faq(b, "") : new Faq(b.substring(0, nl).trim(), b.substring(nl + 1).trim()));
+        }
+        return out;
+    }
+
+    /** Text typed with blank lines between paragraphs. */
+    public List<String> paragraphs(String key) {
+        return Arrays.stream(get(key).replace("\r", "").split("\n\\s*\n")).map(String::trim).filter(p -> !p.isEmpty()).toList();
+    }
+
+    public Long aboutPhotoId() {
+        try {
+            return Long.valueOf(get("about.photoId").trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public String subject(EmailWording w) { return get(w.subjectKey()); }

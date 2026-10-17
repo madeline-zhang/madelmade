@@ -25,12 +25,18 @@
           <div class="field"><label for="basePrice">Price</label><div class="price-input">$ <input type="number" step="0.01" min="0" id="basePrice" name="basePrice" th:value="${@money.plain(product.basePrice)}"></div>
             <div class="help">For a loaf with options, the whole-loaf price before add-ons.</div></div>
           <div class="field"><label for="leadTimeDays">Days of notice</label><input type="number" min="0" max="60" id="leadTimeDays" name="leadTimeDays" th:value="${product.leadTimeDays}" th:placeholder="${'Standard (' + settings.noticeDays() + ')'}">
-            <div class="help">Leave blank for the standard notice. Coffee might be 1.</div></div>
+            <div class="help">Leave blank for the standard notice. Use 0 for same day, like lattes.</div></div>
         </div>
         <div class="field"><label for="shortDescription">Short line</label><input type="text" id="shortDescription" name="shortDescription" maxlength="200" th:value="${product.shortDescription}" placeholder="e.g. Hot or iced"></div>
         <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="3" th:text="${product.description}"></textarea></div>
+        <div class="field"><label for="ingredients">Ingredients</label><textarea id="ingredients" name="ingredients" rows="2" th:text="${product.ingredients}" placeholder="e.g. Bread flour, water, salt, sourdough starter"></textarea>
+          <div class="help">Most to least by weight. Tennessee's home food law requires this on the product page for anything sold online.</div></div>
+        <div class="field"><label for="allergens">Allergens</label><input type="text" id="allergens" name="allergens" maxlength="300" th:value="${product.allergens}" placeholder="e.g. Wheat. Or: None of the major allergens">
+          <div class="help">The major ones: milk, eggs, wheat, soy, peanuts, tree nuts, fish, shellfish, sesame.</div></div>
+        <div class="field"><label for="notesHint">Example in "Anything special?"</label><input type="text" id="notesHint" name="notesHint" maxlength="120" th:value="${product.notesHint}" placeholder="Higher hydration, if possible">
+          <div class="help">Light grey example text customers see in the notes box. "e.g." is added in front for you.</div></div>
         <div class="field-row">
-          <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Not sourdough"></div>
+          <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Yeast-risen"></div>
           <div class="field"><label for="displayOrder">Order on menu</label><input type="number" id="displayOrder" name="displayOrder" th:value="${product.displayOrder}"></div>
         </div>
         <div>
@@ -40,6 +46,8 @@
             <label class="switch"><input type="checkbox" name="soldOut" value="true" th:checked="${product.soldOut}" aria-label="Sold out"><span></span></label></div>
           <div class="toggle-row"><div><div class="t">Counts as a loaf</div><div class="d">Counts toward your loaf limit. Turn off for coffee.</div></div>
             <label class="switch"><input type="checkbox" name="countsAsLoaf" value="true" th:checked="${product.id == null or product.countsAsLoaf}" aria-label="Counts as a loaf"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">Pickup only</div><div class="d">Can't be delivered. Turn on for anything made with milk, like lattes.</div></div>
+            <label class="switch"><input type="checkbox" name="pickupOnly" value="true" th:checked="${product.pickupOnly}" aria-label="Pickup only"><span></span></label></div>
           <div class="toggle-row"><div><div class="t">Offer a birth certificate</div><div class="d">Shows the certificate add-on on this item.</div></div>
             <label class="switch"><input type="checkbox" name="allowsBirthCertificate" value="true" th:checked="${product.allowsBirthCertificate}" aria-label="Offer a birth certificate"><span></span></label></div>
         </div>
@@ -72,10 +80,10 @@
             <form method="post" th:action="@{/admin/choices/{id}(id=${c.id})}" th:id="${'choice-' + c.id}" style="display: contents">
               <div class="field"><label class="visually-hidden" th:for="${'c-n-' + c.id}">Name</label><input type="text" th:id="${'c-n-' + c.id}" name="name" th:value="${c.name}"></div>
               <div class="field"><label class="visually-hidden" th:for="${'c-p-' + c.id}">Price change</label><div class="price-input">+$<input type="number" step="0.01" th:id="${'c-p-' + c.id}" name="priceChange" th:value="${@money.plain(c.priceChange)}" style="width: 72px !important"></div></div>
-              <div class="field desc"><label class="visually-hidden" th:for="${'c-d-' + c.id}">Description</label><input type="text" th:id="${'c-d-' + c.id}" name="description" th:value="${c.description}" placeholder="Short description (shown with photo swatches)"></div>
               <div class="row-actions" style="display: flex; gap: 6px">
                 <button type="submit" class="btn btn-secondary btn-small">Save</button>
               </div>
+              <div class="field desc"><label class="visually-hidden" th:for="${'c-d-' + c.id}">Description</label><textarea th:id="${'c-d-' + c.id}" name="description" rows="2" th:text="${c.description}" placeholder="Short description (shown with photo swatches)"></textarea></div>
               <div class="flags">
                 <label><input type="checkbox" name="active" value="true" th:checked="${c.active}"> Offered</label>
                 <label><input type="checkbox" name="defaultChoice" value="true" th:checked="${c.defaultChoice}"> Picked by default</label>

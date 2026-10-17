@@ -9,6 +9,7 @@ import java.util.UUID;
 public class CartLine implements Serializable {
     private final String id = UUID.randomUUID().toString().substring(0, 8);
     private Long productId;
+    private boolean pickupOnly;
     private String productName;
     private String slug;
     private Long photoId;
@@ -34,6 +35,8 @@ public class CartLine implements Serializable {
     }
 
     public String getId() { return id; }
+    public boolean isPickupOnly() { return pickupOnly; }
+    public void setPickupOnly(boolean pickupOnly) { this.pickupOnly = pickupOnly; }
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
     public String getProductName() { return productName; }

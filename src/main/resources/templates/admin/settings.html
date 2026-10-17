@@ -35,13 +35,15 @@
           <p class="t-small muted" style="margin: 0">Customers can't pick these days at checkout.</p>
           <div class="stack" style="gap: 8px" th:unless="${daysOff.isEmpty()}">
             <div class="toggle-row" th:each="d : ${daysOff}">
-              <span th:text="${#strings.replace(d, '..', ' to ')}">2026-11-26 to 2026-11-28</span>
-              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/remove(entry=${d})}" formnovalidate>Remove</button>
+              <div><div class="t" th:text="${@fmt.range(d.from, d.to)}">Dec 20 – Jan 2</div>
+                <div class="d" th:if="${!d.note.isEmpty()}" th:text="${d.note}">Christmas break</div></div>
+              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/remove(entry=${d.raw})}" formnovalidate>Remove</button>
             </div>
           </div>
           <div class="field-row" style="align-items: end">
             <div class="field"><label for="offFrom">From</label><input type="date" id="offFrom" name="from"></div>
             <div class="field"><label for="offTo">To (optional)</label><input type="date" id="offTo" name="to"></div>
+            <div class="field"><label for="offNote">Why (just for you)</label><input type="text" id="offNote" name="note" maxlength="80" placeholder="e.g. Christmas break"></div>
             <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/add}">Add</button>
           </div>
         </section>
@@ -50,7 +52,12 @@
           <h2 class="card-title">Pickup and delivery</h2>
           <div class="field"><label for="pickupArea">Pickup area (shown to everyone)</label><input type="text" id="pickupArea" name="pickup.area" th:value="${settings.get('pickup.area')}"></div>
           <div class="field"><label for="pickupAddress">Pickup address (private)</label><textarea id="pickupAddress" name="pickup.address" rows="2" th:text="${settings.get('pickup.address')}"></textarea>
-            <div class="help">Only sent in the approval email for pickup orders. Never shown on the site.</div></div>
+            <div class="help">Only shared with a customer once you approve their pickup order. Never shown on the public site.</div></div>
+          <div class="field-row">
+            <div class="field"><label for="producerName">Your name for order labels</label><input type="text" id="producerName" name="producer.name" maxlength="80" th:value="${settings.get('producer.name')}"></div>
+            <div class="field"><label for="producerPhone">Your phone for order labels</label><input type="tel" id="producerPhone" name="producer.phone" maxlength="30" th:value="${settings.get('producer.phone')}"></div>
+          </div>
+          <div class="help">Tennessee's home food law asks for your name, address and phone. They go only to approved customers, in their confirmation email and on their order page.</div>
           <div class="toggle-row"><div><div class="t">Offer delivery</div><div class="d">You quote the delivery fee on each order before approving.</div></div>
             <label class="switch"><input type="checkbox" name="delivery.enabled" th:checked="${settings.flag('delivery.enabled')}" aria-label="Offer delivery"><span></span></label></div>
         </section>

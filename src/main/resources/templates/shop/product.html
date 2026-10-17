@@ -27,9 +27,15 @@
           <div class="price-row">
             <div class="t-price" data-price-text th:text="${@money.fmt(product.basePrice)}">$10</div>
             <div class="t-small muted" data-tbd-note hidden>+ custom price to be discussed</div>
-            <span class="tag" th:if="${product.badge != null}" th:text="${product.badge}">Not sourdough</span>
+            <span class="tag" th:if="${product.badge != null}" th:text="${product.badge}">Yeast-risen</span>
+            <span class="tag" th:if="${product.pickupOnly}">Pickup only</span>
           </div>
           <p class="t-subtitle" style="font-size: 1rem; max-width: 520px" th:text="${product.description}">Our everyday sourdough.</p>
+          <dl class="label-info t-small" th:if="${product.ingredients != null or product.allergens != null}">
+            <th:block th:if="${product.ingredients != null}"><dt>Ingredients</dt><dd th:text="${product.ingredients}">Flour, water, salt</dd></th:block>
+            <th:block th:if="${product.allergens != null}"><dt>Allergens</dt><dd th:text="${product.allergens}">Wheat</dd></th:block>
+          </dl>
+          <p class="t-small muted" th:unless="${product.ingredients != null or product.allergens != null}">Ask Madeline about ingredients and allergens at <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
           <div class="alert alert-info" th:if="${product.soldOut}">Sold out for now. Check back soon!</div>
         </div>
 
@@ -44,7 +50,7 @@
         <div class="field custom-box">
           <label for="notes" data-notes-label>Anything special? (optional)</label>
           <textarea id="notes" name="notes" rows="3" maxlength="1000" th:text="${form_notes}"
-                    placeholder="e.g. Happy birthday Miriam scored on top"></textarea>
+                    th:placeholder="${product.notesHint == null ? null : (#strings.startsWith(product.notesHint, 'e.g.') ? product.notesHint : 'e.g. ' + product.notesHint)}"></textarea>
         </div>
 
         <div class="stack" style="gap: 14px" th:if="${product.allowsBirthCertificate and settings.certificatesEnabled()}">

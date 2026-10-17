@@ -11,6 +11,8 @@ import com.madelmade.service.Cart;
 import com.madelmade.service.CheckoutForm;
 import com.madelmade.service.Formats;
 import com.madelmade.service.OrderService;
+import com.madelmade.service.PromoService;
+import com.madelmade.domain.PromoCode;
 import com.madelmade.service.SettingsService;
 import com.madelmade.service.UserFacingException;
 import java.time.LocalDate;
@@ -31,15 +33,17 @@ public class CheckoutController {
     private final CustomerRepository customers;
     private final SettingsService settings;
     private final Formats formats;
+    private final PromoService promos;
 
     public CheckoutController(Cart cart, OrderService orderService, OrderRepository orders, CustomerRepository customers,
-                              SettingsService settings, Formats formats) {
+                              SettingsService settings, Formats formats, PromoService promos) {
         this.cart = cart;
         this.orderService = orderService;
         this.orders = orders;
         this.customers = customers;
         this.settings = settings;
         this.formats = formats;
+        this.promos = promos;
     }
 
     @GetMapping("/checkout/start")
@@ -66,8 +70,17 @@ public class CheckoutController {
             return "redirect:/order/received/" + o.getStatusToken();
         } catch (UserFacingException e) {
             CurrentUser.email().ifPresent(form::setEmail);
-            return show(model, form, e.getMessages());
+            model.addAttribute("fieldErrors", e.getByField());
+            return show(model, form, e.getByField().isEmpty() ? e.getMessages() : List.of());
         }
+    }
+
+    /** "Apply" next to the promo code: shows the discount without sending the request. */
+    @PostMapping("/checkout/promo")
+    public String applyPromo(@ModelAttribute("form") CheckoutForm form, Model model) {
+        if (cart.isEmpty()) return "redirect:/#menu";
+        CurrentUser.email().ifPresent(form::setEmail);
+        return show(model, form, List.of());
     }
 
     @GetMapping("/order/received/{token}")
@@ -82,6 +95,17 @@ public class CheckoutController {
         LocalDate minPriority = orderService.earliestDate(cart, true);
         model.addAttribute("form", form);
         model.addAttribute("formErrors", errors);
+        try {
+            PromoCode promo = promos.check(form.getPromoCode(), CurrentUser.email().orElse(form.getEmail()));
+            if (promo != null) {
+                form.setPromoCode(promo.getCode());
+                model.addAttribute("promo", promo);
+                model.addAttribute("promoDiscount", PromoService.discountOn(cart.getTotal(), promo.getPercentOff()));
+                model.addAttribute("promoTotal", cart.getTotal().subtract(PromoService.discountOn(cart.getTotal(), promo.getPercentOff())));
+            }
+        } catch (UserFacingException e) {
+            model.addAttribute("promoError", String.join(" ", e.getMessages()));
+        }
         model.addAttribute("minStandard", minStandard.toString());
         model.addAttribute("minStandardText", formats.longDay(minStandard));
         model.addAttribute("minPriority", minPriority.toString());
@@ -89,7 +113,8 @@ public class CheckoutController {
         model.addAttribute("contactPrefs", ContactPref.values());
         List<LocalDate> off = settings.daysOff().stream().filter(d -> !d.isBefore(formats.today())).limit(12).toList();
         model.addAttribute("daysOff", off);
-        model.addAttribute("daysOffText", off.stream().map(formats::day).toList());
+        model.addAttribute("daysOffText", settings.upcomingDayOffRanges(formats.today()).stream()
+                .limit(6).map(r -> formats.range(r[0], r[1])).toList());
         return "shop/checkout";
     }
 

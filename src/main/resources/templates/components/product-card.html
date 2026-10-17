@@ -6,7 +6,7 @@
     <img th:src="@{/img/madelmade-logo-simple.svg}" alt="" style="width: 34%; opacity: .55">
   </div>
   <span class="card-badge" th:if="${p.soldOut}">Sold out</span>
-  <span class="card-badge" th:if="${!p.soldOut and p.badge != null}" th:text="${p.badge}">Not sourdough</span>
+  <span class="card-badge" th:if="${!p.soldOut and p.badge != null}" th:text="${p.badge}">Yeast-risen</span>
   <div class="product-card-body">
     <div class="product-card-name" th:text="${p.name}">Classic Loaf</div>
     <div class="product-card-price">

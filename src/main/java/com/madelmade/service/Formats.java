@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 @Component("fmt")
 public class Formats {
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.US);
+    private static final DateTimeFormatter SHORT = DateTimeFormatter.ofPattern("MMM d", Locale.US);
     private static final DateTimeFormatter LONG_DAY = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.US);
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("MMM d 'at' h:mm a", Locale.US);
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("h:mm a", Locale.US);
@@ -29,6 +30,14 @@ public class Formats {
 
     public String day(LocalDate d) {
         return d == null ? "" : DAY.format(d);
+    }
+
+    /** "Dec 20", "Dec 20 – 24" or "Dec 20 – Jan 2". */
+    public String range(LocalDate a, LocalDate b) {
+        if (a == null) return "";
+        if (b == null || b.equals(a)) return SHORT.format(a);
+        if (a.getYear() == b.getYear() && a.getMonth() == b.getMonth()) return SHORT.format(a) + " – " + b.getDayOfMonth();
+        return SHORT.format(a) + " – " + SHORT.format(b);
     }
 
     public String longDay(LocalDate d) {

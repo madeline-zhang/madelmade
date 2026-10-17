@@ -1,0 +1,7 @@
+<!-- Notices required by Tennessee's home food rules. -->
+<div th:fragment="pickupOnly" class="notice-box" th:if="${cart.pickupOnly}" role="note">
+  <strong>Pickup only</strong>
+  <span th:text="${settings.get('notice.pickupOnly')}">Lattes are pickup only.</span>
+</div>
+
+<p th:fragment="homeKitchen" class="home-kitchen t-small muted" th:text="${settings.get('notice.homeKitchen')}">This product was produced at a private residence that is exempt from state licensing and inspection.</p>

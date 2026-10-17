@@ -32,7 +32,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * Photo editor: rotate, tilt, crop, warmth and brightness. Edits are made in the browser and the
  * original is always kept, so a photo can be re-edited later without losing quality.
- * Targets: product-ID, choice-ID, gallery-ID or gallery-new.
+ * Targets: product-ID, choice-ID, gallery-ID, gallery-new, other-new (Other bakes) or about-photo.
  */
 @Controller
 @RequestMapping("/admin/photos")
@@ -74,6 +74,14 @@ public class AdminPhotosController {
                 GalleryPhoto g = gallery.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
                 return new Target(key, g.getCaption() == null ? "Gallery photo" : g.getCaption(), g.getPhotoId(), "/admin/gallery", "portrait");
             }
+            case "other" -> {
+                if (!parts[1].equals("new")) throw new NotFoundException();
+                return new Target(key, "New photo for Other bakes", null, "/admin/gallery#other", "portrait");
+            }
+            case "about" -> {
+                if (!parts[1].equals("photo")) throw new NotFoundException();
+                return new Target(key, "Your photo on the About page", settings.aboutPhotoId(), "/admin/pages", "portrait");
+            }
             default -> throw new NotFoundException();
         }
     }
@@ -89,7 +97,8 @@ public class AdminPhotosController {
         model.addAttribute("defaultCrop", p != null ? p.getCrop() : t.crop());
         model.addAttribute("defaultRotate", p != null ? p.getRotate() : 0);
         model.addAttribute("defaultTilt", p != null ? p.getTilt() : 0.0);
-        model.addAttribute("section", target.startsWith("gallery") ? "gallery" : "products");
+        model.addAttribute("section", target.startsWith("gallery") || target.startsWith("other") ? "gallery"
+                : target.startsWith("about") ? "pages" : "products");
         return "admin/photo-editor";
     }
 
@@ -139,6 +148,7 @@ public class AdminPhotosController {
             case "product" -> products.findById(parse(parts[1])).ifPresent(p -> { p.setPhotoId(null); products.save(p); });
             case "choice" -> choices.findById(parse(parts[1])).ifPresent(c -> { c.setPhotoId(null); choices.save(c); });
             case "gallery" -> gallery.findById(parse(parts[1])).ifPresent(gallery::delete);
+            case "about" -> settings.putAll(Map.of("about.photoId", ""));
             default -> { }
         }
         flash.addFlashAttribute("ok", "Photo removed.");
@@ -157,11 +167,20 @@ public class AdminPhotosController {
             case "gallery" -> {
                 GalleryPhoto g = parts[1].equals("new") ? new GalleryPhoto()
                         : gallery.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
-                if (parts[1].equals("new")) g.setDisplayOrder((int) gallery.count());
+                if (parts[1].equals("new")) g.setDisplayOrder((int) gallery.countBySection(GalleryPhoto.LOAVES));
                 g.setPhotoId(photoId);
                 if (caption != null) g.setCaption(caption.isBlank() ? null : caption.trim());
                 gallery.save(g);
             }
+            case "other" -> {
+                GalleryPhoto g = new GalleryPhoto();
+                g.setSection(GalleryPhoto.OTHER);
+                g.setDisplayOrder((int) gallery.countBySection(GalleryPhoto.OTHER));
+                g.setPhotoId(photoId);
+                if (caption != null && !caption.isBlank()) g.setCaption(caption.trim());
+                gallery.save(g);
+            }
+            case "about" -> settings.putAll(Map.of("about.photoId", String.valueOf(photoId)));
             default -> throw new NotFoundException();
         }
     }
