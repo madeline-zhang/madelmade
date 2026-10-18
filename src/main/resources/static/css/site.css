@@ -97,6 +97,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .wordmark img { height: 20px; }
   .header-signin { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.12em; padding: 12px 2px; white-space: nowrap; }
   .header-actions { gap: 4px; }
+  .header-signin.hide-on-phone { display: none; }
   .mobile-nav { position: fixed; z-index: 39; top: var(--header-height); left: 0; right: 0; background: var(--color-cream); border-bottom: 1px solid var(--color-linen); padding: 8px 20px 20px; box-shadow: var(--shadow-card); }
   .mobile-nav.is-open { display: block; }
   .mobile-nav a { display: flex; align-items: center; min-height: 52px; border-bottom: 1px solid var(--color-linen); text-decoration: none; letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.875rem; font-weight: 500; }

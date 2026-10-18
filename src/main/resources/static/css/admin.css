@@ -146,3 +146,7 @@
 .promo-card summary { cursor: pointer; font-size: 0.875rem; color: var(--color-muted); }
 .about-photo-admin img, .about-photo-admin .photo-placeholder { width: 160px; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; }
 .photo-placeholder { background: var(--color-placeholder); color: var(--color-muted); display: flex; align-items: center; justify-content: center; font-size: 0.8125rem; text-align: center; padding: 8px; }
+
+/* Drag to frame a photo in the editor */
+.editor-stage canvas { cursor: grab; touch-action: none; }
+.editor-stage canvas.is-dragging { cursor: grabbing; }

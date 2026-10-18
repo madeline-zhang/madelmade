@@ -58,7 +58,8 @@ public class PhotoService {
         p.setHeight(img.getHeight());
         p.setRotate(((s.rotate() % 360) + 360) % 360);
         p.setTilt(Math.max(-15, Math.min(15, s.tilt())));
-        p.setCrop(s.crop() == null ? "original" : s.crop());
+        String crop = s.crop() == null || s.crop().isBlank() ? "original" : s.crop().trim();
+        p.setCrop(crop.length() > 60 ? crop.substring(0, 60) : crop);
         p.setWarmth(Math.max(0, Math.min(10, s.warmth())));
         p.setBrightness(Math.max(0, Math.min(10, s.brightness())));
     }
