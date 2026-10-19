@@ -141,9 +141,10 @@
         var certName = $('#certName', form);
         if (certName) certName.required = certToggle.checked;
       }
-      // Swatch preview: the chosen style swaps the large photo and its description.
+      // Swatch preview: once the customer picks a style, it swaps the large photo and its description.
+      // Until then the product's own photo shows.
       if (changed && changed.closest && changed.closest('.swatches')) lastSwatch = changed;
-      var sw = lastSwatch || $('.swatches input:checked', form);
+      var sw = lastSwatch;
       if (sw && img) {
         var photo = sw.getAttribute('data-photo');
         img.src = photo || img.getAttribute('data-default') || img.src;

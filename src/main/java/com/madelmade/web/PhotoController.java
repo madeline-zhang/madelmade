@@ -1,7 +1,6 @@
 package com.madelmade.web;
 
 import com.madelmade.repo.PhotoRepository;
-import java.time.Duration;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +24,9 @@ public class PhotoController {
         if (request.checkNotModified(etag)) return null;
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(v.getEditedType()))
-                .cacheControl(CacheControl.maxAge(Duration.ofMinutes(10)).cachePublic())
+                // Re-edited photos keep their address, so browsers must check back each time.
+                // An unchanged photo answers "not modified" without sending the picture again.
+                .cacheControl(CacheControl.noCache().cachePublic())
                 .eTag(etag)
                 .body(v.getEdited());
     }
