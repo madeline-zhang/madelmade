@@ -93,10 +93,14 @@
 
         <section class="card stack">
           <h2 class="card-title">Photo look</h2>
-          <p class="t-small muted" style="margin: 0">Where the editor starts for new photos (5 is no change).</p>
+          <p class="t-small muted" style="margin: 0">Where the editor's sliders start for new photos, from -100 to 100 (0 is no change).</p>
           <div class="field-row">
-            <div class="field"><label for="warmth">Warmth</label><input type="number" min="0" max="10" id="warmth" name="photos.warmth" th:value="${settings.get('photos.warmth')}"></div>
-            <div class="field"><label for="brightness">Brightness</label><input type="number" min="0" max="10" id="brightness" name="photos.brightness" th:value="${settings.get('photos.brightness')}"></div>
+            <div class="field"><label for="brightness">Brightness</label><input type="number" min="-100" max="100" id="brightness" name="photos.brightness" th:value="${settings.get('photos.brightness')}"></div>
+            <div class="field"><label for="contrast">Contrast</label><input type="number" min="-100" max="100" id="contrast" name="photos.contrast" th:value="${settings.get('photos.contrast')}"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="saturation">Saturation</label><input type="number" min="-100" max="100" id="saturation" name="photos.saturation" th:value="${settings.get('photos.saturation')}"></div>
+            <div class="field"><label for="warmth">Warmth</label><input type="number" min="-100" max="100" id="warmth" name="photos.warmth" th:value="${settings.get('photos.warmth')}"></div>
           </div>
         </section>
       </div>

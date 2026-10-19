@@ -94,7 +94,12 @@ public class AdminPhotosController {
         model.addAttribute("photo", p);
         model.addAttribute("defaultWarmth", p != null ? p.getWarmth() : settings.number("photos.warmth"));
         model.addAttribute("defaultBrightness", p != null ? p.getBrightness() : settings.number("photos.brightness"));
-        model.addAttribute("defaultCrop", p != null ? p.getCrop() : t.crop());
+        model.addAttribute("defaultContrast", p != null ? p.getContrast() : settings.number("photos.contrast"));
+        model.addAttribute("defaultSaturation", p != null ? p.getSaturation() : settings.number("photos.saturation"));
+        model.addAttribute("defaultCrop", p != null ? p.getCrop() : "");
+        // Menu cards and swatches are square; gallery and About photos are 4:5.
+        model.addAttribute("aspect", t.crop().equals("square") ? 1.0 : 0.8);
+        model.addAttribute("aspectLabel", t.crop().equals("square") ? "Square, to match the menu" : "4:5, to match the gallery");
         model.addAttribute("defaultRotate", p != null ? p.getRotate() : 0);
         model.addAttribute("defaultTilt", p != null ? p.getTilt() : 0.0);
         model.addAttribute("section", target.startsWith("gallery") || target.startsWith("other") ? "gallery"
@@ -116,12 +121,14 @@ public class AdminPhotosController {
                                                     @RequestParam MultipartFile edited,
                                                     @RequestParam(defaultValue = "0") int rotate,
                                                     @RequestParam(defaultValue = "0") double tilt,
-                                                    @RequestParam(defaultValue = "original") String crop,
-                                                    @RequestParam(defaultValue = "5") int warmth,
-                                                    @RequestParam(defaultValue = "5") int brightness,
+                                                    @RequestParam(defaultValue = "") String crop,
+                                                    @RequestParam(defaultValue = "0") int warmth,
+                                                    @RequestParam(defaultValue = "0") int brightness,
+                                                    @RequestParam(defaultValue = "0") int contrast,
+                                                    @RequestParam(defaultValue = "0") int saturation,
                                                     @RequestParam(required = false) String caption) throws IOException {
         Target t = target(target);
-        PhotoService.EditSettings s = new PhotoService.EditSettings(rotate, tilt, crop, warmth, brightness);
+        PhotoService.EditSettings s = new PhotoService.EditSettings(rotate, tilt, crop, warmth, brightness, contrast, saturation);
         try {
             Photo photo;
             boolean replacing = original != null && !original.isEmpty();

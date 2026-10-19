@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Photos are edited in the browser (rotate, tilt, crop, warmth, brightness) so the preview is
+ * Photos are edited in the browser (rotate, tilt, crop, brightness, contrast, saturation, warmth) so the preview is
  * exactly what gets saved. The original is always kept with the settings, so edits can be redone.
  */
 @Service
@@ -21,7 +21,8 @@ public class PhotoService {
     private static final int MAX_ORIGINAL = 25 * 1024 * 1024;
     private static final int MAX_EDITED = 6 * 1024 * 1024;
 
-    public record EditSettings(int rotate, double tilt, String crop, int warmth, int brightness) {}
+    /** Sliders run from -100 to 100, with 0 as no change. Crop is "x,y,width,height" as fractions of the straightened photo. */
+    public record EditSettings(int rotate, double tilt, String crop, int warmth, int brightness, int contrast, int saturation) {}
 
     private final PhotoRepository repo;
 
@@ -57,11 +58,17 @@ public class PhotoService {
         p.setWidth(img.getWidth());
         p.setHeight(img.getHeight());
         p.setRotate(((s.rotate() % 360) + 360) % 360);
-        p.setTilt(Math.max(-15, Math.min(15, s.tilt())));
-        String crop = s.crop() == null || s.crop().isBlank() ? "original" : s.crop().trim();
+        p.setTilt(Math.max(-45, Math.min(45, s.tilt())));
+        String crop = s.crop() == null ? "" : s.crop().trim();
         p.setCrop(crop.length() > 60 ? crop.substring(0, 60) : crop);
-        p.setWarmth(Math.max(0, Math.min(10, s.warmth())));
-        p.setBrightness(Math.max(0, Math.min(10, s.brightness())));
+        p.setWarmth(slider(s.warmth()));
+        p.setBrightness(slider(s.brightness()));
+        p.setContrast(slider(s.contrast()));
+        p.setSaturation(slider(s.saturation()));
+    }
+
+    private static int slider(int v) {
+        return Math.max(-100, Math.min(100, v));
     }
 
     /** Loads one of the bundled starter photos (already warmed) as a new photo. */
@@ -72,7 +79,7 @@ public class PhotoService {
             Photo p = new Photo();
             p.setOriginal(bytes);
             p.setOriginalType("image/jpeg");
-            apply(p, bytes, new EditSettings(0, 0, "original", 5, 5));
+            apply(p, bytes, new EditSettings(0, 0, "", 0, 0, 0, 0));
             return repo.save(p);
         } catch (IOException e) {
             throw new IllegalStateException("Missing starter photo " + path, e);

@@ -43,8 +43,10 @@ public class SettingsService {
         DEFAULTS.put("notify.newRequest", "true");
         DEFAULTS.put("notify.customerReply", "true");
         DEFAULTS.put("notify.morningSummary", "false");
-        DEFAULTS.put("photos.warmth", "6");
-        DEFAULTS.put("photos.brightness", "5");
+        DEFAULTS.put("photos.warmth", "20");
+        DEFAULTS.put("photos.brightness", "0");
+        DEFAULTS.put("photos.contrast", "0");
+        DEFAULTS.put("photos.saturation", "0");
         // Page text Madeline edits under Pages.
         DEFAULTS.put("about.title", "It started with");
         DEFAULTS.put("about.titleAccent", "a starter");

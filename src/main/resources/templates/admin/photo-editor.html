@@ -11,15 +11,18 @@
   <div class="editor" data-editor
        th:data-target="${target.key}"
        th:data-original="${photo != null ? '/admin/photos/' + photo.id + '/original' : ''}"
+       th:data-aspect="${aspect}"
        th:data-rotate="${defaultRotate}" th:data-tilt="${defaultTilt}" th:data-crop="${defaultCrop}"
-       th:data-warmth="${defaultWarmth}" th:data-brightness="${defaultBrightness}">
+       th:data-brightness="${defaultBrightness}" th:data-contrast="${defaultContrast}"
+       th:data-saturation="${defaultSaturation}" th:data-warmth="${defaultWarmth}">
     <div class="stack">
       <div class="editor-stage">
-        <canvas data-canvas width="800" height="800" aria-label="Photo preview"></canvas>
+        <canvas data-canvas width="800" height="800" aria-label="Photo preview. Drag the corners of the crop box to resize it, or drag inside it to move it."></canvas>
         <p class="muted" data-empty th:if="${photo == null}">Choose a photo to start.</p>
       </div>
       <div class="compare">
         <button type="button" class="btn btn-secondary btn-small" data-hold-original>Hold to see the original</button>
+        <span class="t-small muted">Drag the corners to resize the crop. Drag inside it to move it.</span>
       </div>
     </div>
 
@@ -31,43 +34,37 @@
       </div>
 
       <div class="field">
-        <span class="label">Rotate</span>
-        <div class="action-row">
-          <button type="button" class="btn btn-secondary btn-small" data-rotate="-90">↺ Left</button>
-          <button type="button" class="btn btn-secondary btn-small" data-rotate="90">Right ↻</button>
-        </div>
-      </div>
-
-      <div class="range-row">
-        <div class="top"><label for="tilt">Fine tilt</label><span data-out="tilt">0°</span></div>
-        <input type="range" id="tilt" min="-10" max="10" step="0.5" data-input="tilt">
-      </div>
-
-      <div class="field">
         <span class="label">Crop</span>
-        <div class="segmented" role="radiogroup" aria-label="Crop">
-          <label><input type="radio" name="crop" value="original" data-crop-choice><span class="pill">Original</span></label>
-          <label><input type="radio" name="crop" value="square" data-crop-choice><span class="pill">Square</span></label>
-          <label><input type="radio" name="crop" value="portrait" data-crop-choice><span class="pill">4:5</span></label>
-          <label><input type="radio" name="crop" value="landscape" data-crop-choice><span class="pill">4:3</span></label>
+        <div class="t-small" th:text="${aspectLabel}">Square, to match the menu</div>
+        <div class="action-row">
+          <button type="button" class="btn btn-secondary btn-small" data-rotate="-90">↺ Rotate left</button>
+          <button type="button" class="btn btn-secondary btn-small" data-rotate="90">Rotate right ↻</button>
+          <button type="button" class="link-btn" data-reset-crop>Reset crop</button>
         </div>
-        <div class="help">Menu cards and swatches show square photos.</div>
       </div>
 
       <div class="range-row">
-        <div class="top"><label for="zoom">Zoom</label><span data-out="zoom">100%</span></div>
-        <input type="range" id="zoom" min="1" max="3" step="0.05" data-input="zoom">
-        <div class="help">Drag the photo to frame it. <button type="button" class="link-btn" data-reset-frame>Reset framing</button></div>
+        <div class="top"><label for="tilt">Straighten</label><span data-out="tilt">0°</span></div>
+        <input type="range" id="tilt" min="-45" max="45" step="0.1" data-input="tilt">
       </div>
 
       <div class="range-row">
-        <div class="top"><label for="warmth">Warmth</label><span data-out="warmth">6 of 10</span></div>
-        <input type="range" id="warmth" min="0" max="10" step="1" data-input="warmth">
+        <div class="top"><label for="brightness">Brightness</label><span data-out="brightness">0</span></div>
+        <input type="range" id="brightness" min="-100" max="100" step="1" data-input="brightness">
       </div>
       <div class="range-row">
-        <div class="top"><label for="brightness">Brightness</label><span data-out="brightness">5 of 10</span></div>
-        <input type="range" id="brightness" min="0" max="10" step="1" data-input="brightness">
+        <div class="top"><label for="contrast">Contrast</label><span data-out="contrast">0</span></div>
+        <input type="range" id="contrast" min="-100" max="100" step="1" data-input="contrast">
       </div>
+      <div class="range-row">
+        <div class="top"><label for="saturation">Saturation</label><span data-out="saturation">0</span></div>
+        <input type="range" id="saturation" min="-100" max="100" step="1" data-input="saturation">
+      </div>
+      <div class="range-row">
+        <div class="top"><label for="warmth">Warmth</label><span data-out="warmth">0</span></div>
+        <input type="range" id="warmth" min="-100" max="100" step="1" data-input="warmth">
+      </div>
+      <div class="help">Double-click a slider to set it back to 0. <button type="button" class="link-btn" data-reset-adjust>Reset all sliders</button></div>
 
       <div class="field" th:if="${target.key.startsWith('gallery') or target.key.startsWith('other')}">
         <label for="caption">Caption</label>
