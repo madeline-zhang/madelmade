@@ -293,6 +293,7 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .summary-totals { padding-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 0.9375rem; }
 .summary-totals div { display: flex; justify-content: space-between; }
 .summary-totals .grand { font-weight: 700; font-size: 1.0625rem; border-top: 1px solid var(--color-linen); padding-top: 10px; margin-top: 4px; }
+.summary-totals .grand:first-child { border-top: none; padding-top: 0; margin-top: 0; }
 
 /* Timeline and messages */
 .timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
