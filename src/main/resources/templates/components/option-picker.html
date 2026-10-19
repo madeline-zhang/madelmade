@@ -3,7 +3,7 @@
   (size, flavor, hot or iced, beans, milk). site.js updates the preview and live price.
 -->
 <div th:fragment="picker(product, selected)" class="stack" style="gap: 30px">
-  <fieldset class="option-group" th:each="g : ${product.optionGroups}" th:if="${!g.activeChoices.isEmpty()}" data-group>
+  <fieldset class="option-group" th:each="g : ${product.allOptionGroups}" th:if="${!g.activeChoices.isEmpty()}" data-group>
     <legend>
       <span class="t-label" th:text="${g.name}">Size</span>
       <span class="chosen" data-chosen></span>

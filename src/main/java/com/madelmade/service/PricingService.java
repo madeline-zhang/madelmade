@@ -35,7 +35,7 @@ public class PricingService {
         List<OptionChoice> picked = new ArrayList<>();
         List<Long> ids = sel.choiceIds() == null ? List.of() : sel.choiceIds();
 
-        for (OptionGroup g : product.getOptionGroups()) {
+        for (OptionGroup g : product.getAllOptionGroups()) {
             List<OptionChoice> inGroup = g.getActiveChoices().stream().filter(c -> ids.contains(c.getId())).toList();
             if (g.isRequired() && inGroup.isEmpty() && !g.getActiveChoices().isEmpty()) {
                 errors.add("Please choose a " + g.getName().toLowerCase() + ".");

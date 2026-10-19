@@ -3,6 +3,7 @@ package com.madelmade.service;
 import com.madelmade.domain.*;
 import com.madelmade.repo.CategoryRepository;
 import com.madelmade.repo.GalleryPhotoRepository;
+import com.madelmade.repo.OptionGroupRepository;
 import com.madelmade.repo.ProductRepository;
 import java.math.BigDecimal;
 import org.slf4j.Logger;
@@ -25,10 +26,12 @@ public class DataSeeder implements ApplicationRunner {
     private final ProductRepository products;
     private final GalleryPhotoRepository gallery;
     private final PhotoService photos;
+    private final OptionGroupRepository groups;
 
     public DataSeeder(CategoryRepository categories, ProductRepository products, GalleryPhotoRepository gallery,
-                      PhotoService photos) {
+                      PhotoService photos, OptionGroupRepository groups) {
         this.categories = categories;
+        this.groups = groups;
         this.products = products;
         this.gallery = gallery;
         this.photos = photos;
@@ -46,8 +49,9 @@ public class DataSeeder implements ApplicationRunner {
         Product classic = product(bread, "Classic Loaf", "classic-loaf", 10, "miriam.jpg", 0,
                 "Build your own: size, flavor and score.",
                 "Our everyday sourdough, about 2 lb whole. Pick a flavor and a score, and Madeline will confirm your request.");
+        OptionGroup flavors = flavors();
         sizes(classic);
-        flavors(classic);
+        classic.getSharedGroups().add(flavors);
         OptionGroup score = group(classic, "Score style", OptionGroup.STYLE_SWATCHES, 2);
         swatch(score, "Simple score", "jonah.jpg", "[Placeholder] One clean slash for a classic rustic ear.", 0, false);
         swatch(score, "Double leaf", "miriam.jpg", "[Placeholder] Two wheat leaves cut along a central ear.", 0, false).setDefaultChoice(true);
@@ -62,7 +66,7 @@ public class DataSeeder implements ApplicationRunner {
                 "A flour-stencil design on top.",
                 "Sourdough with a flour stencil on top: a butterfly, your own letters, or a custom design. About 2 lb whole.");
         sizes(stencil);
-        flavors(stencil);
+        stencil.getSharedGroups().add(flavors);
         OptionGroup design = group(stencil, "Design", OptionGroup.STYLE_SWATCHES, 2);
         swatch(design, "Butterfly", "peter.jpg", "[Placeholder] A butterfly stenciled in flour across the top.", 0, false).setDefaultChoice(true);
         swatch(design, "Letters", "bday.jpg", "[Placeholder] Your words in flour, up to 15 characters.", 0, false).setTextLimit(15);
@@ -165,12 +169,18 @@ public class DataSeeder implements ApplicationRunner {
         button(size, "Whole", 0, false).setDefaultChoice(true);
     }
 
-    private void flavors(Product p) {
-        OptionGroup flavor = group(p, "Flavor", OptionGroup.STYLE_BUTTONS, 1);
+    /** Flavors are shared by the build-your-own loaves, so they're edited in one place. */
+    private OptionGroup flavors() {
+        OptionGroup flavor = new OptionGroup();
+        flavor.setName("Flavor");
+        flavor.setDisplayStyle(OptionGroup.STYLE_BUTTONS);
+        flavor.setDisplayOrder(1);
+        flavor.setRequired(true);
         button(flavor, "Plain", 0, false).setDefaultChoice(true);
         button(flavor, "Rosemary garlic", 2, false);
         button(flavor, "Rosemary garlic asiago", 2, false);
         button(flavor, "Custom", 0, true);
+        return groups.save(flavor);
     }
 
     private OptionGroup group(Product p, String name, String style, int order) {

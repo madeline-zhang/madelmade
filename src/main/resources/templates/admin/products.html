@@ -18,7 +18,7 @@
             <span th:unless="${p.photoId != null}" class="thumb-sm photo-slot" style="border-radius: 10px">Add photo</span></a></td>
           <td><a th:href="@{/admin/products/{id}(id=${p.id})}" style="font-weight: 600" th:text="${p.name}">Classic Loaf</a>
             <span class="tag" th:if="${p.missingLabelInfo}">Add ingredients</span>
-            <div class="t-small muted" th:text="${p.optionGroups.size() + ' option group' + (p.optionGroups.size() == 1 ? '' : 's')}"></div></td>
+            <div class="t-small muted" th:text="${p.allOptionGroups.size() + ' option group' + (p.allOptionGroups.size() == 1 ? '' : 's')}"></div></td>
           <td th:text="${p.category.name}">Bread</td>
           <td th:text="${@money.fmt(p.basePrice)}">$10</td>
           <td><form method="post" th:action="@{/admin/products/{id}/toggle(id=${p.id})}"><input type="hidden" name="field" value="active">

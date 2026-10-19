@@ -60,6 +60,7 @@ public class AdminProductsController {
     @GetMapping("/products/{id}")
     public String edit(@PathVariable Long id, Model model) {
         model.addAttribute("product", find(id));
+        model.addAttribute("sharedGroups", groups.findByProductIsNullOrderByDisplayOrderAscIdAsc());
         model.addAttribute("categories", categories.findAllByOrderByDisplayOrderAscIdAsc());
         return "admin/product-edit";
     }
@@ -161,18 +162,79 @@ public class AdminProductsController {
         g.setMultiple(multiple);
         groups.save(g);
         flash.addFlashAttribute("ok", "Saved " + g.getName() + ".");
-        return "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + gid;
+        return redirectTo(g);
     }
 
     @PostMapping("/groups/{gid}/delete")
     @Transactional
     public String deleteGroup(@PathVariable Long gid, RedirectAttributes flash) {
         OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
+        flash.addFlashAttribute("ok", "Removed " + g.getName() + ".");
+        if (g.isShared()) {
+            products.findAll().forEach(p -> p.getSharedGroups().remove(g));
+            groups.delete(g);
+            return "redirect:/admin/options";
+        }
         Product p = g.getProduct();
         p.getOptionGroups().remove(g);
         products.save(p);
-        flash.addFlashAttribute("ok", "Removed " + g.getName() + ".");
         return "redirect:/admin/products/" + p.getId();
+    }
+
+    // ---- Shared groups, like Flavor on the Classic and Stencil loaves ----
+
+    @GetMapping("/options")
+    public String sharedGroups(Model model) {
+        model.addAttribute("sharedGroups", groups.findByProductIsNullOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("products", products.findAllOrdered());
+        return "admin/options";
+    }
+
+    @PostMapping("/options")
+    @Transactional
+    public String addSharedGroup(@RequestParam String name,
+                                 @RequestParam(defaultValue = OptionGroup.STYLE_BUTTONS) String displayStyle,
+                                 RedirectAttributes flash) {
+        if (name == null || name.isBlank()) {
+            flash.addFlashAttribute("errors", List.of("Name the option group, e.g. Flavor."));
+            return "redirect:/admin/options";
+        }
+        OptionGroup g = new OptionGroup();
+        g.setName(name.trim());
+        g.setDisplayStyle(OptionGroup.STYLE_SWATCHES.equals(displayStyle) ? OptionGroup.STYLE_SWATCHES : OptionGroup.STYLE_BUTTONS);
+        g.setDisplayOrder(1);
+        groups.save(g);
+        flash.addFlashAttribute("ok", "Added " + g.getName() + ". Add its choices, then pick the products that use it.");
+        return redirectTo(g);
+    }
+
+    /** Which products use a shared group, set from the Shared options page. */
+    @PostMapping("/options/{gid}/products")
+    @Transactional
+    public String setGroupProducts(@PathVariable Long gid, @RequestParam(required = false) List<Long> productIds,
+                                   RedirectAttributes flash) {
+        OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
+        if (!g.isShared()) throw new NotFoundException();
+        List<Long> ids = productIds == null ? List.of() : productIds;
+        for (Product p : products.findAll()) {
+            if (ids.contains(p.getId())) p.getSharedGroups().add(g);
+            else p.getSharedGroups().remove(g);
+        }
+        flash.addFlashAttribute("ok", "Saved which products use " + g.getName() + ".");
+        return redirectTo(g);
+    }
+
+    /** Which shared groups a product uses, set from the product's page. */
+    @PostMapping("/products/{id}/shared")
+    @Transactional
+    public String setProductGroups(@PathVariable Long id, @RequestParam(required = false) List<Long> groupIds,
+                                   RedirectAttributes flash) {
+        Product p = find(id);
+        p.getSharedGroups().clear();
+        if (groupIds != null) groups.findAllById(groupIds).stream().filter(OptionGroup::isShared).forEach(p.getSharedGroups()::add);
+        products.save(p);
+        flash.addFlashAttribute("ok", "Saved.");
+        return "redirect:/admin/products/" + id + "#shared";
     }
 
     // ---- Choices ----
@@ -182,7 +244,10 @@ public class AdminProductsController {
     public String addChoice(@PathVariable Long gid, @RequestParam String name,
                             @RequestParam(required = false) String priceChange, RedirectAttributes flash) {
         OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
-        if (name == null || name.isBlank()) return back(g.getProduct().getId(), flash, "Name the choice first.");
+        if (name == null || name.isBlank()) {
+            flash.addFlashAttribute("errors", List.of("Name the choice first."));
+            return redirectTo(g);
+        }
         OptionChoice c = new OptionChoice();
         c.setGroup(g);
         c.setName(name.trim());
@@ -192,7 +257,7 @@ public class AdminProductsController {
         g.getChoices().add(c);
         groups.save(g);
         flash.addFlashAttribute("ok", "Added " + c.getName() + ".");
-        return "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + gid;
+        return redirectTo(g);
     }
 
     @PostMapping("/choices/{cid}")
@@ -223,7 +288,7 @@ public class AdminProductsController {
         c.setDefaultChoice(defaultChoice);
         choices.save(c);
         flash.addFlashAttribute("ok", "Saved " + c.getName() + ".");
-        return "redirect:/admin/products/" + c.getGroup().getProduct().getId() + "#group-" + c.getGroup().getId();
+        return redirectTo(c.getGroup());
     }
 
     @PostMapping("/choices/{cid}/delete")
@@ -234,7 +299,7 @@ public class AdminProductsController {
         g.getChoices().remove(c);
         groups.save(g);
         flash.addFlashAttribute("ok", "Removed " + c.getName() + ".");
-        return "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + g.getId();
+        return redirectTo(g);
     }
 
     // ---- Categories ----
@@ -285,6 +350,11 @@ public class AdminProductsController {
 
     private Product find(Long id) {
         return products.findById(id).orElseThrow(NotFoundException::new);
+    }
+
+    private static String redirectTo(OptionGroup g) {
+        return g.isShared() ? "redirect:/admin/options#group-" + g.getId()
+                : "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + g.getId();
     }
 
     private String back(Long productId, RedirectAttributes flash, String error) {

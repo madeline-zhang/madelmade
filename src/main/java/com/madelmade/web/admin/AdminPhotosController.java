@@ -2,6 +2,7 @@ package com.madelmade.web.admin;
 
 import com.madelmade.domain.GalleryPhoto;
 import com.madelmade.domain.OptionChoice;
+import com.madelmade.domain.OptionGroup;
 import com.madelmade.domain.Photo;
 import com.madelmade.domain.Product;
 import com.madelmade.repo.GalleryPhotoRepository;
@@ -66,8 +67,12 @@ public class AdminPhotosController {
             }
             case "choice" -> {
                 OptionChoice c = choices.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
-                return new Target(key, c.getGroup().getProduct().getName() + ": " + c.getName(), c.getPhotoId(),
-                        "/admin/products/" + c.getGroup().getProduct().getId() + "#group-" + c.getGroup().getId(), "square");
+                OptionGroup g = c.getGroup();
+                if (g.isShared()) {
+                    return new Target(key, g.getName() + ": " + c.getName(), c.getPhotoId(), "/admin/options#group-" + g.getId(), "square");
+                }
+                return new Target(key, g.getProduct().getName() + ": " + c.getName(), c.getPhotoId(),
+                        "/admin/products/" + g.getProduct().getId() + "#group-" + g.getId(), "square");
             }
             case "gallery" -> {
                 if (parts[1].equals("new")) return new Target(key, "New gallery photo", null, "/admin/gallery", "portrait");

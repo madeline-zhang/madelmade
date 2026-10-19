@@ -79,7 +79,7 @@ class SiteTest {
     @Transactional
     void stencilWithLettersFlavorAndCertificateIsPricedRight() {
         Product stencil = products.findBySlug("stencil-loaf").orElseThrow();
-        List<Long> ids = stencil.getOptionGroups().stream()
+        List<Long> ids = stencil.getAllOptionGroups().stream()
                 .flatMap(g -> g.getActiveChoices().stream())
                 .filter(c -> List.of("Whole", "Rosemary garlic", "Letters").contains(c.getName()))
                 .map(OptionChoice::getId).toList();
@@ -93,7 +93,7 @@ class SiteTest {
     @Transactional
     void halfLoafHalvesThePriceAndLettersHaveALimit() {
         Product classic = products.findBySlug("classic-loaf").orElseThrow();
-        List<Long> half = classic.getOptionGroups().stream()
+        List<Long> half = classic.getAllOptionGroups().stream()
                 .flatMap(g -> g.getActiveChoices().stream())
                 .filter(c -> c.getName().equals("Half") || c.isDefaultChoice() && !c.getName().equals("Whole"))
                 .map(OptionChoice::getId).toList();
@@ -102,7 +102,7 @@ class SiteTest {
         assertThat(q.unitPrice()).isEqualByComparingTo(new BigDecimal("5"));
 
         Product stencil = products.findBySlug("stencil-loaf").orElseThrow();
-        List<Long> letters = stencil.getOptionGroups().stream()
+        List<Long> letters = stencil.getAllOptionGroups().stream()
                 .flatMap(g -> g.getActiveChoices().stream())
                 .filter(c -> c.isDefaultChoice() && !c.getName().equals("Butterfly") || c.getName().equals("Letters"))
                 .map(OptionChoice::getId).toList();

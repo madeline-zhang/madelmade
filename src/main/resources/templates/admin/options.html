@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'options')}">
+<head><title>Shared options · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">Edit once, used everywhere</div><h1>Shared options</h1></div></div>
+  <p class="muted" style="max-width: 760px; margin-top: 0">Option groups like Flavor that several products use. Changes here show on every product that uses the group. "Order" sets where the group sits among each product's own options (Size is 0).</p>
+
+  <div class="stack" style="gap: 24px; max-width: 900px">
+    <div class="empty" th:if="${sharedGroups.isEmpty()}">No shared groups yet.</div>
+
+    <th:block th:each="g : ${sharedGroups}">
+      <div th:replace="~{admin/group-card :: card(${g})}"></div>
+      <form class="card stack" style="gap: 6px; margin-top: -12px" method="post" th:action="@{/admin/options/{id}/products(id=${g.id})}">
+        <div class="t-label" th:text="${'Products that use ' + g.name}">Products that use Flavor</div>
+        <label class="check-row" th:each="p : ${products}">
+          <input type="checkbox" name="productIds" th:value="${p.id}" th:checked="${p.sharedGroups.contains(g)}">
+          <span th:text="${p.name}">Classic Loaf</span>
+        </label>
+        <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save products</button>
+      </form>
+    </th:block>
+
+    <form class="group-card" method="post" th:action="@{/admin/options}" style="flex-direction: row; flex-wrap: wrap; align-items: end">
+      <div class="field" style="flex: 1 1 200px"><label for="ng">New shared group</label><input type="text" id="ng" name="name" placeholder="e.g. Flavor"></div>
+      <div class="field"><label for="ngs">Shown as</label><select id="ngs" name="displayStyle"><option value="buttons">Buttons</option><option value="swatches">Photo swatches</option></select></div>
+      <button type="submit" class="btn btn-small">Add group</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

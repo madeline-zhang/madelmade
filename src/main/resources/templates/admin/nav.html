@@ -2,6 +2,7 @@
   <a th:href="@{/admin/orders}" th:classappend="${section == 'orders'} ? 'is-on'">Orders<span class="pill-count" th:if="${needsReviewCount > 0}" th:text="${needsReviewCount}">3</span></a>
   <a th:href="@{/admin/calendar}" th:classappend="${section == 'calendar'} ? 'is-on'">Calendar</a>
   <a th:href="@{/admin/products}" th:classappend="${section == 'products'} ? 'is-on'">Products</a>
+  <a th:href="@{/admin/options}" th:classappend="${section == 'options'} ? 'is-on'">Shared options</a>
   <a th:href="@{/admin/gallery}" th:classappend="${section == 'gallery'} ? 'is-on'">Gallery</a>
   <a th:href="@{/admin/promos}" th:classappend="${section == 'promos'} ? 'is-on'">Promo codes</a>
   <a th:href="@{/admin/pages}" th:classappend="${section == 'pages'} ? 'is-on'">Pages</a>
