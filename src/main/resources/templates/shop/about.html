@@ -11,7 +11,7 @@
         <p class="t-subtitle" th:each="para : ${settings.paragraphs('about.body')}" th:text="${para}">I'm Madeline, a home baker in Brentwood, Tennessee.</p>
         <p><a class="btn" th:href="@{/#menu}">See the menu&nbsp;&nbsp;→</a></p>
       </div>
-      <img class="about-photo" th:if="${settings.aboutPhotoId() != null}" th:src="@{/photos/{id}(id=${settings.aboutPhotoId()})}" alt="Madeline">
+      <img class="about-photo" th:if="${settings.aboutPhotoId() != null}" th:src="${photoUrls.src(settings.aboutPhotoId())}" alt="Madeline">
       <div class="about-photo is-placeholder" th:unless="${settings.aboutPhotoId() != null}" aria-hidden="true">
         <img th:src="@{/img/madelmade-logo-simple.svg}" alt="">
         <span>Photo coming soon</span>

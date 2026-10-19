@@ -74,7 +74,7 @@
 
           <div class="choice-row" th:each="c : ${g.choices}">
             <a class="photo-slot" th:href="@{/admin/photos/edit(target=${'choice-' + c.id})}" th:title="${'Photo for ' + c.name}">
-              <img th:if="${c.photoId != null}" th:src="@{/photos/{id}(id=${c.photoId})}" alt="">
+              <img th:if="${c.photoId != null}" th:src="${photoUrls.src(c.photoId)}" alt="">
               <span th:unless="${c.photoId != null}">Add photo</span>
             </a>
             <form method="post" th:action="@{/admin/choices/{id}(id=${c.id})}" th:id="${'choice-' + c.id}" style="display: contents">
@@ -116,7 +116,7 @@
     <aside class="stack" style="gap: 16px" th:if="${product.id != null}">
       <div class="card stack" style="gap: 12px">
         <h2 class="card-title" style="margin: 0">Photo</h2>
-        <img th:if="${product.photoId != null}" th:src="@{/photos/{id}(id=${product.photoId})}" alt="" style="border-radius: 12px; aspect-ratio: 1; object-fit: cover; width: 100%; height: auto">
+        <img th:if="${product.photoId != null}" th:src="${photoUrls.src(product.photoId)}" alt="" style="border-radius: 12px; aspect-ratio: 1; object-fit: cover; width: 100%; height: auto">
         <a class="btn btn-secondary" th:href="@{/admin/photos/edit(target=${'product-' + product.id})}" th:text="${product.photoId != null ? 'Edit photo' : 'Add a photo'}">Edit photo</a>
       </div>
       <form class="card" method="post" th:action="@{/admin/products/{id}/delete(id=${product.id})}" data-confirm="Delete this product for good? Past orders keep their details. (To take it off the menu for now, turn off On the menu instead.)">

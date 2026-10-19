@@ -12,9 +12,9 @@
       <label th:each="c : ${g.activeChoices}" th:title="${g.swatches} ? ${c.name}">
         <input th:type="${g.multiple} ? 'checkbox' : 'radio'" th:name="${'opt-' + g.id}" th:value="${c.id}"
                th:checked="${selected != null and !selected.isEmpty()} ? ${selected.contains(c.id)} : ${c.defaultChoice}"
-               th:data-name="${c.name}" th:data-price="${c.priceChange}" th:data-halves="${c.halvesPrice}" th:data-tbd="${c.priceTbd}" th:data-custom="${c.custom}" th:data-text-limit="${c.textLimit}" th:data-desc="${c.description}" th:data-photo="${c.photoId != null ? '/photos/' + c.photoId : ''}" th:data-group-name="${g.name}">
+               th:data-name="${c.name}" th:data-price="${c.priceChange}" th:data-halves="${c.halvesPrice}" th:data-tbd="${c.priceTbd}" th:data-custom="${c.custom}" th:data-text-limit="${c.textLimit}" th:data-desc="${c.description}" th:data-group-name="${g.name}">
         <span th:if="${g.swatches}" class="swatch">
-          <img th:if="${c.photoId != null}" th:src="@{/photos/{id}(id=${c.photoId})}" alt="" loading="lazy">
+          <img th:if="${c.photoId != null}" th:src="${photoUrls.src(c.photoId)}" alt="" loading="lazy">
           <span th:unless="${c.photoId != null}" class="swatch-blank" th:text="${c.name}">Custom</span>
         </span>
         <span th:if="${g.swatches}" class="visually-hidden" th:text="${c.name}">Double leaf</span>

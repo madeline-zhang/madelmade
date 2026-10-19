@@ -11,8 +11,7 @@
 
       <div class="product-media">
         <img class="main-photo" data-preview-img
-             th:src="${product.photoId != null} ? @{/photos/{id}(id=${product.photoId})} : @{/img/madelmade-logo-simple.svg}"
-             th:data-default="${product.photoId != null ? '/photos/' + product.photoId : ''}"
+             th:src="${product.photoId != null} ? ${photoUrls.src(product.photoId)} : @{/img/madelmade-logo-simple.svg}"
              th:alt="${product.name}" width="700" height="700">
         <div class="stack" style="gap: 4px" data-preview-text hidden>
           <div class="preview-name" data-preview-name></div>

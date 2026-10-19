@@ -1,7 +1,7 @@
 <!-- Product card: used for bread, coffee and anything added later. -->
 <a th:fragment="card(p)" class="product-card" th:classappend="${p.soldOut} ? 'is-sold-out'"
    th:href="@{/p/{slug}(slug=${p.slug})}" th:data-category="${p.category.slug}">
-  <img th:if="${p.photoId != null}" class="photo" th:src="@{/photos/{id}(id=${p.photoId})}" th:alt="${p.name}" loading="lazy" width="400" height="400">
+  <img th:if="${p.photoId != null}" class="photo" th:src="${photoUrls.src(p.photoId)}" th:alt="${p.name}" loading="lazy" width="400" height="400">
   <div th:unless="${p.photoId != null}" class="photo-placeholder" aria-hidden="true">
     <img th:src="@{/img/madelmade-logo-simple.svg}" alt="" style="width: 34%; opacity: .55">
   </div>

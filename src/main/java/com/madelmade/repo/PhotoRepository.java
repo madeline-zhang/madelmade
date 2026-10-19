@@ -23,6 +23,9 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
     @Query("select p.edited as edited, p.editedType as editedType, p.updatedAt as updatedAt from Photo p where p.id = ?1")
     Optional<EditedView> findEdited(Long id);
 
+    @Query("select p.updatedAt from Photo p where p.id = ?1")
+    Optional<Instant> findUpdatedAt(Long id);
+
     @Query("select p.original as original, p.originalType as originalType from Photo p where p.id = ?1")
     Optional<OriginalView> findOriginal(Long id);
 }

@@ -24,7 +24,7 @@
         <section class="card stack">
           <h2 class="card-title">Your photo</h2>
           <div class="about-photo-admin">
-            <img th:if="${settings.aboutPhotoId() != null}" th:src="@{/photos/{id}(id=${settings.aboutPhotoId()})}" alt="Your photo on the About page">
+            <img th:if="${settings.aboutPhotoId() != null}" th:src="${photoUrls.src(settings.aboutPhotoId())}" alt="Your photo on the About page">
             <div th:unless="${settings.aboutPhotoId() != null}" class="photo-placeholder">No photo yet</div>
           </div>
           <a class="btn btn-secondary btn-small" style="align-self: flex-start" th:href="@{/admin/photos/edit(target='about-photo')}"

@@ -2,7 +2,7 @@
 <div th:fragment="cartLines(editable)">
   <p th:if="${cart.empty}" class="muted" style="padding: 24px 0">Your cart is empty. <a th:href="@{/#menu}">Browse the menu</a>.</p>
   <div class="cart-line" th:each="l : ${cart.lines}">
-    <img th:if="${l.photoId != null}" th:src="@{/photos/{id}(id=${l.photoId})}" alt="" loading="lazy">
+    <img th:if="${l.photoId != null}" th:src="${photoUrls.src(l.photoId)}" alt="" loading="lazy">
     <div th:unless="${l.photoId != null}" class="thumb"></div>
     <div>
       <div class="cart-line-name" th:text="${l.productName}">Classic Loaf</div>

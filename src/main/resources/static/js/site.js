@@ -87,6 +87,7 @@
     var base = parseFloat(form.getAttribute('data-base')) || 0;
     var certPrice = parseFloat(form.getAttribute('data-cert-price')) || 0;
     var img = $('[data-preview-img]', form);
+    var defaultPhoto = img ? img.getAttribute('src') : '';
     var previewText = $('[data-preview-text]', form);
     var lettersBox = $('[data-letters-box]', form);
     var lettersInput = lettersBox ? $('input', lettersBox) : null;
@@ -146,8 +147,9 @@
       if (changed && changed.closest && changed.closest('.swatches')) lastSwatch = changed;
       var sw = lastSwatch;
       if (sw && img) {
-        var photo = sw.getAttribute('data-photo');
-        img.src = photo || img.getAttribute('data-default') || img.src;
+        // The swatch's own picture carries the photo's current address.
+        var swatchImg = sw.parentNode.querySelector('.swatch img');
+        img.src = (swatchImg && swatchImg.getAttribute('src')) || defaultPhoto;
         img.alt = sw.getAttribute('data-name');
         if (previewText) {
           previewText.hidden = false;

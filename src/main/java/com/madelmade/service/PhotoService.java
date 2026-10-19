@@ -25,9 +25,11 @@ public class PhotoService {
     public record EditSettings(int rotate, double tilt, String crop, int warmth, int brightness, int contrast, int saturation) {}
 
     private final PhotoRepository repo;
+    private final PhotoUrls urls;
 
-    public PhotoService(PhotoRepository repo) {
+    public PhotoService(PhotoRepository repo, PhotoUrls urls) {
         this.repo = repo;
+        this.urls = urls;
     }
 
     @Transactional
@@ -38,14 +40,18 @@ public class PhotoService {
         p.setOriginal(original);
         p.setOriginalType(sniffType(original, originalType));
         apply(p, edited, s);
-        return repo.save(p);
+        Photo saved = repo.save(p);
+        urls.changed(saved.getId(), saved.getUpdatedAt());
+        return saved;
     }
 
     @Transactional
     public Photo update(Photo p, byte[] edited, EditSettings s) {
         apply(p, edited, s);
         p.setUpdatedAt(Instant.now());
-        return repo.save(p);
+        Photo saved = repo.save(p);
+        urls.changed(saved.getId(), saved.getUpdatedAt());
+        return saved;
     }
 
     private void apply(Photo p, byte[] edited, EditSettings s) {

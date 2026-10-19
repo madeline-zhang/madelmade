@@ -13,7 +13,7 @@
         <dt>Labor</dt><dd th:text="${item.certLabor != null ? item.certLabor : '·'}">23 hr</dd>
         <dt>Starter</dt><dd th:text="${item.certStarter != null ? item.certStarter : settings.defaultStarter()}">Manna</dd>
       </dl>
-      <img th:if="${photoId != null}" th:src="@{/photos/{id}(id=${photoId})}" th:alt="${item.certName}">
+      <img th:if="${photoId != null}" th:src="${photoUrls.src(photoId)}" th:alt="${item.certName}">
       <p class="verse" th:if="${item.certMessage != null}" th:text="${item.certMessage}">Genesis 32:28</p>
     </article>
     <div class="action-row no-print">
