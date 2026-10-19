@@ -24,9 +24,9 @@
           <div class="t-small" th:text="${o.itemsSummary}">Stencil Loaf, Classic Loaf</div>
           <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
             <span class="t-price" th:text="${@money.fmt(o.total) + (o.priceTbd ? ' + custom' : '')}">$26</span>
-            <div class="action-row" style="flex: 0 0 auto">
+            <div class="order-actions">
               <a class="btn btn-secondary btn-small" th:href="@{/o/{t}(t=${o.statusToken})}" th:text="${o.status.closed ? 'Details' : 'View status'}">View status</a>
-              <form method="post" th:action="@{/profile/reorder/{id}(id=${o.id})}" class="inline-form">
+              <form method="post" th:action="@{/profile/reorder/{id}(id=${o.id})}" >
                 <button type="submit" class="btn btn-small">Reorder</button>
               </form>
             </div>
