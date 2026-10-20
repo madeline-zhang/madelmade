@@ -30,11 +30,12 @@
             <span class="tag" th:if="${product.pickupOnly}">Pickup only</span>
           </div>
           <p class="t-subtitle" style="font-size: 1rem; max-width: 520px" th:text="${product.description}">Our everyday sourdough.</p>
-          <dl class="label-info t-small" th:if="${product.ingredients != null or product.allergens != null}">
-            <th:block th:if="${product.ingredients != null}"><dt>Ingredients</dt><dd th:text="${product.ingredients}">Flour, water, salt</dd></th:block>
-            <th:block th:if="${product.allergens != null}"><dt>Allergens</dt><dd th:text="${product.allergens}">Wheat</dd></th:block>
+          <!-- site.js adds the picked flavor's ingredients and allergens to the base lists. -->
+          <dl class="label-info t-small" th:if="${product.hasLabelInfo}">
+            <dt>Ingredients</dt><dd data-label="ingredients" th:data-base="${product.ingredients}" th:text="${product.ingredients}">Flour, water, salt</dd>
+            <dt>Allergens</dt><dd data-label="allergens" th:data-base="${product.allergens}" th:text="${product.allergens}">Wheat</dd>
           </dl>
-          <p class="t-small muted" th:unless="${product.ingredients != null or product.allergens != null}">Ask Madeline about ingredients and allergens at <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
+          <p class="t-small muted" th:unless="${product.hasLabelInfo}">Ask Madeline about ingredients and allergens at <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
           <div class="alert alert-info" th:if="${product.soldOut}">Sold out for now. Check back soon!</div>
         </div>
 

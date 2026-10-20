@@ -101,7 +101,7 @@
     var lastSwatch = null;
 
     var update = function (changed) {
-      var price = base, half = false, tbd = false, custom = false, limit = 0;
+      var price = base, half = false, tbd = false, custom = false, limit = 0, adds = { ingredients: [], allergens: [] };
       $$('[data-group]', form).forEach(function (g) {
         var names = [];
         $$('input', g).forEach(function (i) {
@@ -111,6 +111,10 @@
           if (i.getAttribute('data-halves') === 'true') half = true;
           if (i.getAttribute('data-tbd') === 'true') tbd = true;
           if (i.getAttribute('data-custom') === 'true') custom = true;
+          ['ingredients', 'allergens'].forEach(function (k) {
+            var v = i.getAttribute('data-' + k);
+            if (v) adds[k].push(v);
+          });
           var l = parseInt(i.getAttribute('data-text-limit'), 10);
           if (l > 0) limit = l;
         });
@@ -118,6 +122,11 @@
         if (chosen) chosen.textContent = names.join(', ');
       });
       if (half) price = price / 2;
+      // Ingredients and allergens: the product's base list plus whatever the picked flavor adds.
+      $$('[data-label]', form).forEach(function (dd) {
+        var parts = [dd.getAttribute('data-base')].concat(adds[dd.getAttribute('data-label')]).filter(Boolean);
+        dd.textContent = parts.length ? parts.join(', ') : 'None listed';
+      });
       if (certToggle && certToggle.checked) price += certPrice;
       var qty = qtyInput ? Math.max(1, parseInt(qtyInput.value, 10) || 1) : 1;
       var text = fmt(price * qty);

@@ -98,6 +98,12 @@ public class Product {
     public void setAllergens(String allergens) { this.allergens = allergens; }
     /** Tennessee's home food law needs ingredients and allergens listed for anything sold online. */
     public boolean isMissingLabelInfo() { return ingredients == null || allergens == null; }
+    /** True when the ingredients box has something to show, from the product or its choices. */
+    public boolean isHasLabelInfo() {
+        return ingredients != null || allergens != null || getAllOptionGroups().stream()
+                .flatMap(g -> g.getActiveChoices().stream())
+                .anyMatch(c -> c.getIngredients() != null || c.getAllergens() != null);
+    }
     public boolean isAllowsBirthCertificate() { return allowsBirthCertificate; }
     public void setAllowsBirthCertificate(boolean allowsBirthCertificate) { this.allowsBirthCertificate = allowsBirthCertificate; }
     public String getBadge() { return badge; }

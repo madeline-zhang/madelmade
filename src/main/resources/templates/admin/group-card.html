@@ -25,6 +25,10 @@
         <button type="submit" class="btn btn-secondary btn-small">Save</button>
       </div>
       <div class="field desc"><label class="visually-hidden" th:for="${'c-d-' + c.id}">Description</label><textarea th:id="${'c-d-' + c.id}" name="description" rows="2" th:text="${c.description}" placeholder="Short description (shown with photo swatches)"></textarea></div>
+      <div class="field-row desc">
+        <div class="field"><label class="t-small" th:for="${'c-i-' + c.id}">Adds ingredients</label><input type="text" th:id="${'c-i-' + c.id}" name="ingredients" maxlength="500" th:value="${c.ingredients}" placeholder="e.g. rosemary, garlic"></div>
+        <div class="field"><label class="t-small" th:for="${'c-a-' + c.id}">Adds allergens</label><input type="text" th:id="${'c-a-' + c.id}" name="allergens" maxlength="300" th:value="${c.allergens}" placeholder="e.g. milk"></div>
+      </div>
       <div class="flags">
         <label><input type="checkbox" name="active" value="true" th:checked="${c.active}"> Offered</label>
         <label><input type="checkbox" name="defaultChoice" value="true" th:checked="${c.defaultChoice}"> Picked by default</label>

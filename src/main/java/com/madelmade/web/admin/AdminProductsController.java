@@ -266,6 +266,8 @@ public class AdminProductsController {
                                @RequestParam(required = false) String priceChange,
                                @RequestParam(required = false) String description,
                                @RequestParam(required = false) Integer textLimit,
+                               @RequestParam(required = false) String ingredients,
+                               @RequestParam(required = false) String allergens,
                                @RequestParam(defaultValue = "0") int displayOrder,
                                @RequestParam(defaultValue = "false") boolean halvesPrice,
                                @RequestParam(defaultValue = "false") boolean priceTbd,
@@ -277,6 +279,8 @@ public class AdminProductsController {
         c.setPriceChange(money(priceChange));
         c.setDescription(blank(description));
         c.setTextLimit(textLimit != null && textLimit > 0 ? textLimit : null);
+        c.setIngredients(blank(ingredients));
+        c.setAllergens(blank(allergens));
         c.setDisplayOrder(displayOrder);
         c.setHalvesPrice(halvesPrice);
         c.setPriceTbd(priceTbd);

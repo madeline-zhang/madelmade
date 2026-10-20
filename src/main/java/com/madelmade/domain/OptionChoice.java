@@ -22,6 +22,11 @@ public class OptionChoice {
     private Long photoId;
     /** When set, the customer types text up to this many characters (e.g. 15 for Letters). */
     private Integer textLimit;
+    /** Added to the product's ingredients when this choice is picked, e.g. "rosemary, garlic". */
+    @Column(columnDefinition = "text")
+    private String ingredients;
+    /** Added to the product's allergens when this choice is picked, e.g. "milk". */
+    private String allergens;
     @Column(name = "is_default")
     private boolean defaultChoice;
     private boolean active = true;
@@ -50,6 +55,10 @@ public class OptionChoice {
     public void setPhotoId(Long photoId) { this.photoId = photoId; }
     public Integer getTextLimit() { return textLimit; }
     public void setTextLimit(Integer textLimit) { this.textLimit = textLimit; }
+    public String getIngredients() { return ingredients; }
+    public void setIngredients(String ingredients) { this.ingredients = ingredients; }
+    public String getAllergens() { return allergens; }
+    public void setAllergens(String allergens) { this.allergens = allergens; }
     public boolean isDefaultChoice() { return defaultChoice; }
     public void setDefaultChoice(boolean defaultChoice) { this.defaultChoice = defaultChoice; }
     public boolean isActive() { return active; }

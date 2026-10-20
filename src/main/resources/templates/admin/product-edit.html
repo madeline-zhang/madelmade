@@ -30,7 +30,7 @@
         <div class="field"><label for="shortDescription">Short line</label><input type="text" id="shortDescription" name="shortDescription" maxlength="200" th:value="${product.shortDescription}" placeholder="e.g. Hot or iced"></div>
         <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="3" th:text="${product.description}"></textarea></div>
         <div class="field"><label for="ingredients">Ingredients</label><textarea id="ingredients" name="ingredients" rows="2" th:text="${product.ingredients}" placeholder="e.g. Bread flour, water, salt, sourdough starter"></textarea>
-          <div class="help">Most to least by weight. Tennessee's home food law requires this on the product page for anything sold online.</div></div>
+          <div class="help">Most to least by weight. For a build-your-own loaf, list the base dough; each flavor adds its own ingredients and allergens (set on the flavor's choice). Tennessee's home food law requires this on the product page for anything sold online.</div></div>
         <div class="field"><label for="allergens">Allergens</label><input type="text" id="allergens" name="allergens" maxlength="300" th:value="${product.allergens}" placeholder="e.g. Wheat. Or: None of the major allergens">
           <div class="help">The major ones: milk, eggs, wheat, soy, peanuts, tree nuts, fish, shellfish, sesame.</div></div>
         <div class="field"><label for="notesHint">Example in "Anything special?"</label><input type="text" id="notesHint" name="notesHint" maxlength="120" th:value="${product.notesHint}" placeholder="Higher hydration, if possible">
