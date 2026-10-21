@@ -43,6 +43,7 @@ public class CartController {
     public String add(@RequestParam Long productId,
                       @RequestParam MultiValueMap<String, String> params,
                       @RequestParam(required = false) String letters,
+                      @RequestParam(required = false) String font,
                       @RequestParam(required = false) String notes,
                       @RequestParam(defaultValue = "false") boolean cert,
                       @RequestParam(required = false) String certName,
@@ -62,7 +63,7 @@ public class CartController {
                 }
             }
         });
-        PricingService.Quote q = pricing.quote(p, new PricingService.Selection(picked, letters, notes, cert, certName, certMessage));
+        PricingService.Quote q = pricing.quote(p, new PricingService.Selection(picked, letters, font, notes, cert, certName, certMessage));
         List<String> errors = new ArrayList<>(q.errors());
         int qty = Math.max(1, Math.min(quantity, 12));
         if (!settings.ordersOpen()) errors.add(settings.get("orders.pausedNote"));
@@ -74,13 +75,14 @@ public class CartController {
             flash.addFlashAttribute("errors", errors);
             flash.addFlashAttribute("selected", picked);
             flash.addFlashAttribute("form_letters", letters == null ? "" : letters);
+            flash.addFlashAttribute("form_font", font == null ? "" : font);
             flash.addFlashAttribute("form_notes", notes == null ? "" : notes);
             flash.addFlashAttribute("form_cert", cert);
             flash.addFlashAttribute("form_certName", certName == null ? "" : certName);
             flash.addFlashAttribute("form_certMessage", certMessage == null ? "" : certMessage);
             return "redirect:/p/" + p.getSlug();
         }
-        CartLine line = orders.toCartLine(p, q, qty, letters, notes, cert, certName, certMessage);
+        CartLine line = orders.toCartLine(p, q, qty, letters, font, notes, cert, certName, certMessage);
         cart.add(line);
         flash.addFlashAttribute("openCart", true);
         return "redirect:/p/" + p.getSlug();

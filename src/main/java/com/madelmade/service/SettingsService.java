@@ -31,6 +31,7 @@ public class SettingsService {
         DEFAULTS.put("rules.priorityEnabled", "true");
         DEFAULTS.put("rules.priorityNoticeDays", "1");
         DEFAULTS.put("rules.priorityFee", "5");
+        DEFAULTS.put("design.fonts", "Block letters\nBubble\nScript\nCustom");
         DEFAULTS.put("cert.enabled", "true");
         DEFAULTS.put("cert.price", "1");
         DEFAULTS.put("cert.starter", "Manna");
@@ -143,6 +144,10 @@ public class SettingsService {
     public boolean priorityEnabled() { return flag("rules.priorityEnabled"); }
     public int priorityNoticeDays() { return number("rules.priorityNoticeDays"); }
     public BigDecimal priorityFee() { return money("rules.priorityFee"); }
+    /** Fonts customers pick from for text on a loaf, one per line in Settings. */
+    public List<String> fonts() {
+        return Arrays.stream(get("design.fonts").split("\\R")).map(String::trim).filter(f -> !f.isEmpty()).distinct().toList();
+    }
     public boolean certificatesEnabled() { return flag("cert.enabled"); }
     public BigDecimal certificatePrice() { return money("cert.price"); }
     public String defaultStarter() { return get("cert.starter"); }

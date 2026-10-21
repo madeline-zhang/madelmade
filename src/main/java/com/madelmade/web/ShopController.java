@@ -43,7 +43,7 @@ public class ShopController {
         Product p = products.findBySlug(slug).filter(Product::isActive).orElseThrow(NotFoundException::new);
         model.addAttribute("product", p);
         model.addAttribute("certPrice", settings.certificatePrice().toPlainString());
-        for (String k : new String[] {"form_letters", "form_notes", "form_certName", "form_certMessage"}) {
+        for (String k : new String[] {"form_letters", "form_font", "form_notes", "form_certName", "form_certMessage"}) {
             if (!model.containsAttribute(k)) model.addAttribute(k, "");
         }
         if (!model.containsAttribute("form_cert")) model.addAttribute("form_cert", false);

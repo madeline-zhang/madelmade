@@ -148,7 +148,7 @@ public class OrderService {
                 continue;
             }
             PricingService.Quote q = pricing.quote(p.get(), new PricingService.Selection(line.getChoiceIds(),
-                    line.getLettersText(), line.getCustomNotes(), line.isCertificate(), line.getCertName(), line.getCertMessage()));
+                    line.getLettersText(), line.getLettersFont(), line.getCustomNotes(), line.isCertificate(), line.getCertName(), line.getCertMessage()));
             if (!q.ok()) {
                 error.accept("cart", line.getProductName() + ": " + String.join(" ", q.errors()));
                 continue;
@@ -215,6 +215,7 @@ public class OrderService {
         i.setOptionsSummary(q.summary());
         i.setCustomNotes(trim(line.getCustomNotes()));
         i.setLettersText(trim(line.getLettersText()));
+        i.setLettersFont(trim(line.getLettersFont()));
         i.setUnitPrice(q.unitPrice());
         i.setPriceTbd(q.priceTbd());
         i.setCountsAsLoaf(p.isCountsAsLoaf());
@@ -263,7 +264,7 @@ public class OrderService {
             }
             List<Long> ids = parseIds(i.getChoiceIds());
             boolean cert = i.isHasCertificate() && settings.certificatesEnabled() && p.get().isAllowsBirthCertificate();
-            PricingService.Quote q = pricing.quote(p.get(), new PricingService.Selection(ids, i.getLettersText(),
+            PricingService.Quote q = pricing.quote(p.get(), new PricingService.Selection(ids, i.getLettersText(), i.getLettersFont(),
                     i.getCustomNotes(), cert, i.getCertName(), i.getCertMessage()));
             if (!q.ok()) {
                 skipped.add(i.getProductName());
@@ -273,13 +274,13 @@ public class OrderService {
                 skipped.add(i.getProductName());
                 continue;
             }
-            cart.add(toCartLine(p.get(), q, i.getQuantity(), i.getLettersText(), i.getCustomNotes(), cert,
+            cart.add(toCartLine(p.get(), q, i.getQuantity(), i.getLettersText(), i.getLettersFont(), i.getCustomNotes(), cert,
                     i.getCertName(), i.getCertMessage()));
         }
         return skipped;
     }
 
-    public CartLine toCartLine(Product p, PricingService.Quote q, int qty, String letters, String notes,
+    public CartLine toCartLine(Product p, PricingService.Quote q, int qty, String letters, String font, String notes,
                                boolean cert, String certName, String certMessage) {
         CartLine l = new CartLine();
         l.setProductId(p.getId());
@@ -289,6 +290,7 @@ public class OrderService {
         l.setChoiceIds(new ArrayList<>(q.choiceIds()));
         l.setOptionsSummary(q.summary());
         l.setLettersText(trim(letters));
+        l.setLettersFont(trim(letters) == null ? null : trim(font));
         l.setCustomNotes(trim(notes));
         l.setCertificate(cert);
         l.setCertName(cert ? trim(certName) : null);

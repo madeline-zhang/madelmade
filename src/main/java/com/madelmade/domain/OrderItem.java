@@ -19,6 +19,7 @@ public class OrderItem {
     private String optionsSummary;
     private String customNotes;
     private String lettersText;
+    private String lettersFont;
     private BigDecimal unitPrice = BigDecimal.ZERO;
     private BigDecimal lineTotal = BigDecimal.ZERO;
     private boolean priceTbd;
@@ -59,6 +60,8 @@ public class OrderItem {
     public void setCustomNotes(String customNotes) { this.customNotes = customNotes; }
     public String getLettersText() { return lettersText; }
     public void setLettersText(String lettersText) { this.lettersText = lettersText; }
+    public String getLettersFont() { return lettersFont; }
+    public void setLettersFont(String lettersFont) { this.lettersFont = lettersFont; }
     public BigDecimal getUnitPrice() { return unitPrice; }
     public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
     public BigDecimal getLineTotal() { return lineTotal; }

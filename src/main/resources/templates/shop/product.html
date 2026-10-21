@@ -41,10 +41,20 @@
 
         <div th:replace="~{components/option-picker :: picker(${product}, ${selected})}"></div>
 
-        <div class="field letters-box" data-letters-box hidden>
-          <label for="letters">Your letters</label>
-          <input type="text" id="letters" name="letters" maxlength="40" autocomplete="off" th:value="${form_letters}" placeholder="e.g. HAPPY 40">
-          <div class="char-count" data-char-count></div>
+        <div class="stack letters-box" style="gap: 14px" data-letters-box hidden>
+          <div class="field">
+            <label for="letters">Your text</label>
+            <input type="text" id="letters" name="letters" maxlength="40" autocomplete="off" th:value="${form_letters}" placeholder="e.g. HAPPY 40">
+            <div class="char-count" data-char-count></div>
+          </div>
+          <div class="field" th:unless="${settings.fonts().isEmpty()}">
+            <label for="font">Font</label>
+            <select id="font" name="font" data-font data-required-msg="Please pick a font for your text.">
+              <option value="" th:selected="${#strings.isEmpty(form_font)}">Choose a font</option>
+              <option th:each="f : ${settings.fonts()}" th:value="${f}" th:text="${f}" th:selected="${f == form_font}"
+                      th:data-custom="${#strings.startsWith(#strings.toLowerCase(f), 'custom')}">Script</option>
+            </select>
+          </div>
         </div>
 
         <div class="field custom-box">

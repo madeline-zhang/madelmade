@@ -22,7 +22,7 @@ public class PricingService {
         this.settings = settings;
     }
 
-    public record Selection(List<Long> choiceIds, String lettersText, String customNotes,
+    public record Selection(List<Long> choiceIds, String lettersText, String font, String customNotes,
                             boolean certificate, String certName, String certMessage) {}
 
     public record Quote(BigDecimal unitPrice, BigDecimal certPrice, String summary, boolean priceTbd,
@@ -63,12 +63,20 @@ public class PricingService {
         if (half) price = price.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 
         String letters = sel.lettersText() == null ? "" : sel.lettersText().trim();
+        String font = sel.font() == null ? "" : sel.font().trim();
+        boolean notesBlank = sel.customNotes() == null || sel.customNotes().isBlank();
         if (needsText) {
-            if (letters.isEmpty()) errors.add("Please type the letters you'd like on your loaf.");
-            else if (letters.length() > textLimit) errors.add("Letters can be up to " + textLimit + " characters.");
+            if (letters.isEmpty()) errors.add("Please type the text you'd like on your loaf.");
+            else if (letters.length() > textLimit) errors.add("Text can be up to " + textLimit + " characters.");
+            List<String> fonts = settings.fonts();
+            if (!fonts.isEmpty()) {
+                if (font.isEmpty()) errors.add("Please pick a font for your text.");
+                else if (!fonts.contains(font)) errors.add("Please pick one of the fonts in the list.");
+                else if (isCustomFont(font) && notesBlank) errors.add("Please describe the font you'd like under \"Describe your font\".");
+            }
         }
         boolean custom = picked.stream().anyMatch(OptionChoice::isCustom);
-        if (custom && (sel.customNotes() == null || sel.customNotes().isBlank())) {
+        if (custom && notesBlank) {
             errors.add("Please describe your custom idea so Madeline can price it.");
         }
 
@@ -85,11 +93,19 @@ public class PricingService {
 
         String summary = picked.stream().map(c -> {
             String s = c.getName();
-            if (c.getTextLimit() != null && !letters.isEmpty()) s += " \"" + letters + "\"";
+            if (c.getTextLimit() != null && c.getTextLimit() > 0 && !letters.isEmpty()) {
+                s += " \"" + letters + "\"";
+                if (!font.isEmpty()) s += " in " + font;
+            }
             return s;
         }).collect(Collectors.joining(" · "));
 
         return new Quote(price, certPrice, summary, tbd, picked.stream().map(OptionChoice::getId).toList(), errors);
+    }
+
+    /** A font named "Custom" (or "Custom ...") asks the customer to describe it in their notes. */
+    public static boolean isCustomFont(String font) {
+        return font != null && font.trim().toLowerCase().startsWith("custom");
     }
 
     /** The lowest price on the card ("from $10"), ignoring the half-size discount. */

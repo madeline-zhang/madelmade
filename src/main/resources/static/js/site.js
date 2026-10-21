@@ -215,6 +215,7 @@
     var lettersBox = $('[data-letters-box]', form);
     var lettersInput = lettersBox ? $('input', lettersBox) : null;
     var charCount = $('[data-char-count]', form);
+    var fontSelect = $('[data-font]', form);
     var notesLabel = $('[data-notes-label]', form);
     var notes = $('#notes', form);
     var certToggle = $('[data-cert-toggle]', form);
@@ -257,6 +258,13 @@
       $('[data-price-button]', form).textContent = text + (tbd ? ' + custom' : '');
       $('[data-tbd-note]', form).hidden = !tbd;
 
+      // A "Custom" font is described in the notes box, so that box becomes required.
+      var customFont = false;
+      if (fontSelect) {
+        fontSelect.required = limit > 0;
+        var opt = fontSelect.options[fontSelect.selectedIndex];
+        customFont = limit > 0 && !!opt && opt.getAttribute('data-custom') === 'true';
+      }
       if (lettersBox) {
         lettersBox.hidden = limit === 0;
         if (lettersInput) {
@@ -266,8 +274,9 @@
         }
       }
       if (notesLabel) {
-        notesLabel.textContent = custom ? 'Describe your idea (required)' : 'Anything special? (optional)';
-        if (notes) notes.required = custom;
+        notesLabel.textContent = custom ? 'Describe your idea (required)'
+          : customFont ? 'Describe your font (required)' : 'Anything special? (optional)';
+        if (notes) notes.required = custom || customFont;
       }
       if (certBox && certToggle) {
         certBox.hidden = !certToggle.checked;

@@ -32,6 +32,13 @@
           </div>
         </section>
 
+        <section class="card stack">
+          <h2 class="card-title">Fonts for text loaves</h2>
+          <div class="field"><label for="fonts">Fonts customers can pick</label>
+            <textarea id="fonts" name="design.fonts" rows="4" th:text="${settings.get('design.fonts')}"></textarea>
+            <div class="help">One per line. Shown when someone picks Text on a stencil loaf. A font starting with "Custom" asks them to describe it.</div></div>
+        </section>
+
         <section class="card stack" id="days-off">
           <h2 class="card-title">Days off</h2>
           <p class="t-small muted" style="margin: 0">Customers can't pick these days at checkout.</p>

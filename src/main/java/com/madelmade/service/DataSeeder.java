@@ -65,12 +65,12 @@ public class DataSeeder implements ApplicationRunner {
 
         Product stencil = product(bread, "Stencil Loaf", "stencil-loaf", 13, "peter.jpg", 1,
                 "A flour-stencil design on top.",
-                "Sourdough with a flour stencil on top: a butterfly, your own letters, or a custom design. About 2 lb whole.");
+                "Sourdough with a flour stencil on top: a butterfly, your own words, or a custom design. About 2 lb whole.");
         sizes(stencil);
         stencil.getSharedGroups().add(flavors);
         OptionGroup design = group(stencil, "Design", OptionGroup.STYLE_SWATCHES, 2);
         swatch(design, "Butterfly", "peter.jpg", "[Placeholder] A butterfly stenciled in flour across the top.", 0, false).setDefaultChoice(true);
-        swatch(design, "Letters", "bday.jpg", "[Placeholder] Your words in flour, up to 15 characters.", 0, false).setTextLimit(15);
+        swatch(design, "Text", "bday.jpg", "[Placeholder] Your words in flour, up to 15 characters, in the font you pick.", 0, false).setTextLimit(15);
         OptionChoice customDesign = swatch(design, "Custom", "rebecca.jpg", "[Placeholder] Your own design. Madeline approves it before baking.", 2, false);
         customDesign.setNeedsDesignApproval(true);
         products.save(stencil);

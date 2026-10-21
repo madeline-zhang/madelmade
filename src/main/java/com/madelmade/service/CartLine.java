@@ -17,6 +17,7 @@ public class CartLine implements Serializable {
     private String optionsSummary;
     private String customNotes;
     private String lettersText;
+    private String lettersFont;
     private boolean certificate;
     private String certName;
     private String certMessage;
@@ -53,6 +54,8 @@ public class CartLine implements Serializable {
     public void setCustomNotes(String customNotes) { this.customNotes = customNotes; }
     public String getLettersText() { return lettersText; }
     public void setLettersText(String lettersText) { this.lettersText = lettersText; }
+    public String getLettersFont() { return lettersFont; }
+    public void setLettersFont(String lettersFont) { this.lettersFont = lettersFont; }
     public boolean isCertificate() { return certificate; }
     public void setCertificate(boolean certificate) { this.certificate = certificate; }
     public String getCertName() { return certName; }
