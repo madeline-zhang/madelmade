@@ -35,6 +35,7 @@ public class SettingsService {
         DEFAULTS.put("cert.enabled", "true");
         DEFAULTS.put("cert.price", "1");
         DEFAULTS.put("cert.starter", "Manna");
+        DEFAULTS.put("cert.photoId", "");
         DEFAULTS.put("admin.emails", "madelmadewithlove@gmail.com");
         DEFAULTS.put("pickup.area", "Brentwood / Nolensville, TN");
         DEFAULTS.put("pickup.address", "");
@@ -242,9 +243,14 @@ public class SettingsService {
         return Arrays.stream(get(key).replace("\r", "").split("\n\\s*\n")).map(String::trim).filter(p -> !p.isEmpty()).toList();
     }
 
-    public Long aboutPhotoId() {
+    public Long aboutPhotoId() { return photoId("about.photoId"); }
+
+    /** Madeline's example birth certificate; the product page falls back to the built-in example when unset. */
+    public Long certPhotoId() { return photoId("cert.photoId"); }
+
+    private Long photoId(String key) {
         try {
-            return Long.valueOf(get("about.photoId").trim());
+            return Long.valueOf(get(key).trim());
         } catch (NumberFormatException e) {
             return null;
         }

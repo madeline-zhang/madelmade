@@ -87,6 +87,10 @@ public class AdminPhotosController {
                 if (!parts[1].equals("photo")) throw new NotFoundException();
                 return new Target(key, "Your photo on the About page", settings.aboutPhotoId(), "/admin/pages", "portrait");
             }
+            case "cert" -> {
+                if (!parts[1].equals("photo")) throw new NotFoundException();
+                return new Target(key, "Example birth certificate", settings.certPhotoId(), "/admin/settings#certificates", "certificate");
+            }
             default -> throw new NotFoundException();
         }
     }
@@ -102,13 +106,17 @@ public class AdminPhotosController {
         model.addAttribute("defaultContrast", p != null ? p.getContrast() : settings.number("photos.contrast"));
         model.addAttribute("defaultSaturation", p != null ? p.getSaturation() : settings.number("photos.saturation"));
         model.addAttribute("defaultCrop", p != null ? p.getCrop() : "");
-        // Menu cards and swatches are square; gallery and About photos are 4:5.
-        model.addAttribute("aspect", t.crop().equals("square") ? 1.0 : 0.8);
-        model.addAttribute("aspectLabel", t.crop().equals("square") ? "Square, to match the menu" : "4:5, to match the gallery");
+        // Menu cards and swatches are square; gallery and About photos are 4:5; the certificate card is 3:4.
+        model.addAttribute("aspect", switch (t.crop()) { case "square" -> 1.0; case "certificate" -> 0.75; default -> 0.8; });
+        model.addAttribute("aspectLabel", switch (t.crop()) {
+            case "square" -> "Square, to match the menu";
+            case "certificate" -> "3:4, like the certificate card";
+            default -> "4:5, to match the gallery";
+        });
         model.addAttribute("defaultRotate", p != null ? p.getRotate() : 0);
         model.addAttribute("defaultTilt", p != null ? p.getTilt() : 0.0);
         model.addAttribute("section", target.startsWith("gallery") || target.startsWith("other") ? "gallery"
-                : target.startsWith("about") ? "pages" : "products");
+                : target.startsWith("about") ? "pages" : target.startsWith("cert") ? "settings" : "products");
         return "admin/photo-editor";
     }
 
@@ -161,6 +169,7 @@ public class AdminPhotosController {
             case "choice" -> choices.findById(parse(parts[1])).ifPresent(c -> { c.setPhotoId(null); choices.save(c); });
             case "gallery" -> gallery.findById(parse(parts[1])).ifPresent(gallery::delete);
             case "about" -> settings.putAll(Map.of("about.photoId", ""));
+            case "cert" -> settings.putAll(Map.of("cert.photoId", ""));
             default -> { }
         }
         flash.addFlashAttribute("ok", "Photo removed.");
@@ -193,6 +202,7 @@ public class AdminPhotosController {
                 gallery.save(g);
             }
             case "about" -> settings.putAll(Map.of("about.photoId", String.valueOf(photoId)));
+            case "cert" -> settings.putAll(Map.of("cert.photoId", String.valueOf(photoId)));
             default -> throw new NotFoundException();
         }
     }

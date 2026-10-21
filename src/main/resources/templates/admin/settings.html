@@ -73,13 +73,20 @@
       </div>
 
       <div class="stack" style="gap: 24px">
-        <section class="card stack">
+        <section class="card stack" id="certificates">
           <h2 class="card-title">Birth certificates</h2>
           <div class="toggle-row"><div><div class="t">Offer birth certificates</div><div class="d">Shows the add-on on loaves that allow it.</div></div>
             <label class="switch"><input type="checkbox" name="cert.enabled" th:checked="${settings.flag('cert.enabled')}" aria-label="Offer birth certificates"><span></span></label></div>
           <div class="field-row">
             <div class="field"><label for="certPrice">Price</label><div class="price-input">$ <input type="text" inputmode="decimal" id="certPrice" name="cert.price" th:value="${settings.get('cert.price')}"></div></div>
             <div class="field"><label for="certStarter">Starter name</label><input type="text" id="certStarter" name="cert.starter" th:value="${settings.get('cert.starter')}"></div>
+          </div>
+          <div class="field">
+            <label>Example photo</label>
+            <img class="cert-photo-admin" th:src="${settings.certPhotoId() != null ? photoUrls.src(settings.certPhotoId()) : '/img/certificate-example.jpg'}" alt="Example birth certificate">
+            <a class="btn btn-secondary btn-small" style="align-self: flex-start" th:href="@{/admin/photos/edit(target='cert-photo')}"
+               th:text="${settings.certPhotoId() != null ? 'Change photo' : 'Upload your own'}">Upload your own</a>
+            <div class="help">Customers see this when they add a birth certificate to a loaf. Removing your photo brings back the original example.</div>
           </div>
         </section>
 

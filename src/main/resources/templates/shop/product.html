@@ -69,7 +69,7 @@
             <span>Add a birth certificate <span class="t-price" style="font-size: 1rem" th:text="${'+' + @money.fmt(settings.certificatePrice())}">+$1</span></span>
           </label>
           <div class="cert-box" data-cert-box th:hidden="${!form_cert}">
-            <img th:src="@{/img/certificate-example.jpg}" alt="Example birth certificate for a loaf named Jacob" loading="lazy">
+            <img th:src="${settings.certPhotoId() != null ? photoUrls.src(settings.certPhotoId()) : '/img/certificate-example.jpg'}" alt="Example birth certificate" loading="lazy">
             <div class="t-small muted">Madeline hand-draws your loaf, adds your description and fills in the date, weight and labor time on bake day.</div>
             <div class="field">
               <label for="certName">Bread's name</label>
