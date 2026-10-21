@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -79,6 +80,12 @@ public class AdminOrdersController {
     @GetMapping("/orders")
     public String list(@RequestParam(defaultValue = "review") String tab, @RequestParam(required = false) String q,
                        Model model) {
+        // An order number like "#12" or "12" jumps straight to that order.
+        if (q != null && q.trim().matches("#?\\d{1,9}")) {
+            Long id = Long.valueOf(q.trim().replace("#", ""));
+            var match = orders.findById(id);
+            if (match.isPresent()) return "redirect:/admin/orders/" + id + "?tab=" + tabFor(match.get().getStatus());
+        }
         return render(tab, q, null, model);
     }
 
@@ -95,10 +102,13 @@ public class AdminOrdersController {
         List<Tab> tabs = new ArrayList<>();
         TABS.forEach((k, v) -> tabs.add(new Tab(k, LABELS.get(k), v, orders.countByStatusIn(v))));
         String query = q == null ? "" : q.trim().toLowerCase();
-        List<CustomerOrder> list = orders.findByStatusInOrderByCreatedAtDesc(TABS.get(tab)).stream()
+        // A search looks through every tab, not just the one that's open.
+        List<CustomerOrder> source = query.isEmpty() ? orders.findByStatusInOrderByCreatedAtDesc(TABS.get(tab))
+                : orders.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<CustomerOrder> list = source.stream()
                 .filter(o -> query.isEmpty() || matches(o, query))
                 .toList();
-        if (tab.equals("approved") || tab.equals("baked")) {
+        if (query.isEmpty() && (tab.equals("approved") || tab.equals("baked"))) {
             list = list.stream().sorted((a, b) -> a.getRequestedDate().compareTo(b.getRequestedDate())).toList();
         }
         model.addAttribute("tab", tab);

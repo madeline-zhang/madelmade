@@ -404,3 +404,7 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .feedback-panel .segmented .pill { font-size: 0.8125rem; padding: 6px 12px; }
 @media (max-width: 760px) { body:has(.add-bar) .feedback { bottom: calc(88px + env(safe-area-inset-bottom)); } }
 .about-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 0; }
+.profile-orders { gap: 10px; }
+.profile-orders .t-title { margin-bottom: 2px; }
+.profile-order { gap: 8px; padding: 18px 20px; }
+.profile-order + .profile-order { margin-top: 0; }

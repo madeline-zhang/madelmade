@@ -13,28 +13,17 @@
     </div>
 
     <div class="two-col">
-      <section class="stack" style="gap: 16px" aria-labelledby="orders-title">
-        <h2 id="orders-title" class="t-title">Your orders</h2>
+      <section class="stack" style="gap: 28px" aria-label="Your orders"
+               th:with="current=${orders.?[!status.closed]}, past=${orders.?[status.closed]}">
         <p class="muted" th:if="${orders.isEmpty()}">No orders yet. <a th:href="@{/#menu}">Order your first loaf</a>.</p>
-        <article class="card stack" style="gap: 10px" th:each="o : ${orders}">
-          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
-            <strong th:text="${o.fulfillment.label + ' ' + @fmt.day(o.requestedDate)}">Pickup Sat, Oct 11</strong>
-            <span th:replace="~{components/status-badge :: badge(${o.status}, true)}"></span>
-          </div>
-          <div class="t-small" th:text="${o.itemsSummary}">Stencil Loaf, Classic Loaf</div>
-          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
-            <span class="t-price" th:text="${@money.fmt(o.total) + (o.priceTbd ? ' + custom' : '')}">$26</span>
-            <div class="order-actions">
-              <a class="btn btn-secondary btn-small" th:href="@{/o/{t}(t=${o.statusToken})}" th:text="${o.status.closed ? 'Details' : 'View status'}">View status</a>
-              <form method="post" th:action="@{/profile/reorder/{id}(id=${o.id})}" >
-                <button type="submit" class="btn btn-small">Reorder</button>
-              </form>
-            </div>
-          </div>
-          <form method="post" th:action="@{/o/{t}/cancel(t=${o.statusToken})}" th:if="${o.status.cancellableByCustomer}" data-confirm="Cancel this order? Madeline will be told right away." style="text-align: right">
-            <button type="submit" class="link-btn t-small">Cancel this order</button>
-          </form>
-        </article>
+        <div class="stack profile-orders" th:unless="${current.isEmpty()}">
+          <h2 class="t-title">In progress</h2>
+          <th:block th:each="o : ${current}"><article th:replace="~{account/profile :: orderCard(${o})}"></article></th:block>
+        </div>
+        <div class="stack profile-orders" th:unless="${past.isEmpty()}">
+          <h2 class="t-title">Past orders</h2>
+          <th:block th:each="o : ${past}"><article th:replace="~{account/profile :: orderCard(${o})}"></article></th:block>
+        </div>
       </section>
 
       <form method="post" th:action="@{/profile}" class="card stack" th:object="${customer}">
@@ -55,6 +44,31 @@
       </form>
     </div>
   </div>
+  <!-- One order on the profile; used by the In progress and Past orders lists above. -->
+  <th:block th:if="${false}">
+        <article th:fragment="orderCard(o)" class="card stack profile-order">
+          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
+            <div>
+              <strong th:text="${o.fulfillment.label + ' ' + @fmt.day(o.requestedDate)}">Pickup Sat, Oct 11</strong>
+              <span class="t-small muted" th:text="${'Order ' + o.number}">Order #12</span>
+            </div>
+            <span th:replace="~{components/status-badge :: badge(${o.status}, true)}"></span>
+          </div>
+          <div class="t-small" th:text="${o.itemsSummary}">Stencil Loaf, Classic Loaf</div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
+            <span class="t-price" th:text="${@money.fmt(o.total) + (o.priceTbd ? ' + custom' : '')}">$26</span>
+            <div class="order-actions">
+              <a class="btn btn-secondary btn-small" th:href="@{/o/{t}(t=${o.statusToken})}" th:text="${o.status.closed ? 'Details' : 'View status'}">View status</a>
+              <form method="post" th:action="@{/profile/reorder/{id}(id=${o.id})}" >
+                <button type="submit" class="btn btn-small">Reorder</button>
+              </form>
+            </div>
+          </div>
+          <form method="post" th:action="@{/o/{t}/cancel(t=${o.statusToken})}" th:if="${o.status.cancellableByCustomer}" data-confirm="Cancel this order? Madeline will be told right away." style="text-align: right">
+            <button type="submit" class="link-btn t-small">Cancel this order</button>
+          </form>
+        </article>
+  </th:block>
 </main>
 </body>
 </html>
