@@ -10,7 +10,7 @@
     <span class="t-small muted" th:text="${g.activeChoices.size() + (g.activeChoices.size() == 1 ? ' choice' : ' choices') + (g.swatches ? ' · photo swatches' : '')}">4 choices</span>
   </summary>
   <div class="collapsible-body stack" style="gap: 14px">
-  <form method="post" th:action="@{/admin/groups/{id}/save(id=${g.id})}" class="stack" style="gap: 14px">
+  <form method="post" th:action="@{/admin/groups/{id}/save(id=${g.id})}" class="stack" style="gap: 14px" data-autosave>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: end">
       <div class="field" style="flex: 1 1 180px"><label th:for="${'g-n-' + g.id}">Group name</label><input type="text" th:id="${'g-n-' + g.id}" name="name" th:value="${g.name}"></div>
       <div class="field"><label th:for="${'g-s-' + g.id}">Shown as</label>
@@ -20,7 +20,7 @@
         </select></div>
       <label class="check-row t-small"><input type="checkbox" name="required" value="true" th:checked="${g.required}"> Required</label>
       <label class="check-row t-small"><input type="checkbox" name="multiple" value="true" th:checked="${g.multiple}"> Pick several</label>
-      <button type="submit" class="btn btn-small" th:text="${'Save ' + g.name}">Save Flavor</button>
+      <button type="submit" class="btn btn-small" th:text="${'Save ' + g.name}" data-autosave-hide>Save Flavor</button>
     </div>
 
     <div class="choice-row" th:each="c, it : ${g.choices}" th:with="p=${'c' + c.id + '.'}">
@@ -52,20 +52,20 @@
     </div>
 
     <div style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap; border-top: 1px solid var(--color-linen); padding-top: 14px">
-      <div class="field"><label th:for="${'nc-' + g.id}">New choice</label><input type="text" th:id="${'nc-' + g.id}" name="newChoiceName" placeholder="e.g. Cinnamon raisin"></div>
-      <div class="field"><label th:for="${'ncp-' + g.id}">Price change</label><div class="price-input">+$<input type="number" step="0.01" th:id="${'ncp-' + g.id}" name="newChoicePrice" value="0"></div></div>
-      <button type="submit" class="btn btn-small" th:text="${'Save ' + g.name}">Save Flavor</button>
+      <div class="field"><label th:for="${'nc-' + g.id}">New choice</label><input type="text" th:id="${'nc-' + g.id}" name="newChoiceName" placeholder="e.g. Cinnamon raisin" data-no-autosave></div>
+      <div class="field"><label th:for="${'ncp-' + g.id}">Price change</label><div class="price-input">+$<input type="number" step="0.01" th:id="${'ncp-' + g.id}" name="newChoicePrice" value="0" data-no-autosave></div></div>
+      <button type="submit" class="btn btn-small">Add choice</button>
     </div>
-    <p class="t-small muted" style="margin: 0">Saving keeps every change in this group, and adds the new choice if you typed one.</p>
+    <p class="t-small muted" style="margin: 0">Changes to this group save as you make them.</p>
   </form>
   <form method="post" th:action="@{/admin/groups/{id}/delete(id=${g.id})}" th:data-confirm="${g.shared ? 'Remove this group from every product that uses it?' : 'Remove this whole option group?'}"><button type="submit" class="link-btn" th:text="${'Remove the ' + g.name + ' group'}">Remove group</button></form>
-  <form th:if="${showProducts}" class="stack" style="gap: 6px; border-top: 1px solid var(--color-linen); padding-top: 14px" method="post" th:action="@{/admin/options/{id}/products(id=${g.id})}">
+  <form th:if="${showProducts}" class="stack" style="gap: 6px; border-top: 1px solid var(--color-linen); padding-top: 14px" method="post" th:action="@{/admin/options/{id}/products(id=${g.id})}" data-autosave>
     <div class="t-label" th:text="${'Products that use ' + g.name}">Products that use Flavor</div>
     <label class="check-row" th:each="p : ${products}">
       <input type="checkbox" name="productIds" th:value="${p.id}" th:checked="${p.sharedGroups.contains(g)}">
       <span th:text="${p.name}">Classic Loaf</span>
     </label>
-    <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save products</button>
+    <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start" data-autosave-hide>Save products</button>
   </form>
   </div>
 </details>

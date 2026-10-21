@@ -14,11 +14,11 @@
     <div class="gallery-grid">
     <div class="card stack" style="padding: 14px; gap: 10px" th:each="g, it : ${photos}" th:id="${'photo-' + g.id}">
       <a th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}" title="Edit photo"><img th:src="${photoUrls.src(g.photoId)}" alt="" style="width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px"></a>
-      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px">
+      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px" data-autosave>
         <div class="field"><label th:for="${'cap-' + g.id}">Caption</label><input type="text" th:id="${'cap-' + g.id}" name="caption" th:value="${g.caption}"></div>
         <div style="display: flex; gap: 8px; align-items: end">
           <span th:replace="~{admin/arrows :: arrows('', 'this photo', ${it.first}, ${it.last})}"></span>
-          <button type="submit" class="btn btn-secondary btn-small">Save</button>
+          <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
           <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}">Edit photo</a>
         </div>
       </form>
@@ -35,11 +35,11 @@
     <div class="gallery-grid">
     <div class="card stack" style="padding: 14px; gap: 10px" th:each="g, it : ${otherPhotos}" th:id="${'photo-' + g.id}">
       <a th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}" title="Edit photo"><img th:src="${photoUrls.src(g.photoId)}" alt="" style="width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px"></a>
-      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px">
+      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px" data-autosave>
         <div class="field"><label th:for="${'cap-' + g.id}">Caption</label><input type="text" th:id="${'cap-' + g.id}" name="caption" th:value="${g.caption}"></div>
         <div style="display: flex; gap: 8px; align-items: end">
           <span th:replace="~{admin/arrows :: arrows('', 'this photo', ${it.first}, ${it.last})}"></span>
-          <button type="submit" class="btn btn-secondary btn-small">Save</button>
+          <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
           <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}">Edit photo</a>
         </div>
       </form>

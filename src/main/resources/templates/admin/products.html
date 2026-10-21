@@ -42,10 +42,10 @@
     <p class="t-small muted" style="margin-top: -6px">These become the menu tabs, in this order. Products move within their tab with the arrows in the list above.</p>
     <div class="stack" style="gap: 10px">
       <div th:each="c, it : ${categories}" style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap">
-        <form method="post" th:action="@{/admin/categories/{id}(id=${c.id})}" style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap">
+        <form method="post" th:action="@{/admin/categories/{id}(id=${c.id})}" style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap" data-autosave>
           <span th:replace="~{admin/arrows :: arrows('', ${c.name}, ${it.first}, ${it.last})}"></span>
           <div class="field"><label th:for="${'cat-' + c.id}">Name</label><input type="text" th:id="${'cat-' + c.id}" name="name" th:value="${c.name}"></div>
-          <button type="submit" class="btn btn-secondary btn-small">Save</button>
+          <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
         </form>
         <form method="post" th:action="@{/admin/categories/{id}/delete(id=${c.id})}" data-confirm="Delete this category?"><button type="submit" class="link-btn">Delete</button></form>
       </div>

@@ -11,7 +11,7 @@
 
   <div class="product-editor">
     <div class="stack" style="gap: 24px">
-      <form class="card stack" method="post" th:action="@{/admin/products/save}">
+      <form class="card stack" method="post" th:action="@{/admin/products/save}" th:data-autosave="${product.id != null ? 'true' : null}">
         <input type="hidden" name="id" th:value="${product.id}">
         <h2 class="card-title">Details</h2>
         <div class="field-row">
@@ -50,7 +50,7 @@
           <div class="toggle-row"><div><div class="t">Offer a birth certificate</div><div class="d">Shows the certificate add-on on this item.</div></div>
             <label class="switch"><input type="checkbox" name="allowsBirthCertificate" value="true" th:checked="${product.allowsBirthCertificate}" aria-label="Offer a birth certificate"><span></span></label></div>
         </div>
-        <button type="submit" class="btn" style="align-self: flex-start" th:text="${product.id == null ? 'Add product' : 'Save details'}">Save details</button>
+        <button type="submit" class="btn" style="align-self: flex-start" th:data-autosave-hide="${product.id != null ? 'true' : null}" th:text="${product.id == null ? 'Add product' : 'Save details'}">Save details</button>
       </form>
 
       <section class="stack" style="gap: 16px" th:if="${product.id != null}" aria-labelledby="opts">
@@ -80,7 +80,7 @@
           <button type="submit" class="btn btn-small">Add group</button>
         </form>
 
-        <form id="shared" class="group-card" method="post" th:action="@{/admin/products/{id}/shared(id=${product.id})}">
+        <form id="shared" class="group-card" method="post" th:action="@{/admin/products/{id}/shared(id=${product.id})}" data-autosave>
           <div>
             <div class="t-label">Shared options</div>
             <p class="t-small muted" style="margin: 4px 0 0">Groups like Flavor that several products use. Edit their choices once on the <a th:href="@{/admin/options}">Shared options</a> page.</p>
@@ -90,7 +90,7 @@
             <input type="checkbox" name="groupIds" th:value="${g.id}" th:checked="${product.sharedGroups.contains(g)}">
             <span th:text="${g.name + ' (' + g.activeChoices.size() + ' choices)'}">Flavor (4 choices)</span>
           </label>
-          <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start" th:unless="${sharedGroups.isEmpty()}">Save shared options</button>
+          <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start" th:unless="${sharedGroups.isEmpty()}" data-autosave-hide>Save shared options</button>
         </form>
       </section>
     </div>

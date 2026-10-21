@@ -5,7 +5,7 @@
 <main id="main" class="admin-main">
   <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">Words and photos on the site</div><h1>Pages</h1></div></div>
 
-  <form method="post" th:action="@{/admin/pages}" class="stack" style="gap: 24px">
+  <form method="post" th:action="@{/admin/pages}" class="stack" style="gap: 24px" data-autosave>
     <div class="settings-grid">
       <section class="card stack">
         <h2 class="card-title">About page</h2>
@@ -59,7 +59,7 @@
         </section>
       </div>
     </div>
-    <div class="save-bar"><a class="btn btn-secondary" th:href="@{/about}" target="_blank" rel="noopener">View About ↗</a><button type="submit" class="btn">Save pages</button></div>
+    <div class="save-bar"><a class="btn btn-secondary" th:href="@{/about}" target="_blank" rel="noopener">View About ↗</a><button type="submit" class="btn" data-autosave-hide>Save pages</button></div>
   </form>
 </main>
 </body>

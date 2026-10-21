@@ -5,7 +5,7 @@
 <main id="main" class="admin-main">
   <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">How orders work</div><h1>Settings</h1></div></div>
 
-  <form method="post" th:action="@{/admin/settings}" class="stack" style="gap: 24px">
+  <form method="post" th:action="@{/admin/settings}" class="stack" style="gap: 24px" data-autosave>
     <div class="settings-grid">
       <div class="stack" style="gap: 24px">
         <section class="card stack">
@@ -50,9 +50,9 @@
             </div>
           </div>
           <div class="field-row" style="align-items: end">
-            <div class="field"><label for="offFrom">From</label><input type="date" id="offFrom" name="from"></div>
-            <div class="field"><label for="offTo">To (optional)</label><input type="date" id="offTo" name="to"></div>
-            <div class="field"><label for="offNote">Why (just for you)</label><input type="text" id="offNote" name="note" maxlength="80" placeholder="e.g. Christmas break"></div>
+            <div class="field"><label for="offFrom">From</label><input type="date" id="offFrom" name="from" data-no-autosave></div>
+            <div class="field"><label for="offTo">To (optional)</label><input type="date" id="offTo" name="to" data-no-autosave></div>
+            <div class="field"><label for="offNote">Why (just for you)</label><input type="text" id="offNote" name="note" data-no-autosave maxlength="80" placeholder="e.g. Christmas break"></div>
             <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/add}">Add</button>
           </div>
         </section>
@@ -132,7 +132,7 @@
       </div>
     </section>
 
-    <div class="save-bar"><button type="submit" class="btn">Save settings</button></div>
+    <div class="save-bar" data-autosave-hide><button type="submit" class="btn">Save settings</button></div>
   </form>
 </main>
 </body>
