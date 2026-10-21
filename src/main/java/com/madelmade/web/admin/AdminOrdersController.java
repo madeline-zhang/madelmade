@@ -9,6 +9,7 @@ import com.madelmade.repo.OrderRepository;
 import com.madelmade.service.Formats;
 import com.madelmade.service.Money;
 import com.madelmade.service.OrderService;
+import com.madelmade.service.SettingsService;
 import com.madelmade.service.UserFacingException;
 import com.madelmade.web.NotFoundException;
 import java.math.BigDecimal;
@@ -62,14 +63,16 @@ public class AdminOrdersController {
     private final Formats formats;
     private final Money money;
     private final AppProperties props;
+    private final SettingsService settings;
 
     public AdminOrdersController(OrderRepository orders, OrderService orderService, Formats formats, Money money,
-                                 AppProperties props) {
+                                 AppProperties props, SettingsService settings) {
         this.orders = orders;
         this.orderService = orderService;
         this.formats = formats;
         this.money = money;
         this.props = props;
+        this.settings = settings;
     }
 
     @GetMapping({"", "/"})
@@ -118,6 +121,7 @@ public class AdminOrdersController {
         model.addAttribute("selected", selected);
         model.addAttribute("todayText", TODAY.format(formats.today()));
         model.addAttribute("inProgress", orderService.loavesBooked());
+        model.addAttribute("yearSales", yearSales());
         if (selected != null) contactLinks(selected, model);
         return "admin/orders";
     }
@@ -283,6 +287,17 @@ public class AdminOrdersController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + ".csv\"")
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .body(sb.toString());
+    }
+
+    /** Gross sales before tax for orders completed this calendar year; cancelled and declined orders never count. */
+    private YearSales yearSales() {
+        int year = formats.today().getYear();
+        BigDecimal gross = BigDecimal.ZERO;
+        for (CustomerOrder o : orders.findByStatusInOrderByCreatedAtDesc(EnumSet.of(OrderStatus.COMPLETED))) {
+            LocalDate done = completedOn(o);
+            if (done != null && done.getYear() == year) gross = gross.add(o.getPreTaxTotal());
+        }
+        return YearSales.of(year, gross, settings.taxRates().enabled());
     }
 
     /** The day an order was picked up or delivered, from its history. */
