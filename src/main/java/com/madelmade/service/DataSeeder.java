@@ -54,12 +54,12 @@ public class DataSeeder implements ApplicationRunner {
         sizes(classic);
         classic.getSharedGroups().add(flavors);
         OptionGroup score = group(classic, "Score style", OptionGroup.STYLE_SWATCHES, 2);
-        swatch(score, "Simple score", "jonah.jpg", "[Placeholder] One clean slash for a classic rustic ear.", 0, false);
-        swatch(score, "Double leaf", "miriam.jpg", "[Placeholder] Two wheat leaves cut along a central ear.", 0, false).setDefaultChoice(true);
-        swatch(score, "Circular", "rebecca.jpg", "[Placeholder] A ring of cuts that opens like a crown.", 0, false);
-        swatch(score, "Pumpkin", "jordan.jpg", "[Placeholder] Ribbed sides that bake into a pumpkin shape.", 0, false);
-        swatch(score, "Flower", "rebecca.jpg", "[Placeholder] Petal cuts around the top of the loaf.", 0, false);
-        OptionChoice customScore = swatch(score, "Custom", "peter.jpg", "[Placeholder] Describe your idea below; price discussed.", 0, false);
+        swatch(score, "Simple score", "jonah.jpg", "One clean slash for a classic rustic ear.", 0, false);
+        swatch(score, "Double leaf", "miriam.jpg", "Two wheat leaves cut along a central ear.", 0, false).setDefaultChoice(true);
+        swatch(score, "Circular", "rebecca.jpg", "A ring of cuts that opens like a crown.", 0, false);
+        swatch(score, "Pumpkin", "jordan.jpg", "Ribbed sides that bake into a pumpkin shape.", 0, false);
+        swatch(score, "Flower", "rebecca.jpg", "Petal cuts around the top of the loaf.", 0, false);
+        OptionChoice customScore = swatch(score, "Custom", "peter.jpg", "Describe your idea below; price discussed.", 0, false);
         customScore.setPriceTbd(true);
         products.save(classic);
 
@@ -69,9 +69,9 @@ public class DataSeeder implements ApplicationRunner {
         sizes(stencil);
         stencil.getSharedGroups().add(flavors);
         OptionGroup design = group(stencil, "Design", OptionGroup.STYLE_SWATCHES, 2);
-        swatch(design, "Butterfly", "peter.jpg", "[Placeholder] A butterfly stenciled in flour across the top.", 0, false).setDefaultChoice(true);
-        swatch(design, "Text", "bday.jpg", "[Placeholder] Your words in flour, up to 15 characters, in the font you pick.", 0, false).setTextLimit(15);
-        OptionChoice customDesign = swatch(design, "Custom", "rebecca.jpg", "[Placeholder] Your own design. Madeline approves it before baking.", 2, false);
+        swatch(design, "Butterfly", "peter.jpg", "A butterfly stenciled in flour across the top.", 0, false).setDefaultChoice(true);
+        swatch(design, "Text", "bday.jpg", "Your words in flour, up to 15 characters, in the font you pick.", 0, false).setTextLimit(15);
+        OptionChoice customDesign = swatch(design, "Custom", "rebecca.jpg", "Your own design. Madeline approves it before baking.", 2, false);
         customDesign.setNeedsDesignApproval(true);
         products.save(stencil);
 

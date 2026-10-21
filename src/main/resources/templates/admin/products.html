@@ -18,7 +18,6 @@
             <img th:if="${p.photoId != null}" class="thumb-sm" th:src="${photoUrls.src(p.photoId)}" alt="">
             <span th:unless="${p.photoId != null}" class="thumb-sm photo-slot" style="border-radius: 10px">Add photo</span></a></td>
           <td><a th:href="@{/admin/products/{id}(id=${p.id})}" style="font-weight: 600" th:text="${p.name}">Classic Loaf</a>
-            <span class="tag" th:if="${p.missingLabelInfo}">Add ingredients</span>
             <div class="t-small muted" th:text="${p.allOptionGroups.size() + ' option group' + (p.allOptionGroups.size() == 1 ? '' : 's')}"></div></td>
           <td th:text="${p.category.name}">Bread</td>
           <td th:text="${@money.fmt(p.basePrice)}">$10</td>

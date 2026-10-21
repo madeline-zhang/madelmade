@@ -32,9 +32,4 @@ public class AdminEmailsController {
         if (index < 0 || index >= all.size()) throw new NotFoundException();
         return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(all.get(index).html());
     }
-
-    @GetMapping("/admin/styleguide")
-    public String styleguide() {
-        return "admin/styleguide";
-    }
 }

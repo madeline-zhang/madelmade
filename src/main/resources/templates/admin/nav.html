@@ -15,7 +15,6 @@
   <a class="admin-brand" th:href="@{/admin}"><span class="name">MadelMade</span><span class="sub">Admin</span></a>
   <div class="admin-nav"><th:block th:replace="~{admin/nav :: links(${section})}"></th:block></div>
   <div class="admin-foot">
-    <a th:href="@{/admin/styleguide}">Style guide</a>
     <a th:href="@{/}" target="_blank" rel="noopener">View site&nbsp;&nbsp;↗</a>
     <a th:href="@{/profile}">Your profile and orders</a>
     <div th:text="${'Signed in as ' + userEmail}">Signed in as Madeline</div>

@@ -15,10 +15,6 @@
         </p>
       </div>
       <img class="about-photo" th:if="${settings.aboutPhotoId() != null}" th:src="${photoUrls.src(settings.aboutPhotoId())}" alt="Madeline">
-      <div class="about-photo is-placeholder" th:unless="${settings.aboutPhotoId() != null}" aria-hidden="true">
-        <img th:src="@{/img/madelmade-logo-simple.svg}" alt="">
-        <span>Photo coming soon</span>
-      </div>
     </section>
 
     <section class="stack" style="gap: 24px" aria-labelledby="how">
