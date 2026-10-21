@@ -14,6 +14,9 @@
     <div class="alert alert-error" role="alert" th:if="${formErrors != null and !formErrors.isEmpty()}" style="margin-bottom: 24px">
       <ul><li th:each="e : ${formErrors}" th:text="${e}">Problem</li></ul>
     </div>
+    <div class="alert alert-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('cart')}" style="margin-bottom: 24px">
+      <ul><li th:each="e : ${fieldErrors.get('cart')}" th:text="${e}">Problem</li></ul>
+    </div>
 
     <div class="two-col">
       <form method="post" th:action="@{/checkout}" th:object="${form}" class="stack" style="gap: 28px" data-checkout-form
@@ -36,24 +39,32 @@
             </div>
             <div class="help">You'll always get email updates too.</div>
           </div>
+          <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('contact')}">
+            <div th:each="e : ${fieldErrors.get('contact')}" th:text="${e}">Problem</div>
+          </div>
         </section>
 
         <section class="card stack">
           <h2 class="card-title">Pickup or delivery</h2>
           <div class="segmented" role="radiogroup" aria-label="Pickup or delivery">
             <label><input type="radio" th:field="*{fulfillment}" value="PICKUP" data-fulfillment><span class="pill">Pickup <span class="pill-note">free</span></span></label>
-            <label th:if="${settings.deliveryEnabled()}"><input type="radio" th:field="*{fulfillment}" value="DELIVERY" data-fulfillment><span class="pill">Delivery <span class="pill-note">fee quoted</span></span></label>
+            <label th:if="${settings.deliveryEnabled()}" th:classappend="${cart.pickupOnly} ? 'pill-disabled'"><input type="radio" th:field="*{fulfillment}" value="DELIVERY" data-fulfillment th:disabled="${cart.pickupOnly}"><span class="pill">Delivery <span class="pill-note" th:text="${cart.pickupOnly ? 'not available' : 'fee quoted'}">fee quoted</span></span></label>
           </div>
+          <div th:replace="~{components/notices :: pickupOnly}"></div>
           <p class="t-small muted" style="margin: 0" data-pickup-note th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once Madeline approves.'}">Pickup info</p>
           <div class="field" data-address-field>
             <label for="address">Delivery address</label>
             <textarea id="address" th:field="*{address}" rows="2" autocomplete="street-address" placeholder="Street, city, ZIP"></textarea>
             <div class="help">Only Madeline sees this. She'll quote the delivery fee with her approval; it's paid up front as a deposit.</div>
           </div>
+          <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('fulfillment')}">
+            <div th:each="e : ${fieldErrors.get('fulfillment')}" th:text="${e}">Problem</div>
+          </div>
         </section>
 
         <section class="card stack">
           <h2 class="card-title">When</h2>
+          <div th:replace="~{components/notices :: busy}"></div>
           <label class="check-row" th:if="${priorityHelps}">
             <input type="checkbox" th:field="*{priority}" data-priority>
             <span>Priority: ready in <span th:text="${settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's')}">1 day</span> <span class="t-price" style="font-size: 1rem" th:text="${'+' + @money.fmt(settings.priorityFee())}">+$5</span></span>
@@ -70,6 +81,9 @@
               </select>
             </div>
           </div>
+          <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('date')}">
+            <div th:each="e : ${fieldErrors.get('date')}" th:text="${e}">Problem</div>
+          </div>
           <div class="help" th:if="${!daysOff.isEmpty()}" th:text="${'Madeline isn''t baking on: ' + #strings.listJoin(daysOffText, ', ')}">Days off</div>
           <div class="help">Madeline confirms the exact time with you in messages.</div>
         </section>
@@ -77,7 +91,16 @@
         <section class="card stack">
           <h2 class="card-title">Anything else?</h2>
           <div class="field"><label for="note">Note for Madeline <span class="muted">(optional)</span></label>
-            <textarea id="note" th:field="*{note}" rows="3" placeholder="It's for my daughter's birthday, she loves butterflies!"></textarea></div>
+            <textarea id="note" th:field="*{note}" rows="3" placeholder="e.g. It's for my daughter's birthday, she loves butterflies!"></textarea></div>
+          <div class="field" id="promo">
+            <label for="promoCode">Promo code <span class="muted">(optional)</span></label>
+            <div class="promo-row">
+              <input type="text" id="promoCode" th:field="*{promoCode}" autocomplete="off" autocapitalize="characters" maxlength="40">
+              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/checkout/promo}" formnovalidate>Apply</button>
+            </div>
+            <div class="help promo-ok" th:if="${promo != null}" th:text="${promo.free ? promo.code + ' applied: your items are free.' : promo.code + ' applied: ' + promo.percentOff + '% off your items.'}">FRIENDS50 applied</div>
+            <div class="help promo-error" th:if="${promoError != null}" th:text="${promoError}" role="alert">That code has expired.</div>
+          </div>
         </section>
 
         <button type="submit" class="btn btn-block" th:disabled="${!settings.ordersOpen()}">Submit request</button>
@@ -87,10 +110,18 @@
         <h2 class="card-title">Your order</h2>
         <div th:replace="~{components/order-summary :: cartLines(false)}"></div>
         <div class="summary-totals">
-          <div class="grand"><span>Total</span><span th:text="${@money.fmt(cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</span></div>
-          <div class="t-small muted">Plus priority or delivery fees if chosen. You pay at pickup or delivery.</div>
+          <div th:if="${promo != null or (taxRates.enabled() and !taxRates.included() and taxEst.tax().signum() > 0)}"><span>Items</span><span th:text="${@money.fmt(cart.total)}">$26</span></div>
+          <th:block th:if="${promo != null}">
+            <div class="discount"><span th:text="${'Promo ' + promo.code}">Promo FRIENDS50</span><span th:text="${'−' + @money.fmt(promoDiscount)}">−$13</span></div>
+          </th:block>
+          <div th:if="${taxRates.enabled() and !taxRates.included() and taxEst.tax().signum() > 0}"><span th:text="${'Estimated ' + #strings.toLowerCase(taxLabel)}">Estimated sales tax (9.75%)</span><span th:text="${@money.fmt(taxEst.tax())}">$2.54</span></div>
+          <div class="grand"><span>Total</span><span th:text="${@money.fmt(checkoutTotal) + (cart.priceTbd ? ' + custom' : '')}">$26</span></div>
+          <div class="t-small muted" th:if="${taxRates.enabled() and taxRates.included()}" th:text="${taxLabel + ': ' + @money.fmt(taxEst.tax())}">Includes sales tax (9.75%): $2.32</div>
+          <div class="t-small muted" th:text="${'Plus priority or delivery fees if chosen' + (taxRates.enabled() and !taxRates.included() ? ', and the sales tax on them' : '') + '. You pay at pickup or delivery.'}">Plus priority or delivery fees if chosen. You pay at pickup or delivery.</div>
         </div>
         <p style="margin: 16px 0 0"><a th:href="@{/cart}" class="t-small">Edit cart</a></p>
+        <div style="margin-top: 16px"><p th:replace="~{components/notices :: homeKitchen}"></p></div>
+        <p class="t-small muted" style="margin: 8px 0 0" th:text="${settings.get('notice.decline')}">Madeline has the right to decline any order.</p>
       </aside>
     </div>
   </div>

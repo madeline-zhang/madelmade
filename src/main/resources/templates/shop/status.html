@@ -55,17 +55,23 @@
         <section class="card stack" style="gap: 10px">
           <h2 class="card-title" style="margin: 0">Details</h2>
           <div><strong th:text="${order.fulfillment.label}">Pickup</strong> · <span th:text="${@fmt.longDay(order.requestedDate)}">Saturday</span><span th:if="${order.requestedTime != null}" th:text="${', ' + order.requestedTime.toLowerCase()}"></span></div>
-          <div class="t-small muted" th:if="${!order.delivery}" th:text="${'Pickup in the ' + settings.pickupArea() + ' area. The address comes with your confirmation.'}"></div>
+          <div class="t-small muted" th:if="${!order.delivery and (order.status.name() == 'NEEDS_REVIEW' or order.status.name() == 'CHANGES_REQUESTED')}" th:text="${'Pickup in the ' + settings.pickupArea() + ' area. The address comes with your confirmation.'}"></div>
           <div class="t-small" th:if="${order.delivery}" th:text="${'Delivering to ' + order.deliveryAddress}"></div>
           <div class="t-small" th:if="${order.depositRequired and order.status.name() == 'APPROVED'}">
             <span th:if="${order.depositPaid}">Delivery deposit received. Thank you!</span>
             <span th:unless="${order.depositPaid}" th:text="${'Please send the ' + @money.fmt(order.deliveryFee) + ' delivery deposit by Venmo or Zelle so Madeline can start baking.'}"></span>
           </div>
           <div class="t-small muted">Payment: at pickup or delivery (cash, Venmo or Zelle).</div>
+          <div class="t-small" th:if="${order.status.name() == 'APPROVED' or order.status.name() == 'BAKED' or order.status.name() == 'COMPLETED'}">
+            <div th:text="${'Made by ' + settings.get('producer.name') + (settings.get('producer.phone').isEmpty() ? '' : ' · ' + settings.get('producer.phone'))}">Made by Madeline</div>
+            <div th:if="${!order.delivery and !settings.get('pickup.address').isEmpty()}" th:text="${settings.get('pickup.address')}">Pickup address</div>
+          </div>
+          <p th:replace="~{components/notices :: homeKitchen}"></p>
           <div class="t-small muted" th:text="${'Updates go to ' + order.contactEmail + (order.contactPref.name() != 'EMAIL' ? ' and by ' + order.contactPref.label : '')}"></div>
         </section>
         <form method="post" th:action="@{/o/{t}/cancel(t=${order.statusToken})}" th:if="${order.status.cancellableByCustomer}" data-confirm="Cancel this order? Madeline will be told right away.">
           <button type="submit" class="btn btn-danger btn-block">Cancel order</button>
+          <p class="t-small muted" style="margin: 8px 0 0; text-align: center">You can cancel until Madeline approves your order.</p>
         </form>
         <a class="btn btn-secondary" th:if="${order.status.closed}" th:href="@{/#menu}">Order again</a>
       </aside>

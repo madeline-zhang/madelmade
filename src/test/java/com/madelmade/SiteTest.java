@@ -79,12 +79,12 @@ class SiteTest {
     @Transactional
     void stencilWithLettersFlavorAndCertificateIsPricedRight() {
         Product stencil = products.findBySlug("stencil-loaf").orElseThrow();
-        List<Long> ids = stencil.getOptionGroups().stream()
+        List<Long> ids = stencil.getAllOptionGroups().stream()
                 .flatMap(g -> g.getActiveChoices().stream())
-                .filter(c -> List.of("Whole", "Rosemary garlic", "Letters").contains(c.getName()))
+                .filter(c -> List.of("Whole", "Rosemary garlic", "Text").contains(c.getName()))
                 .map(OptionChoice::getId).toList();
         PricingService.Quote q = pricing.quote(stencil,
-                new PricingService.Selection(ids, "HAPPY 40", null, true, "Hazel", null));
+                new PricingService.Selection(ids, "HAPPY 40", "Script", null, true, "Hazel", null));
         assertThat(q.errors()).isEmpty();
         assertThat(q.unitPrice()).isEqualByComparingTo(new BigDecimal("16"));
     }
@@ -93,21 +93,32 @@ class SiteTest {
     @Transactional
     void halfLoafHalvesThePriceAndLettersHaveALimit() {
         Product classic = products.findBySlug("classic-loaf").orElseThrow();
-        List<Long> half = classic.getOptionGroups().stream()
+        List<Long> half = classic.getAllOptionGroups().stream()
                 .flatMap(g -> g.getActiveChoices().stream())
                 .filter(c -> c.getName().equals("Half") || c.isDefaultChoice() && !c.getName().equals("Whole"))
                 .map(OptionChoice::getId).toList();
-        PricingService.Quote q = pricing.quote(classic, new PricingService.Selection(half, null, null, false, null, null));
+        PricingService.Quote q = pricing.quote(classic, new PricingService.Selection(half, null, null, null, false, null, null));
         assertThat(q.errors()).isEmpty();
         assertThat(q.unitPrice()).isEqualByComparingTo(new BigDecimal("5"));
 
         Product stencil = products.findBySlug("stencil-loaf").orElseThrow();
-        List<Long> letters = stencil.getOptionGroups().stream()
+        List<Long> letters = stencil.getAllOptionGroups().stream()
                 .flatMap(g -> g.getActiveChoices().stream())
-                .filter(c -> c.isDefaultChoice() && !c.getName().equals("Butterfly") || c.getName().equals("Letters"))
+                .filter(c -> c.isDefaultChoice() && !c.getName().equals("Butterfly") || c.getName().equals("Text"))
                 .map(OptionChoice::getId).toList();
         PricingService.Quote tooLong = pricing.quote(stencil,
-                new PricingService.Selection(letters, "HAPPY BIRTHDAY MIRIAM", null, false, null, null));
+                new PricingService.Selection(letters, "HAPPY BIRTHDAY MIRIAM", "Block letters", null, false, null, null));
         assertThat(tooLong.errors()).anyMatch(e -> e.contains("up to 15"));
+
+        PricingService.Quote noFont = pricing.quote(stencil,
+                new PricingService.Selection(letters, "HI", null, null, false, null, null));
+        assertThat(noFont.errors()).anyMatch(e -> e.contains("pick a font"));
+        PricingService.Quote customFont = pricing.quote(stencil,
+                new PricingService.Selection(letters, "HI", "Custom", null, false, null, null));
+        assertThat(customFont.errors()).anyMatch(e -> e.contains("Describe your font"));
+        PricingService.Quote script = pricing.quote(stencil,
+                new PricingService.Selection(letters, "HI", "Script", null, false, null, null));
+        assertThat(script.errors()).isEmpty();
+        assertThat(script.summary()).contains("Text \"HI\" in Script");
     }
 }

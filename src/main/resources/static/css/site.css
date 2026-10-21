@@ -46,6 +46,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn-quiet { background: transparent; color: var(--color-ink); padding: 10px 4px; letter-spacing: 0.02em; text-transform: none; font-size: 0.95rem; }
 .btn-quiet:hover { background: transparent; color: var(--color-terracotta); }
 .btn-small { padding: 9px 16px; font-size: 0.75rem; }
+.order-actions { display: grid; grid-template-columns: repeat(2, 9.5rem); gap: 10px; }
+.order-actions form { display: contents; }
+.order-actions .btn { width: 100%; white-space: nowrap; }
+@media (max-width: 520px) { .order-actions { grid-template-columns: 1fr 1fr; width: 100%; } }
 .btn-block { width: 100%; }
 .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 .link-arrow { font-weight: 600; text-decoration: none; }
@@ -97,6 +101,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .wordmark img { height: 20px; }
   .header-signin { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.12em; padding: 12px 2px; white-space: nowrap; }
   .header-actions { gap: 4px; }
+  .header-signin.hide-on-phone { display: none; }
   .mobile-nav { position: fixed; z-index: 39; top: var(--header-height); left: 0; right: 0; background: var(--color-cream); border-bottom: 1px solid var(--color-linen); padding: 8px 20px 20px; box-shadow: var(--shadow-card); }
   .mobile-nav.is-open { display: block; }
   .mobile-nav a { display: flex; align-items: center; min-height: 52px; border-bottom: 1px solid var(--color-linen); text-decoration: none; letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.875rem; font-weight: 500; }
@@ -111,7 +116,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .hero-content > * { max-width: 640px; }
 .hero-eyebrow { font-size: 0.875rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--color-hero-eyebrow); }
 .hero h1 { font-family: var(--font-display); font-weight: 500; font-size: var(--text-hero); line-height: 0.98; margin: 0; }
-.hero h1 em { display: block; font-style: italic; line-height: 1.04; }
+.hero h1 em { font-style: italic; }
+.hero h1 .nowrap { white-space: nowrap; }
 .hero-lead { font-size: 1.25rem; line-height: 1.55; color: var(--color-hero-text); max-width: 520px; margin: 0; }
 .hero .btn { align-self: flex-start; padding: 18px 32px; font-size: 0.9375rem; letter-spacing: 0.2em; }
 .scroll-cue { position: absolute; z-index: 1; bottom: 28px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--color-hero-eyebrow); font-size: 0.75rem; letter-spacing: 0.3em; text-decoration: none; }
@@ -141,7 +147,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .product-card-body { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 4px; }
 .product-card-name { font-family: var(--font-title); font-weight: 800; font-size: 1.375rem; line-height: 1.2; }
 .product-card-price { font-size: 0.9375rem; color: var(--color-crust); }
-.product-card.is-sold-out .photo { filter: grayscale(0.8); opacity: 0.6; }
+.product-card.is-sold-out .photo { filter: grayscale(1); }
 .card-badge { position: absolute; top: 12px; left: 12px; background: var(--color-crumb); color: var(--color-ink); padding: 4px 12px; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-card); }
 .paused-note { background: var(--badge-review-bg); color: var(--badge-review-fg); padding: 14px 18px; border-radius: var(--radius); font-weight: 500; }
 
@@ -232,13 +238,21 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 
 /* ---- Cart drawer and checkout popup ---- */
 .scrim { position: fixed; inset: 0; z-index: 60; background: rgba(38,48,40,0.38); }
-.drawer { position: fixed; z-index: 61; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--color-cream); box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .25s ease; visibility: hidden; }
-.drawer.is-open { transform: none; visibility: visible; }
+.drawer { position: fixed; z-index: 61; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--color-cream); box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .3s ease, visibility 0s linear .3s; visibility: hidden; }
+.drawer.is-open { transform: none; visibility: visible; transition: transform .3s ease, visibility 0s; }
+/* Opened by the server right after "Add to cart": slide in instead of appearing. */
+.drawer.is-open.drawer-enter { animation: drawer-in .3s ease both; }
+@keyframes drawer-up { from { transform: translateY(100%); } to { transform: none; } }
+.scrim:not(.hidden) { animation: scrim-in .3s ease both; }
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .drawer, .drawer.is-open { transition: none; } .drawer.is-open.drawer-enter { animation: none; } }
 .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--color-linen); }
 .drawer-body { flex: 1; overflow-y: auto; padding: 8px 20px; }
 .drawer-foot { border-top: 1px solid var(--color-linen); padding: 18px 20px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
 @media (max-width: 760px) {
   .drawer { top: auto; left: 0; width: 100%; height: 100%; border-radius: 0; transform: translateY(100%); }
+  .drawer.is-open.drawer-enter { animation-name: drawer-up; }
 }
 .cart-line { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--color-linen); }
 .cart-line img, .cart-line .thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--color-placeholder); }
@@ -279,6 +293,7 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .summary-totals { padding-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 0.9375rem; }
 .summary-totals div { display: flex; justify-content: space-between; }
 .summary-totals .grand { font-weight: 700; font-size: 1.0625rem; border-top: 1px solid var(--color-linen); padding-top: 10px; margin-top: 4px; }
+.summary-totals .grand:first-child { border-top: none; padding-top: 0; margin-top: 0; }
 
 /* Timeline and messages */
 .timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
@@ -299,9 +314,12 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .bubble.is-log { align-self: center; background: transparent; border-style: dashed; font-size: 0.875rem; max-width: 100%; }
 
 /* About and FAQ */
-.about-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: center; }
-.about-hero .logo-large { width: min(340px, 80%); margin: 0 auto; }
-@media (max-width: 900px) { .about-hero { grid-template-columns: 1fr; gap: 28px; } .about-hero .logo-large { width: 180px; } }
+.about-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 64px; align-items: center; }
+.about-photo { width: 100%; max-width: 320px; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); justify-self: center; }
+.about-signoff { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.about-signoff img { width: 96px; }
+.about-signoff p { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 1.375rem; color: var(--color-crust); }
+@media (max-width: 900px) { .about-hero { grid-template-columns: 1fr; gap: 28px; } .about-photo { max-width: 240px; } }
 .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; counter-reset: step; }
 .step { background: var(--color-crumb); border: 1px solid var(--color-card-line); border-radius: var(--radius); padding: 22px; }
 .step-num { width: 34px; height: 34px; border-radius: var(--radius-pill); background: var(--color-terracotta); color: var(--color-white); display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 12px; }
@@ -319,6 +337,8 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .gallery-tile { margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .gallery-tile img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); }
 .gallery-tile figcaption { font-family: var(--font-display); font-size: 1.25rem; font-style: italic; }
+.gallery-other { margin-top: 72px; display: flex; flex-direction: column; gap: 20px; }
+.gallery-other .page-head { margin-bottom: 0; }
 @media (max-width: 900px) { .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } }
 
 /* Sign in */
@@ -343,3 +363,44 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .site-footer nav { display: flex; gap: 20px; flex-wrap: wrap; }
 .site-footer a { text-decoration: none; }
 .footer-brand { font-family: var(--font-display); font-size: 1.375rem; color: var(--color-ink); font-weight: 600; }
+
+/* ---- Promo code ---- */
+.promo-row { display: flex; gap: 10px; align-items: stretch; }
+.promo-row input { flex: 1; min-width: 0; text-transform: uppercase; }
+.promo-ok { color: var(--badge-approved-fg); font-weight: 600; }
+.promo-error { color: var(--badge-declined-fg); font-weight: 600; }
+.summary-totals .discount span:last-child { color: var(--badge-approved-fg); }
+
+/* ---- Required notices ---- */
+.notice-box { display: flex; flex-direction: column; gap: 4px; background: var(--badge-review-bg); color: var(--badge-review-fg); border-radius: 12px; padding: 12px 14px; font-size: 0.875rem; line-height: 1.45; }
+.notice-box strong { font-weight: 700; }
+.home-kitchen { margin: 0; font-style: italic; }
+.pill-disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Ingredients and allergens on the product page (required by Tennessee's home food law) */
+.label-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 4px 0 0; max-width: 520px; }
+.label-info dt { font-weight: 600; }
+.label-info dd { margin: 0; color: var(--color-ink-soft, inherit); }
+.home-kitchen-section p { margin: 0; }
+
+/* An error shown right beside the part of the form it's about. */
+.field-error { background: var(--badge-declined-bg); color: var(--badge-declined-fg); border-radius: 10px; padding: 10px 14px; font-size: 0.875rem; display: grid; gap: 4px; }
+.field-error[data-live] { margin-top: 6px; }
+[aria-invalid="true"] { border-color: var(--badge-declined-fg) !important; }
+
+/* Feedback button in the corner, opening a short form. */
+.feedback { position: fixed; z-index: 35; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); }
+.feedback > summary { list-style: none; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--color-ink); color: var(--color-crumb); box-shadow: var(--shadow-card); }
+.feedback > summary::-webkit-details-marker { display: none; }
+.feedback[open] > summary { display: none; }
+.feedback-panel { width: min(340px, calc(100vw - 32px)); background: var(--color-cream); border: 1px solid var(--color-linen); border-radius: var(--radius-lg); box-shadow: var(--shadow-sheet); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.feedback-head { display: flex; justify-content: space-between; align-items: center; }
+.feedback-panel textarea { min-height: 96px; }
+.feedback-panel .btn { align-self: flex-start; }
+.feedback-panel .segmented .pill { font-size: 0.8125rem; padding: 6px 12px; }
+@media (max-width: 760px) { body:has(.add-bar) .feedback { bottom: calc(88px + env(safe-area-inset-bottom)); } }
+.about-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 0; }
+.profile-orders { gap: 10px; }
+.profile-orders .t-title { margin-bottom: 2px; }
+.profile-order { gap: 8px; padding: 18px 20px; }
+.profile-order + .profile-order { margin-top: 0; }

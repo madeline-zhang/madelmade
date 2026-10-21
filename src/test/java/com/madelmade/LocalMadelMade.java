@@ -25,6 +25,12 @@ public class LocalMadelMade {
                 // Postgres is stopping with the app anyway.
             }
         }));
+        for (String arg : args) {
+            if (arg.startsWith("--copy-to-live=")) {
+                CopyToLive.run(pg.getPostgresDatabase(), arg.substring("--copy-to-live=".length()));
+                return;
+            }
+        }
         System.setProperty("spring.datasource.url", pg.getJdbcUrl("postgres", "postgres"));
         System.setProperty("spring.datasource.username", "postgres");
         System.setProperty("spring.datasource.password", "");

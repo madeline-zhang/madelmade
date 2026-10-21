@@ -9,14 +9,30 @@
       <h1>Orders</h1>
     </div>
     <div class="admin-tools">
-      <div class="t-small muted">Loaves in progress: <strong style="color: var(--color-ink)" th:text="${inProgress + ' of ' + settings.maxLoaves()}">2 of 3</strong></div>
+      <div class="t-small muted" th:title="${'Completed orders in ' + yearSales.year + ', before tax'}">Sales in <span th:text="${yearSales.year}">2026</span>: <strong style="color: var(--color-ink)" th:text="${@money.fmt(yearSales.gross)}">$420</strong></div>
+      <div class="t-small muted">Loaves booked: <strong style="color: var(--color-ink)" th:text="${inProgress + ' of ' + settings.maxLoaves()}">2 of 3</strong></div>
       <form class="search" method="get" th:action="@{/admin/orders}" role="search">
         <svg th:replace="~{components/icons :: search}"></svg>
         <input type="hidden" name="tab" th:value="${tab}">
-        <input type="search" name="q" th:value="${q}" placeholder="Search name, email or product" aria-label="Search orders">
+        <input type="search" name="q" th:value="${q}" placeholder="Search order #, name, email or product" aria-label="Search orders">
       </form>
-      <a class="btn btn-secondary btn-small" th:href="@{/admin/orders/export.csv}">Export CSV</a>
+      <details class="export-menu">
+        <summary class="btn btn-secondary btn-small">Export CSV</summary>
+        <form method="get" th:action="@{/admin/orders/export.csv}" class="stack card" style="gap: 10px">
+          <p class="t-small muted" style="margin: 0">For bookkeeping and sales tax. Pick dates to get only the orders picked up or delivered then, or leave them empty for every order.</p>
+          <div class="field-row">
+            <div class="field"><label for="exFrom">From</label><input type="date" id="exFrom" name="from"></div>
+            <div class="field"><label for="exTo">To</label><input type="date" id="exTo" name="to"></div>
+          </div>
+          <button type="submit" class="btn btn-small" style="align-self: flex-start">Download</button>
+        </form>
+      </details>
     </div>
+  </div>
+
+  <div th:if="${yearSales.message != null}" class="alert" th:classappend="${'alert-' + yearSales.level}" style="margin-bottom: 16px">
+    <span th:text="${yearSales.message}">Sales are over $3,000 this year.</span>
+    <a th:href="@{/admin/settings#sales-tax}" th:if="${yearSales.level == 'error'}">Sales tax settings</a>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Order status">
@@ -30,16 +46,18 @@
 
   <div class="orders-split" th:classappend="${selected != null} ? 'has-detail'">
     <div class="order-list">
+      <div class="t-small muted" th:if="${q != null and !q.isEmpty()}" style="padding: 0 4px 8px">Showing matches from every tab. <a th:href="@{/admin/orders(tab=${tab})}">Clear search</a></div>
       <div class="empty" th:if="${orders.isEmpty()}" th:text="${q != null and !q.isEmpty() ? 'No orders match that search.' : 'Nothing here right now.'}">Nothing here.</div>
       <a th:each="o : ${orders}" class="order-card" th:classappend="${selected != null and selected.id == o.id} ? 'is-on'"
          th:href="@{/admin/orders/{id}(id=${o.id},tab=${tab},q=${q})}">
-        <div class="row"><span class="who" th:text="${o.contactName}">Sarah Kim</span><span class="when" th:text="${@fmt.ago(o.createdAt)}">2h ago</span></div>
+        <div class="row"><span class="who"><span class="order-no" th:text="${o.number}">#12</span> <span th:text="${o.contactName}">Sarah Kim</span></span><span class="when" th:text="${@fmt.ago(o.createdAt)}">2h ago</span></div>
         <div class="what" th:text="${o.itemsSummary}">Stencil Loaf, Classic Loaf</div>
         <div class="row">
           <span class="meta">
             <span th:text="${o.fulfillment.label + ' · ' + @fmt.day(o.requestedDate)}">Pickup · Sat, Oct 11</span>
             <span class="tag" th:if="${o.priceTbd}">Custom</span>
             <span class="tag" th:if="${o.priority}">Priority</span>
+            <span class="tag" th:if="${o.promoCode != null}" th:text="${o.promoCode}">FRIENDS50</span>
             <span class="flag" th:if="${o.overCapacity and !o.status.closed}">Over capacity</span>
             <th:block th:if="${tab == 'review' and o.status.name() == 'CHANGES_REQUESTED'}"><span th:replace="~{components/status-badge :: badge(${o.status}, false)}"></span></th:block>
           </span>

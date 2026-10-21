@@ -5,7 +5,7 @@
 <main id="main" class="admin-main">
   <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">How orders work</div><h1>Settings</h1></div></div>
 
-  <form method="post" th:action="@{/admin/settings}" class="stack" style="gap: 24px">
+  <form method="post" th:action="@{/admin/settings}" class="stack" style="gap: 24px" data-autosave>
     <div class="settings-grid">
       <div class="stack" style="gap: 24px">
         <section class="card stack">
@@ -20,7 +20,9 @@
           <div class="field-row">
             <div class="field"><label for="noticeDays">Days of notice</label><input type="number" min="0" max="60" id="noticeDays" name="rules.noticeDays" th:value="${settings.get('rules.noticeDays')}"></div>
             <div class="field"><label for="maxLoaves">Loaves at a time</label><input type="number" min="1" max="50" id="maxLoaves" name="rules.maxLoaves" th:value="${settings.get('rules.maxLoaves')}">
-              <div class="help">Approved and baked loaves count. Also the most loaves in one order.</div></div>
+              <div class="help">Every open order counts: waiting for review, approved or baked. Customers see a heads-up that you may move their date when an order would go over.</div></div>
+            <div class="field"><label for="maxPerOrder">Most loaves in one order</label><input type="number" min="1" max="50" id="maxPerOrder" name="rules.maxPerOrder" th:value="${settings.get('rules.maxPerOrder')}">
+              <div class="help">Customers can't add more than this to one cart.</div></div>
           </div>
           <div class="toggle-row"><div><div class="t">Offer priority</div><div class="d">Customers can pay extra for shorter notice.</div></div>
             <label class="switch"><input type="checkbox" name="rules.priorityEnabled" th:checked="${settings.flag('rules.priorityEnabled')}" aria-label="Offer priority"><span></span></label></div>
@@ -30,18 +32,27 @@
           </div>
         </section>
 
+        <section class="card stack">
+          <h2 class="card-title">Fonts for text loaves</h2>
+          <div class="field"><label for="fonts">Fonts customers can pick</label>
+            <textarea id="fonts" name="design.fonts" rows="4" th:text="${settings.get('design.fonts')}"></textarea>
+            <div class="help">One per line. Shown when someone picks Text on a stencil loaf. A font starting with "Custom" asks them to describe it.</div></div>
+        </section>
+
         <section class="card stack" id="days-off">
           <h2 class="card-title">Days off</h2>
           <p class="t-small muted" style="margin: 0">Customers can't pick these days at checkout.</p>
           <div class="stack" style="gap: 8px" th:unless="${daysOff.isEmpty()}">
             <div class="toggle-row" th:each="d : ${daysOff}">
-              <span th:text="${#strings.replace(d, '..', ' to ')}">2026-11-26 to 2026-11-28</span>
-              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/remove(entry=${d})}" formnovalidate>Remove</button>
+              <div><div class="t" th:text="${@fmt.range(d.from, d.to)}">Dec 20 – Jan 2</div>
+                <div class="d" th:if="${!d.note.isEmpty()}" th:text="${d.note}">Christmas break</div></div>
+              <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/remove(entry=${d.raw})}" formnovalidate>Remove</button>
             </div>
           </div>
           <div class="field-row" style="align-items: end">
-            <div class="field"><label for="offFrom">From</label><input type="date" id="offFrom" name="from"></div>
-            <div class="field"><label for="offTo">To (optional)</label><input type="date" id="offTo" name="to"></div>
+            <div class="field"><label for="offFrom">From</label><input type="date" id="offFrom" name="from" data-no-autosave></div>
+            <div class="field"><label for="offTo">To (optional)</label><input type="date" id="offTo" name="to" data-no-autosave></div>
+            <div class="field"><label for="offNote">Why (just for you)</label><input type="text" id="offNote" name="note" data-no-autosave maxlength="80" placeholder="e.g. Christmas break"></div>
             <button type="submit" class="btn btn-secondary btn-small" th:formaction="@{/admin/settings/daysoff/add}">Add</button>
           </div>
         </section>
@@ -50,20 +61,32 @@
           <h2 class="card-title">Pickup and delivery</h2>
           <div class="field"><label for="pickupArea">Pickup area (shown to everyone)</label><input type="text" id="pickupArea" name="pickup.area" th:value="${settings.get('pickup.area')}"></div>
           <div class="field"><label for="pickupAddress">Pickup address (private)</label><textarea id="pickupAddress" name="pickup.address" rows="2" th:text="${settings.get('pickup.address')}"></textarea>
-            <div class="help">Only sent in the approval email for pickup orders. Never shown on the site.</div></div>
+            <div class="help">Only shared with a customer once you approve their pickup order. Never shown on the public site.</div></div>
+          <div class="field-row">
+            <div class="field"><label for="producerName">Your name for order labels</label><input type="text" id="producerName" name="producer.name" maxlength="80" th:value="${settings.get('producer.name')}"></div>
+            <div class="field"><label for="producerPhone">Your phone for order labels</label><input type="tel" id="producerPhone" name="producer.phone" maxlength="30" th:value="${settings.get('producer.phone')}"></div>
+          </div>
+          <div class="help">Tennessee's home food law asks for your name, address and phone. They go only to approved customers, in their confirmation email and on their order page.</div>
           <div class="toggle-row"><div><div class="t">Offer delivery</div><div class="d">You quote the delivery fee on each order before approving.</div></div>
             <label class="switch"><input type="checkbox" name="delivery.enabled" th:checked="${settings.flag('delivery.enabled')}" aria-label="Offer delivery"><span></span></label></div>
         </section>
       </div>
 
       <div class="stack" style="gap: 24px">
-        <section class="card stack">
+        <section class="card stack" id="certificates">
           <h2 class="card-title">Birth certificates</h2>
           <div class="toggle-row"><div><div class="t">Offer birth certificates</div><div class="d">Shows the add-on on loaves that allow it.</div></div>
             <label class="switch"><input type="checkbox" name="cert.enabled" th:checked="${settings.flag('cert.enabled')}" aria-label="Offer birth certificates"><span></span></label></div>
           <div class="field-row">
             <div class="field"><label for="certPrice">Price</label><div class="price-input">$ <input type="text" inputmode="decimal" id="certPrice" name="cert.price" th:value="${settings.get('cert.price')}"></div></div>
             <div class="field"><label for="certStarter">Starter name</label><input type="text" id="certStarter" name="cert.starter" th:value="${settings.get('cert.starter')}"></div>
+          </div>
+          <div class="field">
+            <label>Example photo</label>
+            <img class="cert-photo-admin" th:src="${settings.certPhotoId() != null ? photoUrls.src(settings.certPhotoId()) : '/img/certificate-example.jpg'}" alt="Example birth certificate">
+            <a class="btn btn-secondary btn-small" style="align-self: flex-start" th:href="@{/admin/photos/edit(target='cert-photo')}"
+               th:text="${settings.certPhotoId() != null ? 'Change photo' : 'Upload your own'}">Upload your own</a>
+            <div class="help">Customers see this when they add a birth certificate to a loaf. Removing your photo brings back the original example.</div>
           </div>
         </section>
 
@@ -84,12 +107,30 @@
             <div class="help">Separate with commas. They sign in with Google or an emailed code.</div></div>
         </section>
 
+        <section class="card stack" id="sales-tax">
+          <h2 class="card-title">Sales tax</h2>
+          <div class="toggle-row"><div><div class="t">Charge sales tax</div><div class="d">Turn on once your Tennessee sales tax account is open. Orders placed before then stay untaxed.</div></div>
+            <label class="switch"><input type="checkbox" name="tax.enabled" th:checked="${settings.flag('tax.enabled')}" aria-label="Charge sales tax"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">Prices include tax</div><div class="d">Off: tax is added as its own line at checkout. On: menu prices already include it, and the site works out the tax inside them for your records.</div></div>
+            <label class="switch"><input type="checkbox" name="tax.included" th:checked="${settings.flag('tax.included')}" aria-label="Prices include tax"><span></span></label></div>
+          <div class="field-row">
+            <div class="field"><label for="ratePrepared">State rate, prepared food (%)</label><input type="text" inputmode="decimal" id="ratePrepared" name="tax.ratePrepared" th:value="${settings.get('tax.ratePrepared')}"></div>
+            <div class="field"><label for="rateFood">State rate, food or grocery (%)</label><input type="text" inputmode="decimal" id="rateFood" name="tax.rateFood" th:value="${settings.get('tax.rateFood')}"></div>
+          </div>
+          <div class="field"><label for="rateLocal">Local rate (%)</label><input type="text" inputmode="decimal" id="rateLocal" name="tax.rateLocal" th:value="${settings.get('tax.rateLocal')}" style="max-width: 160px">
+            <div class="help">Williamson County is 2.75%, which covers Brentwood and Nolensville. Set each product's kind (prepared food, food or grocery, or not taxed) on its page under Products. The tax applies to items after promo codes, plus priority and delivery fees.</div></div>
+        </section>
+
         <section class="card stack">
           <h2 class="card-title">Photo look</h2>
-          <p class="t-small muted" style="margin: 0">Where the editor starts for new photos (5 is no change).</p>
+          <p class="t-small muted" style="margin: 0">Where the editor's sliders start for new photos, from -100 to 100 (0 is no change).</p>
           <div class="field-row">
-            <div class="field"><label for="warmth">Warmth</label><input type="number" min="0" max="10" id="warmth" name="photos.warmth" th:value="${settings.get('photos.warmth')}"></div>
-            <div class="field"><label for="brightness">Brightness</label><input type="number" min="0" max="10" id="brightness" name="photos.brightness" th:value="${settings.get('photos.brightness')}"></div>
+            <div class="field"><label for="brightness">Brightness</label><input type="number" min="-100" max="100" id="brightness" name="photos.brightness" th:value="${settings.get('photos.brightness')}"></div>
+            <div class="field"><label for="contrast">Contrast</label><input type="number" min="-100" max="100" id="contrast" name="photos.contrast" th:value="${settings.get('photos.contrast')}"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="saturation">Saturation</label><input type="number" min="-100" max="100" id="saturation" name="photos.saturation" th:value="${settings.get('photos.saturation')}"></div>
+            <div class="field"><label for="warmth">Warmth</label><input type="number" min="-100" max="100" id="warmth" name="photos.warmth" th:value="${settings.get('photos.warmth')}"></div>
           </div>
         </section>
       </div>
@@ -105,7 +146,7 @@
       </div>
     </section>
 
-    <div class="save-bar"><button type="submit" class="btn">Save settings</button></div>
+    <div class="save-bar" data-autosave-hide><button type="submit" class="btn">Save settings</button></div>
   </form>
 </main>
 </body>

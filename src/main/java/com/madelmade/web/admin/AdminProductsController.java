@@ -4,6 +4,7 @@ import com.madelmade.domain.Category;
 import com.madelmade.domain.OptionChoice;
 import com.madelmade.domain.OptionGroup;
 import com.madelmade.domain.Product;
+import com.madelmade.domain.TaxCategory;
 import com.madelmade.repo.CategoryRepository;
 import com.madelmade.repo.OptionChoiceRepository;
 import com.madelmade.repo.OptionGroupRepository;
@@ -17,6 +18,7 @@ import java.util.Locale;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,13 +56,16 @@ public class AdminProductsController {
         p.setDisplayOrder((int) products.count());
         model.addAttribute("product", p);
         model.addAttribute("categories", categories.findAllByOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("taxCategories", TaxCategory.values());
         return "admin/product-edit";
     }
 
     @GetMapping("/products/{id}")
     public String edit(@PathVariable Long id, Model model) {
         model.addAttribute("product", find(id));
+        model.addAttribute("sharedGroups", groups.findByProductIsNullOrderByDisplayOrderAscIdAsc());
         model.addAttribute("categories", categories.findAllByOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("taxCategories", TaxCategory.values());
         return "admin/product-edit";
     }
 
@@ -69,11 +74,17 @@ public class AdminProductsController {
     public String save(@RequestParam(required = false) Long id, @RequestParam String name,
                        @RequestParam Long categoryId, @RequestParam(required = false) String shortDescription,
                        @RequestParam(required = false) String description, @RequestParam(required = false) String basePrice,
-                       @RequestParam(required = false) Integer leadTimeDays, @RequestParam(defaultValue = "0") int displayOrder,
+                       @RequestParam(required = false) Integer leadTimeDays,
                        @RequestParam(defaultValue = "false") boolean active, @RequestParam(defaultValue = "false") boolean soldOut,
                        @RequestParam(defaultValue = "false") boolean countsAsLoaf,
+                       @RequestParam(defaultValue = "false") boolean pickupOnly,
                        @RequestParam(defaultValue = "false") boolean allowsBirthCertificate,
-                       @RequestParam(required = false) String badge, RedirectAttributes flash) {
+                       @RequestParam(defaultValue = "false") boolean buildYourOwnTag,
+                       @RequestParam(required = false) TaxCategory taxCategory,
+                       @RequestParam(required = false) String badge,
+                       @RequestParam(required = false) String ingredients, @RequestParam(required = false) String allergens,
+                       @RequestParam(required = false) String notesHint,
+                       RedirectAttributes flash) {
         if (name == null || name.isBlank()) {
             flash.addFlashAttribute("errors", List.of("Give the product a name."));
             return id == null ? "redirect:/admin/products/new" : "redirect:/admin/products/" + id;
@@ -86,16 +97,45 @@ public class AdminProductsController {
         p.setDescription(blank(description));
         p.setBasePrice(money(basePrice));
         p.setLeadTimeDays(leadTimeDays);
-        p.setDisplayOrder(displayOrder);
+        // New products go to the end of their category; the arrows on the Products list move them.
+        if (id == null) p.setDisplayOrder((int) products.count());
         p.setActive(active);
         p.setSoldOut(soldOut);
         p.setCountsAsLoaf(countsAsLoaf);
+        p.setPickupOnly(pickupOnly);
         p.setAllowsBirthCertificate(allowsBirthCertificate);
+        p.setBuildYourOwnTag(buildYourOwnTag);
+        if (taxCategory != null) p.setTaxCategory(taxCategory);
         p.setBadge(blank(badge));
+        p.setIngredients(blank(ingredients));
+        p.setAllergens(blank(allergens));
+        p.setNotesHint(blank(notesHint));
         p.setUpdatedAt(Instant.now());
         products.save(p);
         flash.addFlashAttribute("ok", id == null ? "Product added. Now add its options and photo." : "Saved.");
         return "redirect:/admin/products/" + p.getId();
+    }
+
+    /** The arrows on the Products list: moves a product within its menu tab. */
+    @PostMapping("/products/{id}/move")
+    @Transactional
+    public String moveProduct(@PathVariable Long id, @RequestParam String dir) {
+        Product p = find(id);
+        List<Product> sameTab = products.findAllOrdered().stream()
+                .filter(o -> o.getCategory().getId().equals(p.getCategory().getId())).toList();
+        Ordering.move(sameTab, p, dir, Product::setDisplayOrder);
+        return "redirect:/admin/products#product-" + id;
+    }
+
+    /** The arrows in "Order on the product page": moves a group among the product's own and shared groups. */
+    @PostMapping("/products/{id}/groups/{gid}/move")
+    @Transactional
+    public String moveGroup(@PathVariable Long id, @PathVariable Long gid, @RequestParam String dir) {
+        Product p = find(id);
+        List<OptionGroup> all = p.getAllOptionGroups();
+        OptionGroup g = all.stream().filter(o -> o.getId().equals(gid)).findFirst().orElseThrow(NotFoundException::new);
+        Ordering.move(all, g, dir, OptionGroup::setDisplayOrder);
+        return "redirect:/admin/products/" + id + "#group-order";
     }
 
     @PostMapping("/products/{id}/toggle")
@@ -139,84 +179,144 @@ public class AdminProductsController {
         return "redirect:/admin/products/" + id + "#group-" + g.getId();
     }
 
-    @PostMapping("/groups/{gid}")
+    /**
+     * Saves a whole option group in one go: the group's settings, every choice, and a new choice if one
+     * was typed. Choice fields arrive as "c{id}.name", "c{id}.priceChange" and so on.
+     */
+    @PostMapping("/groups/{gid}/save")
     @Transactional
-    public String updateGroup(@PathVariable Long gid, @RequestParam String name, @RequestParam String displayStyle,
-                              @RequestParam(defaultValue = "0") int displayOrder,
-                              @RequestParam(defaultValue = "false") boolean required,
-                              @RequestParam(defaultValue = "false") boolean multiple, RedirectAttributes flash) {
+    public String saveGroup(@PathVariable Long gid, @RequestParam MultiValueMap<String, String> form, RedirectAttributes flash) {
         OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
+        String name = form.getFirst("name");
         if (name != null && !name.isBlank()) g.setName(name.trim());
-        g.setDisplayStyle(OptionGroup.STYLE_SWATCHES.equals(displayStyle) ? OptionGroup.STYLE_SWATCHES : OptionGroup.STYLE_BUTTONS);
-        g.setDisplayOrder(displayOrder);
-        g.setRequired(required);
-        g.setMultiple(multiple);
+        g.setDisplayStyle(OptionGroup.STYLE_SWATCHES.equals(form.getFirst("displayStyle")) ? OptionGroup.STYLE_SWATCHES : OptionGroup.STYLE_BUTTONS);
+        g.setRequired(form.containsKey("required"));
+        g.setMultiple(form.containsKey("multiple"));
+
+        OptionChoice newDefault = null;
+        for (OptionChoice c : g.getChoices()) {
+            String p = "c" + c.getId() + ".";
+            if (!form.containsKey(p + "name")) continue;
+            String cname = form.getFirst(p + "name");
+            if (cname != null && !cname.isBlank()) c.setName(cname.trim());
+            c.setPriceChange(money(form.getFirst(p + "priceChange")));
+            c.setDescription(blank(form.getFirst(p + "description")));
+            c.setIngredients(blank(form.getFirst(p + "ingredients")));
+            c.setAllergens(blank(form.getFirst(p + "allergens")));
+            Integer textLimit = integer(form.getFirst(p + "textLimit"), null);
+            c.setTextLimit(textLimit != null && textLimit > 0 ? textLimit : null);
+            c.setActive(form.containsKey(p + "active"));
+            c.setHalvesPrice(form.containsKey(p + "halvesPrice"));
+            c.setPriceTbd(form.containsKey(p + "priceTbd"));
+            c.setNeedsDesignApproval(form.containsKey(p + "needsDesignApproval"));
+            boolean wantsDefault = form.containsKey(p + "defaultChoice");
+            // In a pick-one group, a newly ticked default wins over the old one.
+            if (wantsDefault && !c.isDefaultChoice() && newDefault == null) newDefault = c;
+            c.setDefaultChoice(wantsDefault);
+        }
+        if (!g.isMultiple()) {
+            List<OptionChoice> defaults = g.getChoices().stream().filter(OptionChoice::isDefaultChoice).toList();
+            OptionChoice keep = newDefault != null ? newDefault : defaults.isEmpty() ? null : defaults.get(0);
+            g.getChoices().forEach(c -> c.setDefaultChoice(c == keep));
+        }
+
+        String newName = form.getFirst("newChoiceName");
+        String added = null;
+        if (newName != null && !newName.isBlank()) {
+            OptionChoice c = new OptionChoice();
+            c.setGroup(g);
+            c.setName(newName.trim());
+            c.setPriceChange(money(form.getFirst("newChoicePrice")));
+            c.setDisplayOrder(g.getChoices().size());
+            c.setDefaultChoice(g.getChoices().isEmpty());
+            g.getChoices().add(c);
+            added = c.getName();
+        }
+        // A choice's arrows submit the whole form with move=c{id}:up, so edits made first aren't lost.
+        String move = form.getFirst("move");
+        if (move != null && move.matches("c\\d+:(up|down)")) {
+            Long cid = Long.valueOf(move.substring(1, move.indexOf(':')));
+            g.getChoices().stream().filter(c -> cid.equals(c.getId())).findFirst()
+                    .ifPresent(c -> Ordering.move(g.getChoices(), c, move.substring(move.indexOf(':') + 1), OptionChoice::setDisplayOrder));
+        }
         groups.save(g);
-        flash.addFlashAttribute("ok", "Saved " + g.getName() + ".");
-        return "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + gid;
+        if (move == null) flash.addFlashAttribute("ok", "Saved " + g.getName() + (added != null ? " and added " + added : "") + ".");
+        return redirectTo(g);
     }
 
     @PostMapping("/groups/{gid}/delete")
     @Transactional
     public String deleteGroup(@PathVariable Long gid, RedirectAttributes flash) {
         OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
+        flash.addFlashAttribute("ok", "Removed " + g.getName() + ".");
+        if (g.isShared()) {
+            products.findAll().forEach(p -> p.getSharedGroups().remove(g));
+            groups.delete(g);
+            return "redirect:/admin/options";
+        }
         Product p = g.getProduct();
         p.getOptionGroups().remove(g);
         products.save(p);
-        flash.addFlashAttribute("ok", "Removed " + g.getName() + ".");
         return "redirect:/admin/products/" + p.getId();
     }
 
-    // ---- Choices ----
+    // ---- Shared groups, like Flavor on the Classic and Stencil loaves ----
 
-    @PostMapping("/groups/{gid}/choices")
-    @Transactional
-    public String addChoice(@PathVariable Long gid, @RequestParam String name,
-                            @RequestParam(required = false) String priceChange, RedirectAttributes flash) {
-        OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
-        if (name == null || name.isBlank()) return back(g.getProduct().getId(), flash, "Name the choice first.");
-        OptionChoice c = new OptionChoice();
-        c.setGroup(g);
-        c.setName(name.trim());
-        c.setPriceChange(money(priceChange));
-        c.setDisplayOrder(g.getChoices().size());
-        c.setDefaultChoice(g.getChoices().isEmpty());
-        g.getChoices().add(c);
-        groups.save(g);
-        flash.addFlashAttribute("ok", "Added " + c.getName() + ".");
-        return "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + gid;
+    @GetMapping("/options")
+    public String sharedGroups(Model model) {
+        model.addAttribute("sharedGroups", groups.findByProductIsNullOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("products", products.findAllOrdered());
+        return "admin/options";
     }
 
-    @PostMapping("/choices/{cid}")
+    @PostMapping("/options")
     @Transactional
-    public String updateChoice(@PathVariable Long cid, @RequestParam String name,
-                               @RequestParam(required = false) String priceChange,
-                               @RequestParam(required = false) String description,
-                               @RequestParam(required = false) Integer textLimit,
-                               @RequestParam(defaultValue = "0") int displayOrder,
-                               @RequestParam(defaultValue = "false") boolean halvesPrice,
-                               @RequestParam(defaultValue = "false") boolean priceTbd,
-                               @RequestParam(defaultValue = "false") boolean needsDesignApproval,
-                               @RequestParam(defaultValue = "false") boolean defaultChoice,
-                               @RequestParam(defaultValue = "false") boolean active, RedirectAttributes flash) {
-        OptionChoice c = choices.findById(cid).orElseThrow(NotFoundException::new);
-        if (name != null && !name.isBlank()) c.setName(name.trim());
-        c.setPriceChange(money(priceChange));
-        c.setDescription(blank(description));
-        c.setTextLimit(textLimit != null && textLimit > 0 ? textLimit : null);
-        c.setDisplayOrder(displayOrder);
-        c.setHalvesPrice(halvesPrice);
-        c.setPriceTbd(priceTbd);
-        c.setNeedsDesignApproval(needsDesignApproval);
-        c.setActive(active);
-        if (defaultChoice && !c.getGroup().isMultiple()) {
-            c.getGroup().getChoices().forEach(o -> o.setDefaultChoice(false));
+    public String addSharedGroup(@RequestParam String name,
+                                 @RequestParam(defaultValue = OptionGroup.STYLE_BUTTONS) String displayStyle,
+                                 RedirectAttributes flash) {
+        if (name == null || name.isBlank()) {
+            flash.addFlashAttribute("errors", List.of("Name the option group, e.g. Flavor."));
+            return "redirect:/admin/options";
         }
-        c.setDefaultChoice(defaultChoice);
-        choices.save(c);
-        flash.addFlashAttribute("ok", "Saved " + c.getName() + ".");
-        return "redirect:/admin/products/" + c.getGroup().getProduct().getId() + "#group-" + c.getGroup().getId();
+        OptionGroup g = new OptionGroup();
+        g.setName(name.trim());
+        g.setDisplayStyle(OptionGroup.STYLE_SWATCHES.equals(displayStyle) ? OptionGroup.STYLE_SWATCHES : OptionGroup.STYLE_BUTTONS);
+        g.setDisplayOrder(1);
+        groups.save(g);
+        flash.addFlashAttribute("ok", "Added " + g.getName() + ". Add its choices, then pick the products that use it.");
+        return redirectTo(g);
     }
+
+    /** Which products use a shared group, set from the Shared options page. */
+    @PostMapping("/options/{gid}/products")
+    @Transactional
+    public String setGroupProducts(@PathVariable Long gid, @RequestParam(required = false) List<Long> productIds,
+                                   RedirectAttributes flash) {
+        OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
+        if (!g.isShared()) throw new NotFoundException();
+        List<Long> ids = productIds == null ? List.of() : productIds;
+        for (Product p : products.findAll()) {
+            if (ids.contains(p.getId())) p.getSharedGroups().add(g);
+            else p.getSharedGroups().remove(g);
+        }
+        flash.addFlashAttribute("ok", "Saved which products use " + g.getName() + ".");
+        return redirectTo(g);
+    }
+
+    /** Which shared groups a product uses, set from the product's page. */
+    @PostMapping("/products/{id}/shared")
+    @Transactional
+    public String setProductGroups(@PathVariable Long id, @RequestParam(required = false) List<Long> groupIds,
+                                   RedirectAttributes flash) {
+        Product p = find(id);
+        p.getSharedGroups().clear();
+        if (groupIds != null) groups.findAllById(groupIds).stream().filter(OptionGroup::isShared).forEach(p.getSharedGroups()::add);
+        products.save(p);
+        flash.addFlashAttribute("ok", "Saved.");
+        return "redirect:/admin/products/" + id + "#shared";
+    }
+
+    // ---- Choices ----
 
     @PostMapping("/choices/{cid}/delete")
     @Transactional
@@ -226,7 +326,7 @@ public class AdminProductsController {
         g.getChoices().remove(c);
         groups.save(g);
         flash.addFlashAttribute("ok", "Removed " + c.getName() + ".");
-        return "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + g.getId();
+        return redirectTo(g);
     }
 
     // ---- Categories ----
@@ -250,13 +350,13 @@ public class AdminProductsController {
     @PostMapping("/categories/{id}")
     @Transactional
     public String updateCategory(@PathVariable Long id, @RequestParam String name,
-                                 @RequestParam(defaultValue = "0") int displayOrder, RedirectAttributes flash) {
+                                 @RequestParam(required = false) String move, RedirectAttributes flash) {
         Category c = categories.findById(id).orElseThrow(NotFoundException::new);
         if (name != null && !name.isBlank()) c.setName(name.trim());
-        c.setDisplayOrder(displayOrder);
+        if (move != null) Ordering.move(categories.findAllByOrderByDisplayOrderAscIdAsc(), c, move, Category::setDisplayOrder);
+        else flash.addFlashAttribute("ok", "Saved.");
         categories.save(c);
-        flash.addFlashAttribute("ok", "Saved.");
-        return "redirect:/admin/products";
+        return "redirect:/admin/products#cats";
     }
 
     @PostMapping("/categories/{id}/delete")
@@ -279,6 +379,11 @@ public class AdminProductsController {
         return products.findById(id).orElseThrow(NotFoundException::new);
     }
 
+    private static String redirectTo(OptionGroup g) {
+        return g.isShared() ? "redirect:/admin/options#group-" + g.getId()
+                : "redirect:/admin/products/" + g.getProduct().getId() + "#group-" + g.getId();
+    }
+
     private String back(Long productId, RedirectAttributes flash, String error) {
         flash.addFlashAttribute("errors", List.of(error));
         return "redirect:/admin/products/" + productId;
@@ -295,6 +400,15 @@ public class AdminProductsController {
         String n = Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
         n = n.toLowerCase(Locale.ROOT).replace("'", "").replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
         return n.isEmpty() ? "item" : n;
+    }
+
+    private static Integer integer(String s, Integer fallback) {
+        if (s == null || s.isBlank()) return fallback;
+        try {
+            return Integer.valueOf(s.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
     }
 
     private static BigDecimal money(String s) {

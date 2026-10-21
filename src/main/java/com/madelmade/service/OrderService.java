@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -31,11 +33,12 @@ public class OrderService {
     private final SettingsService settings;
     private final Notifier notifier;
     private final Formats formats;
+    private final PromoService promos;
     private final SecureRandom random = new SecureRandom();
 
     public OrderService(OrderRepository orders, ProductRepository products, CustomerRepository customerRepo,
                         CustomerService customers, PricingService pricing, SettingsService settings,
-                        Notifier notifier, Formats formats) {
+                        Notifier notifier, Formats formats, PromoService promos) {
         this.orders = orders;
         this.products = products;
         this.customerRepo = customerRepo;
@@ -44,6 +47,7 @@ public class OrderService {
         this.settings = settings;
         this.notifier = notifier;
         this.formats = formats;
+        this.promos = promos;
     }
 
     // ---- Dates and capacity ----
@@ -73,44 +77,65 @@ public class OrderService {
         return settings.priorityEnabled() && settings.priorityNoticeDays() < standardNotice(cart);
     }
 
-    public int loavesInProgress() {
-        return orders.findByStatusInOrderByCreatedAtDesc(OrderStatus.IN_PROGRESS).stream()
+    /** Loaves in every order that's still open: waiting for review, approved or baked. */
+    public int loavesBooked() {
+        return orders.findByStatusInOrderByCreatedAtDesc(OrderStatus.OPEN).stream()
                 .mapToInt(CustomerOrder::getLoafCount).sum();
     }
+
+    /** True when this cart would put Madeline over the loaves she can have on the go at once. */
+    public boolean wouldBeOverCapacity(int cartLoaves) {
+        return cartLoaves > 0 && loavesBooked() + cartLoaves > settings.maxLoaves();
+    }
+
+    public String perOrderLimitMessage(int inCart) {
+        int max = settings.maxPerOrder();
+        String msg = "You can order up to " + max + " loa" + (max == 1 ? "f" : "ves") + " per order.";
+        if (inCart <= 0) return msg;
+        int left = Math.max(0, max - inCart);
+        return msg + " You have " + inCart + " in your cart, so you can add "
+                + (left == 0 ? "no more." : left + " more.");
+    }
+
 
     // ---- Customer side ----
 
     @Transactional
     public CustomerOrder submit(CheckoutForm f, Cart cart, Optional<String> signedInEmail) {
         List<String> errors = new ArrayList<>();
+        Map<String, List<String>> byField = new LinkedHashMap<>();
+        BiConsumer<String, String> error = (field, message) -> {
+            errors.add(message);
+            byField.computeIfAbsent(field, k -> new ArrayList<>()).add(message);
+        };
         if (!settings.ordersOpen()) throw new UserFacingException(settings.get("orders.pausedNote"));
         if (cart.isEmpty()) throw new UserFacingException("Your cart is empty.");
-        if (cart.getLoafCount() > settings.maxLoaves()) {
-            errors.add("Madeline can bake up to " + settings.maxLoaves() + " loaves per order. Please remove a loaf or two.");
+        if (cart.getLoafCount() > settings.maxPerOrder()) {
+            error.accept("cart", "You can order up to " + settings.maxPerOrder() + " loaves per order. Please remove a loaf or two.");
         }
 
         String email = signedInEmail.orElse(trim(f.getEmail())).toLowerCase();
-        if (isBlank(f.getName())) errors.add("Please tell us your name.");
-        if (!EMAIL.matcher(email).matches()) errors.add("Please enter a valid email so you get updates.");
+        if (isBlank(f.getName())) error.accept("contact", "Please tell us your name.");
+        if (!EMAIL.matcher(email).matches()) error.accept("contact", "Please enter a valid email so you get updates.");
         if (f.getContactPref() != ContactPref.EMAIL && isBlank(f.getPhone())) {
-            errors.add("Please add a phone number so Madeline can " + (f.getContactPref() == ContactPref.TEXT ? "text" : "WhatsApp") + " you.");
+            error.accept("contact", "Please add a phone number so Madeline can " + (f.getContactPref() == ContactPref.TEXT ? "text" : "WhatsApp") + " you.");
         }
         if (f.getFulfillment() == Fulfillment.DELIVERY) {
-            if (!settings.deliveryEnabled()) errors.add("Delivery isn't available right now; please choose pickup.");
-            else if (isBlank(f.getAddress())) errors.add("Please enter the delivery address.");
+            if (!settings.deliveryEnabled()) error.accept("fulfillment", "Delivery isn't available right now; please choose pickup.");
+            else if (isBlank(f.getAddress())) error.accept("fulfillment", "Please enter the delivery address.");
         }
         boolean priority = f.isPriority() && settings.priorityEnabled();
         if (f.getDate() == null) {
-            errors.add("Please choose a date.");
+            error.accept("date", "Please choose a date.");
         } else {
             LocalDate earliest = earliestDate(cart, priority);
             if (f.getDate().isBefore(earliest)) {
-                errors.add("The earliest date for this order is " + formats.longDay(earliest)
+                error.accept("date", "The earliest date for this order is " + formats.longDay(earliest)
                         + (priority || !priorityHelps(cart) ? "." : ", or sooner with priority."));
             } else if (settings.daysOff().contains(f.getDate())) {
-                errors.add("Madeline isn't baking on " + formats.longDay(f.getDate()) + ". Please pick another day.");
+                error.accept("date", "Madeline isn't baking on " + formats.longDay(f.getDate()) + ". Please pick another day.");
             } else if (f.getDate().isAfter(formats.today().plusDays(180))) {
-                errors.add("Please choose a date within the next six months.");
+                error.accept("date", "Please choose a date within the next six months.");
             }
         }
 
@@ -119,18 +144,28 @@ public class OrderService {
         for (CartLine line : cart.getLines()) {
             Optional<Product> p = products.findById(line.getProductId());
             if (p.isEmpty() || !p.get().isActive() || p.get().isSoldOut()) {
-                errors.add(line.getProductName() + " is no longer available. Please remove it from your cart.");
+                error.accept("cart", line.getProductName() + " is no longer available. Please remove it from your cart.");
                 continue;
             }
             PricingService.Quote q = pricing.quote(p.get(), new PricingService.Selection(line.getChoiceIds(),
-                    line.getLettersText(), line.getCustomNotes(), line.isCertificate(), line.getCertName(), line.getCertMessage()));
+                    line.getLettersText(), line.getLettersFont(), line.getCustomNotes(), line.isCertificate(), line.getCertName(), line.getCertMessage()));
             if (!q.ok()) {
-                errors.add(line.getProductName() + ": " + String.join(" ", q.errors()));
+                error.accept("cart", line.getProductName() + ": " + String.join(" ", q.errors()));
                 continue;
             }
             items.add(toItem(p.get(), line, q));
+            line.setPickupOnly(p.get().isPickupOnly());
+            if (p.get().isPickupOnly() && f.getFulfillment() == Fulfillment.DELIVERY) {
+                error.accept("fulfillment", p.get().getName() + " is pickup only and can't be delivered. Please choose pickup, or order it separately.");
+            }
         }
-        if (!errors.isEmpty()) throw new UserFacingException(errors);
+        com.madelmade.domain.PromoCode promo = null;
+        try {
+            promo = promos.check(f.getPromoCode(), email);
+        } catch (UserFacingException e) {
+            e.getMessages().forEach(m -> error.accept("promo", m));
+        }
+        if (!errors.isEmpty()) throw new UserFacingException(errors, byField);
 
         Customer customer = customers.findOrCreate(email, trim(f.getName()));
         if (isBlank(customer.getName())) customer.setName(trim(f.getName()));
@@ -154,11 +189,17 @@ public class OrderService {
         o.setPriorityFee(priority ? settings.priorityFee() : BigDecimal.ZERO);
         o.setCustomerNote(trim(f.getNote()));
         o.setStatusToken(newToken());
+        if (promo != null) {
+            o.setPromoCode(promo.getCode());
+            o.setPromoPercent(promo.getPercentOff());
+        }
         items.forEach(o::addItem);
+        o.applyTaxRates(settings.taxRates());
         o.recalculate();
-        o.setOverCapacity(loavesInProgress() + o.getLoafCount() > settings.maxLoaves());
+        o.setOverCapacity(wouldBeOverCapacity(o.getLoafCount()));
         o.changeStatus(OrderStatus.NEEDS_REVIEW, "Request submitted");
         orders.save(o);
+        if (promo != null) promos.recordUse(promo);
 
         cart.clear();
         notifier.toCustomer(o, EmailWording.RECEIVED, null);
@@ -175,6 +216,8 @@ public class OrderService {
         i.setOptionsSummary(q.summary());
         i.setCustomNotes(trim(line.getCustomNotes()));
         i.setLettersText(trim(line.getLettersText()));
+        i.setLettersFont(trim(line.getLettersFont()));
+        i.setTaxCategory(p.getTaxCategory());
         i.setUnitPrice(q.unitPrice());
         i.setPriceTbd(q.priceTbd());
         i.setCountsAsLoaf(p.isCountsAsLoaf());
@@ -223,19 +266,23 @@ public class OrderService {
             }
             List<Long> ids = parseIds(i.getChoiceIds());
             boolean cert = i.isHasCertificate() && settings.certificatesEnabled() && p.get().isAllowsBirthCertificate();
-            PricingService.Quote q = pricing.quote(p.get(), new PricingService.Selection(ids, i.getLettersText(),
+            PricingService.Quote q = pricing.quote(p.get(), new PricingService.Selection(ids, i.getLettersText(), i.getLettersFont(),
                     i.getCustomNotes(), cert, i.getCertName(), i.getCertMessage()));
             if (!q.ok()) {
                 skipped.add(i.getProductName());
                 continue;
             }
-            cart.add(toCartLine(p.get(), q, i.getQuantity(), i.getLettersText(), i.getCustomNotes(), cert,
+            if (p.get().isCountsAsLoaf() && cart.getLoafCount() + i.getQuantity() > settings.maxPerOrder()) {
+                skipped.add(i.getProductName());
+                continue;
+            }
+            cart.add(toCartLine(p.get(), q, i.getQuantity(), i.getLettersText(), i.getLettersFont(), i.getCustomNotes(), cert,
                     i.getCertName(), i.getCertMessage()));
         }
         return skipped;
     }
 
-    public CartLine toCartLine(Product p, PricingService.Quote q, int qty, String letters, String notes,
+    public CartLine toCartLine(Product p, PricingService.Quote q, int qty, String letters, String font, String notes,
                                boolean cert, String certName, String certMessage) {
         CartLine l = new CartLine();
         l.setProductId(p.getId());
@@ -245,16 +292,27 @@ public class OrderService {
         l.setChoiceIds(new ArrayList<>(q.choiceIds()));
         l.setOptionsSummary(q.summary());
         l.setLettersText(trim(letters));
+        l.setLettersFont(trim(letters) == null ? null : trim(font));
         l.setCustomNotes(trim(notes));
         l.setCertificate(cert);
         l.setCertName(cert ? trim(certName) : null);
         l.setCertMessage(cert ? trim(certMessage) : null);
         l.setCertPrice(q.certPrice());
         l.setUnitPrice(q.unitPrice());
-        l.setQuantity(Math.max(1, Math.min(qty, 6)));
+        l.setQuantity(Math.max(1, Math.min(qty, 12)));
         l.setPriceTbd(q.priceTbd());
         l.setCountsAsLoaf(p.isCountsAsLoaf());
+        l.setPickupOnly(p.isPickupOnly());
+        l.setTaxCategory(p.getTaxCategory());
         return l;
+    }
+
+    /** Tax on the cart's items after any promo, shown at checkout before fees are known. */
+    public TaxCalculator.Result estimateTax(Cart cart, BigDecimal discount) {
+        Map<com.madelmade.domain.TaxCategory, BigDecimal> byCategory = new java.util.EnumMap<>(com.madelmade.domain.TaxCategory.class);
+        for (CartLine l : cart.getLines()) byCategory.merge(l.getTaxCategory() == null ? com.madelmade.domain.TaxCategory.PREPARED : l.getTaxCategory(), l.getLineTotal(), BigDecimal::add);
+        BigDecimal charged = cart.getTotal().subtract(discount == null ? BigDecimal.ZERO : discount);
+        return TaxCalculator.compute(settings.taxRates(), byCategory, charged);
     }
 
     // ---- Madeline's side ----

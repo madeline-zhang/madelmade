@@ -2,6 +2,7 @@ package com.madelmade.web.admin;
 
 import com.madelmade.domain.GalleryPhoto;
 import com.madelmade.domain.OptionChoice;
+import com.madelmade.domain.OptionGroup;
 import com.madelmade.domain.Photo;
 import com.madelmade.domain.Product;
 import com.madelmade.repo.GalleryPhotoRepository;
@@ -32,7 +33,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * Photo editor: rotate, tilt, crop, warmth and brightness. Edits are made in the browser and the
  * original is always kept, so a photo can be re-edited later without losing quality.
- * Targets: product-ID, choice-ID, gallery-ID or gallery-new.
+ * Targets: product-ID, choice-ID, gallery-ID, gallery-new, other-new (Other bakes) or about-photo.
  */
 @Controller
 @RequestMapping("/admin/photos")
@@ -66,13 +67,29 @@ public class AdminPhotosController {
             }
             case "choice" -> {
                 OptionChoice c = choices.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
-                return new Target(key, c.getGroup().getProduct().getName() + ": " + c.getName(), c.getPhotoId(),
-                        "/admin/products/" + c.getGroup().getProduct().getId() + "#group-" + c.getGroup().getId(), "square");
+                OptionGroup g = c.getGroup();
+                if (g.isShared()) {
+                    return new Target(key, g.getName() + ": " + c.getName(), c.getPhotoId(), "/admin/options#group-" + g.getId(), "square");
+                }
+                return new Target(key, g.getProduct().getName() + ": " + c.getName(), c.getPhotoId(),
+                        "/admin/products/" + g.getProduct().getId() + "#group-" + g.getId(), "square");
             }
             case "gallery" -> {
                 if (parts[1].equals("new")) return new Target(key, "New gallery photo", null, "/admin/gallery", "portrait");
                 GalleryPhoto g = gallery.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
                 return new Target(key, g.getCaption() == null ? "Gallery photo" : g.getCaption(), g.getPhotoId(), "/admin/gallery", "portrait");
+            }
+            case "other" -> {
+                if (!parts[1].equals("new")) throw new NotFoundException();
+                return new Target(key, "New photo for Other bakes", null, "/admin/gallery#other", "portrait");
+            }
+            case "about" -> {
+                if (!parts[1].equals("photo")) throw new NotFoundException();
+                return new Target(key, "Your photo on the About page", settings.aboutPhotoId(), "/admin/pages", "portrait");
+            }
+            case "cert" -> {
+                if (!parts[1].equals("photo")) throw new NotFoundException();
+                return new Target(key, "Example birth certificate", settings.certPhotoId(), "/admin/settings#certificates", "certificate");
             }
             default -> throw new NotFoundException();
         }
@@ -86,10 +103,20 @@ public class AdminPhotosController {
         model.addAttribute("photo", p);
         model.addAttribute("defaultWarmth", p != null ? p.getWarmth() : settings.number("photos.warmth"));
         model.addAttribute("defaultBrightness", p != null ? p.getBrightness() : settings.number("photos.brightness"));
-        model.addAttribute("defaultCrop", p != null ? p.getCrop() : t.crop());
+        model.addAttribute("defaultContrast", p != null ? p.getContrast() : settings.number("photos.contrast"));
+        model.addAttribute("defaultSaturation", p != null ? p.getSaturation() : settings.number("photos.saturation"));
+        model.addAttribute("defaultCrop", p != null ? p.getCrop() : "");
+        // Menu cards and swatches are square; gallery and About photos are 4:5; the certificate card is 4:3 landscape.
+        model.addAttribute("aspect", switch (t.crop()) { case "square" -> 1.0; case "certificate" -> 4.0 / 3; default -> 0.8; });
+        model.addAttribute("aspectLabel", switch (t.crop()) {
+            case "square" -> "Square, to match the menu";
+            case "certificate" -> "4:3, landscape like the certificate card";
+            default -> "4:5, to match the gallery";
+        });
         model.addAttribute("defaultRotate", p != null ? p.getRotate() : 0);
         model.addAttribute("defaultTilt", p != null ? p.getTilt() : 0.0);
-        model.addAttribute("section", target.startsWith("gallery") ? "gallery" : "products");
+        model.addAttribute("section", target.startsWith("gallery") || target.startsWith("other") ? "gallery"
+                : target.startsWith("about") ? "pages" : target.startsWith("cert") ? "settings" : "products");
         return "admin/photo-editor";
     }
 
@@ -107,12 +134,14 @@ public class AdminPhotosController {
                                                     @RequestParam MultipartFile edited,
                                                     @RequestParam(defaultValue = "0") int rotate,
                                                     @RequestParam(defaultValue = "0") double tilt,
-                                                    @RequestParam(defaultValue = "original") String crop,
-                                                    @RequestParam(defaultValue = "5") int warmth,
-                                                    @RequestParam(defaultValue = "5") int brightness,
+                                                    @RequestParam(defaultValue = "") String crop,
+                                                    @RequestParam(defaultValue = "0") int warmth,
+                                                    @RequestParam(defaultValue = "0") int brightness,
+                                                    @RequestParam(defaultValue = "0") int contrast,
+                                                    @RequestParam(defaultValue = "0") int saturation,
                                                     @RequestParam(required = false) String caption) throws IOException {
         Target t = target(target);
-        PhotoService.EditSettings s = new PhotoService.EditSettings(rotate, tilt, crop, warmth, brightness);
+        PhotoService.EditSettings s = new PhotoService.EditSettings(rotate, tilt, crop, warmth, brightness, contrast, saturation);
         try {
             Photo photo;
             boolean replacing = original != null && !original.isEmpty();
@@ -139,6 +168,8 @@ public class AdminPhotosController {
             case "product" -> products.findById(parse(parts[1])).ifPresent(p -> { p.setPhotoId(null); products.save(p); });
             case "choice" -> choices.findById(parse(parts[1])).ifPresent(c -> { c.setPhotoId(null); choices.save(c); });
             case "gallery" -> gallery.findById(parse(parts[1])).ifPresent(gallery::delete);
+            case "about" -> settings.putAll(Map.of("about.photoId", ""));
+            case "cert" -> settings.putAll(Map.of("cert.photoId", ""));
             default -> { }
         }
         flash.addFlashAttribute("ok", "Photo removed.");
@@ -157,11 +188,21 @@ public class AdminPhotosController {
             case "gallery" -> {
                 GalleryPhoto g = parts[1].equals("new") ? new GalleryPhoto()
                         : gallery.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
-                if (parts[1].equals("new")) g.setDisplayOrder((int) gallery.count());
+                if (parts[1].equals("new")) g.setDisplayOrder((int) gallery.countBySection(GalleryPhoto.LOAVES));
                 g.setPhotoId(photoId);
                 if (caption != null) g.setCaption(caption.isBlank() ? null : caption.trim());
                 gallery.save(g);
             }
+            case "other" -> {
+                GalleryPhoto g = new GalleryPhoto();
+                g.setSection(GalleryPhoto.OTHER);
+                g.setDisplayOrder((int) gallery.countBySection(GalleryPhoto.OTHER));
+                g.setPhotoId(photoId);
+                if (caption != null && !caption.isBlank()) g.setCaption(caption.trim());
+                gallery.save(g);
+            }
+            case "about" -> settings.putAll(Map.of("about.photoId", String.valueOf(photoId)));
+            case "cert" -> settings.putAll(Map.of("cert.photoId", String.valueOf(photoId)));
             default -> throw new NotFoundException();
         }
     }

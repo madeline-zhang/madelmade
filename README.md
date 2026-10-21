@@ -18,6 +18,16 @@ The starting menu and gallery load the first time. Your test orders and changes 
 
 Run the tests with `mvn test`; they also bring their own throwaway Postgres.
 
+## Copy your local menu to the live site (launch day only)
+
+Everything you set up locally (menu, photos, gallery, pages, settings, promo codes) can be copied to the live database in one go. Test orders, test customers and feedback are left behind. Stop the local site first, copy the Postgres **public** connection URL from Railway (Postgres service › Connect), then run:
+
+```
+mvn spring-boot:test-run -Dspring-boot.run.arguments="--copy-to-live=postgresql://postgres:...@....proxy.rlwy.net:12345/railway"
+```
+
+It refuses to run once the live site has any orders or customers, so it can't overwrite real ones.
+
 ## Settings on Railway
 
 | Variable | What it's for |

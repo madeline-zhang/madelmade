@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/** A set of choices on a product, like Size, Flavor, Score style or Milk. */
+/**
+ * A set of choices on a product, like Size, Flavor, Score style or Milk. A shared group has no
+ * product of its own and is used by several products (see Product.sharedGroups).
+ */
 @Entity
 @Table(name = "option_group")
 public class OptionGroup {
@@ -14,7 +17,7 @@ public class OptionGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Product product;
     private String name;
     private boolean required = true;
@@ -28,6 +31,10 @@ public class OptionGroup {
 
     public List<OptionChoice> getActiveChoices() {
         return choices.stream().filter(OptionChoice::isActive).toList();
+    }
+
+    public boolean isShared() {
+        return product == null;
     }
 
     public boolean isSwatches() {

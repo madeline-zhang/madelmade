@@ -1,0 +1,9 @@
+<!--
+  Up and down arrows that replace typed order numbers. They are submit buttons named "move", so they go
+  inside the item's own form and save its other fields at the same time. value is up or down, with an
+  optional prefix (e.g. "c12:" for a choice inside a group form).
+-->
+<span th:fragment="arrows(prefix, label, isFirst, isLast)" class="move-btns">
+  <button type="submit" name="move" th:value="${prefix + 'up'}" formnovalidate th:disabled="${isFirst}" th:aria-label="${'Move ' + label + ' up'}" title="Move up">↑</button>
+  <button type="submit" name="move" th:value="${prefix + 'down'}" formnovalidate th:disabled="${isLast}" th:aria-label="${'Move ' + label + ' down'}" title="Move down">↓</button>
+</span>

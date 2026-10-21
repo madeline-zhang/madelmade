@@ -1,0 +1,12 @@
+<!-- Notices required by Tennessee's home food rules. -->
+<div th:fragment="pickupOnly" class="notice-box" th:if="${cart.pickupOnly}" role="note">
+  <strong>Pickup only</strong>
+  <span th:text="${settings.get('notice.pickupOnly')}">Lattes are pickup only.</span>
+</div>
+
+<div th:fragment="busy" class="notice-box" th:if="${overCapacity}" role="note">
+  <strong>Madeline's oven is full right now</strong>
+  <span th:text="${'She bakes up to ' + settings.maxLoaves() + ' loaves at a time, and this order would go over. You can still send your request, but she may ask to move it to a later date.'}">She bakes up to 3 loaves at a time.</span>
+</div>
+
+<p th:fragment="homeKitchen" class="home-kitchen t-small muted" th:text="${settings.get('notice.homeKitchen')}">This product was produced at a private residence that is exempt from state licensing and inspection.</p>

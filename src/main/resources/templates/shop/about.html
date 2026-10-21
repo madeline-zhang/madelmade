@@ -7,13 +7,14 @@
     <section class="about-hero">
       <div class="stack" style="gap: 18px">
         <div class="t-eyebrow">About MadelMade</div>
-        <h1 class="t-page-title">It started with <em>a starter</em></h1>
-        <p class="t-subtitle">I'm Madeline, a home baker in Brentwood, Tennessee. Someone gave me a sourdough starter, and I didn't want to kill it, so I kept baking.</p>
-        <p class="t-subtitle">One loaf turned into many, and plain loaves turned into designs: leaves, butterflies, names and birthday messages, each scored by hand.</p>
-        <p class="t-subtitle">Every loaf is made to order and made to make you smile.</p>
-        <p><a class="btn" th:href="@{/#menu}">See the menu&nbsp;&nbsp;→</a></p>
+        <h1 class="t-page-title"><span th:text="${settings.get('about.title')}">It started with</span> <em th:text="${settings.get('about.titleAccent')}">a starter</em></h1>
+        <p class="t-subtitle" th:each="para : ${settings.paragraphs('about.body')}" th:text="${para}">I'm Madeline, a home baker in Brentwood, Tennessee.</p>
+        <p class="about-actions">
+          <a class="btn" th:href="@{/#menu}">See the menu&nbsp;&nbsp;→</a>
+          <a class="btn btn-secondary" href="https://www.instagram.com/madelmadewithlove/" target="_blank" rel="noopener">Instagram @madelmadewithlove</a>
+        </p>
       </div>
-      <img class="logo-large" th:src="@{/img/madelmade-logo-detailed.svg}" alt="MadelMade monstera leaf logo">
+      <img class="about-photo" th:if="${settings.aboutPhotoId() != null}" th:src="${photoUrls.src(settings.aboutPhotoId())}" alt="Madeline">
     </section>
 
     <section class="stack" style="gap: 24px" aria-labelledby="how">
@@ -28,23 +29,29 @@
 
     <section class="stack page-narrow" style="gap: 12px" aria-labelledby="faq">
       <h2 id="faq" class="t-section section-title">Frequently asked questions</h2>
-      <p class="muted">Anything else? Email <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
+      <p class="muted">Anything else? Email <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a> or message <a href="https://www.instagram.com/madelmadewithlove/" target="_blank" rel="noopener">@madelmadewithlove</a> on Instagram.</p>
       <div class="faq">
         <details open><summary>How much notice do you need?</summary>
           <p th:text="${'About ' + settings.noticeDays() + ' days for most loaves.' + (settings.priorityEnabled() ? ' Need it sooner? Priority gets it ready in ' + settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's') + ' for an extra ' + @money.fmt(settings.priorityFee()) + ', when there''s room.' : '')}">Three days for most loaves.</p></details>
         <details><summary>Where do I pick up?</summary>
           <p th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once your order is approved.'}">Pickup is in the Brentwood and Nolensville area.</p></details>
-        <details><summary>Do you deliver?</summary>
-          <p>Yes, nearby. Madeline quotes the delivery fee when she approves your order, and it's paid up front as a deposit.</p></details>
-        <details><summary>How do I pay?</summary>
-          <p>Nothing is charged online. You pay at pickup or delivery with cash, Venmo or Zelle.</p></details>
-        <details><summary>What about allergens?</summary>
-          <p>Every loaf contains wheat. Rosemary garlic asiago contains dairy. Mom's Best is not sourdough. Ask if you have other allergies.</p></details>
-        <details><summary>How should I store it?</summary>
-          <p>To enjoy it later, slice it and freeze the slices.</p></details>
-        <details><summary>Best way to reheat?</summary>
-          <p>Toast it and butter it up!</p></details>
+        <details><summary>How many loaves can you bake?</summary>
+          <p th:text="${'Madeline bakes up to ' + settings.maxLoaves() + ' loaves at a time across all orders. When lots of orders come in for the same days, she may ask to move your order to a later date before she approves it. If the new date doesn''t work for you, you can cancel at no cost.'}">Up to 3 loaves at a time.</p></details>
+        <details><summary>Can you turn down an order?</summary>
+          <p th:text="${settings.get('notice.decline')}">Madeline has the right to decline any order.</p></details>
+        <details th:each="f : ${settings.faqs()}"><summary th:text="${f.question}">Do you deliver?</summary>
+          <p th:text="${f.answer}">Yes, nearby.</p></details>
       </div>
+    </section>
+
+    <section class="stack page-narrow home-kitchen-section" style="gap: 10px" aria-labelledby="home-kitchen">
+      <h2 id="home-kitchen" class="t-section section-title" th:text="${settings.get('about.homeTitle')}">Made in my home kitchen</h2>
+      <p th:text="${settings.get('about.homeBody')}">MadelMade is a home bakery.</p>
+    </section>
+
+    <section class="about-signoff">
+      <img th:src="@{/img/madelmade-logo-detailed.svg}" alt="MadelMade monstera leaf logo">
+      <p th:text="${settings.get('about.signoff')}">Made with love, Madeline</p>
     </section>
   </div>
 </main>

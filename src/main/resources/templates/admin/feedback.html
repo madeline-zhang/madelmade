@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'feedback')}">
+<head><title>Feedback · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">From the button in the corner</div><h1>Feedback</h1></div></div>
+
+  <div class="tabs" style="margin-bottom: 20px">
+    <a class="pill" th:classappend="${tab == 'feedback'} ? 'is-on'" th:href="@{/admin/feedback(tab='feedback')}">Feedback
+      <span class="n" th:text="${openFeedback}">2</span></a>
+    <a class="pill" th:classappend="${tab == 'bug'} ? 'is-on'" th:href="@{/admin/feedback(tab='bug')}">Bug reports
+      <span class="n" th:text="${openBugs}">1</span></a>
+  </div>
+
+  <div class="stack" style="gap: 14px; max-width: 900px">
+    <form class="card stack" style="gap: 10px" method="post" th:action="@{/admin/feedback/add}">
+      <input type="hidden" name="kind" th:value="${tab}">
+      <div class="field"><label for="new-note" th:text="${tab == 'bug' ? 'Add a bug' : 'Add a note'}">Add a note</label>
+        <textarea id="new-note" name="message" rows="3" required th:placeholder="${tab == 'bug' ? 'What went wrong, and how to make it happen again' : 'An idea or something to remember'}"></textarea></div>
+      <div class="field" th:if="${tab == 'bug'}"><label for="new-page" class="t-small">Page <span class="muted">(optional)</span></label>
+        <input type="text" id="new-page" name="page" placeholder="e.g. /checkout"></div>
+      <button type="submit" class="btn btn-small" style="align-self: flex-start" th:text="${tab == 'bug' ? 'Add bug' : 'Add note'}">Add note</button>
+    </form>
+
+    <div class="empty" th:if="${items.isEmpty()}" th:text="${tab == 'bug' ? 'No bug reports.' : 'No feedback yet.'}">Nothing yet.</div>
+    <article class="card stack" style="gap: 8px; margin-top: 0" th:each="f : ${items}" th:style="${f.resolved} ? 'opacity: 0.6; margin-top: 0' : 'margin-top: 0'">
+      <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+          <strong th:text="${f.email != null ? f.email : 'Guest'}">Guest</strong>
+          <span class="t-small muted" th:text="${@fmt.stamp(f.createdAt)}">Oct 20, 3:14 PM</span>
+          <span class="tag" th:if="${f.resolved}">Done</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center">
+          <form method="post" th:action="@{/admin/feedback/{id}/resolve(id=${f.id})}"><button type="submit" class="btn btn-secondary btn-small" th:text="${f.resolved ? 'Reopen' : 'Mark done'}">Mark done</button></form>
+          <form method="post" th:action="@{/admin/feedback/{id}/delete(id=${f.id})}" data-confirm="Delete this?"><button type="submit" class="link-btn t-small">Delete</button></form>
+        </div>
+      </div>
+      <p style="margin: 0; white-space: pre-wrap" th:text="${f.message}">Love the site!</p>
+      <div class="t-small muted" th:if="${f.bug}">
+        <span th:if="${f.page != null}">On page <a th:href="${f.page.startsWith('/') ? f.page : null}" th:text="${f.page}" target="_blank" rel="noopener">/checkout</a></span>
+        <span th:if="${f.page == null}">Page not recorded</span>
+      </div>
+    </article>
+  </div>
+</main>
+</body>
+</html>

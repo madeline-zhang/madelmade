@@ -9,6 +9,7 @@ import java.util.UUID;
 public class CartLine implements Serializable {
     private final String id = UUID.randomUUID().toString().substring(0, 8);
     private Long productId;
+    private boolean pickupOnly;
     private String productName;
     private String slug;
     private Long photoId;
@@ -16,6 +17,8 @@ public class CartLine implements Serializable {
     private String optionsSummary;
     private String customNotes;
     private String lettersText;
+    private String lettersFont;
+    private com.madelmade.domain.TaxCategory taxCategory = com.madelmade.domain.TaxCategory.PREPARED;
     private boolean certificate;
     private String certName;
     private String certMessage;
@@ -34,6 +37,8 @@ public class CartLine implements Serializable {
     }
 
     public String getId() { return id; }
+    public boolean isPickupOnly() { return pickupOnly; }
+    public void setPickupOnly(boolean pickupOnly) { this.pickupOnly = pickupOnly; }
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
     public String getProductName() { return productName; }
@@ -50,6 +55,10 @@ public class CartLine implements Serializable {
     public void setCustomNotes(String customNotes) { this.customNotes = customNotes; }
     public String getLettersText() { return lettersText; }
     public void setLettersText(String lettersText) { this.lettersText = lettersText; }
+    public com.madelmade.domain.TaxCategory getTaxCategory() { return taxCategory; }
+    public void setTaxCategory(com.madelmade.domain.TaxCategory taxCategory) { this.taxCategory = taxCategory; }
+    public String getLettersFont() { return lettersFont; }
+    public void setLettersFont(String lettersFont) { this.lettersFont = lettersFont; }
     public boolean isCertificate() { return certificate; }
     public void setCertificate(boolean certificate) { this.certificate = certificate; }
     public String getCertName() { return certName; }

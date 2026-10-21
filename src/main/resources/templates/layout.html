@@ -21,6 +21,7 @@
   <main id="main" th:replace="${content}"></main>
   <footer th:replace="~{components/footer :: footer}"></footer>
   <div th:replace="~{components/cart-drawer :: drawer}"></div>
+  <details th:replace="~{components/feedback :: button}"></details>
   <script th:src="@{/js/site.js}" defer></script>
 </body>
 </html>

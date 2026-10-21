@@ -22,6 +22,8 @@ public class Photo {
     private String crop = "original";
     private int warmth;
     private int brightness;
+    private int contrast;
+    private int saturation;
     private Integer width;
     private Integer height;
     private Instant createdAt = Instant.now();
@@ -46,6 +48,10 @@ public class Photo {
     public void setWarmth(int warmth) { this.warmth = warmth; }
     public int getBrightness() { return brightness; }
     public void setBrightness(int brightness) { this.brightness = brightness; }
+    public int getContrast() { return contrast; }
+    public void setContrast(int contrast) { this.contrast = contrast; }
+    public int getSaturation() { return saturation; }
+    public void setSaturation(int saturation) { this.saturation = saturation; }
     public Integer getWidth() { return width; }
     public void setWidth(Integer width) { this.width = width; }
     public Integer getHeight() { return height; }

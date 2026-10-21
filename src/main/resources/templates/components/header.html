@@ -14,7 +14,7 @@
     <div class="header-actions">
       <a th:if="${!signedIn}" class="header-signin" th:href="@{/signin}">Sign in</a>
       <a th:if="${signedIn and isAdmin}" class="header-signin" th:href="@{/admin}">Admin</a>
-      <a th:if="${signedIn and !isAdmin}" class="header-signin" th:href="@{/profile}">Profile</a>
+      <a th:if="${signedIn}" class="header-signin" th:classappend="${isAdmin} ? 'hide-on-phone'" th:href="@{/profile}">Profile</a>
       <a class="icon-btn" th:href="@{/cart}" data-cart-open
          th:aria-label="${'Cart, ' + cart.count + (cart.count == 1 ? ' item' : ' items')}">
         <svg th:replace="~{components/icons :: cart}"></svg>

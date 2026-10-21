@@ -1,0 +1,71 @@
+<!--
+  One option group with its choices, on a product page or the Shared options page.
+  The whole card is one form, so any Save button saves the group, every choice and a new choice at once.
+  It folds shut to just its name; admin.js remembers which groups were left open.
+  On the Shared options page (showProducts) the card also holds which products use the group.
+-->
+<details th:fragment="card(g, showProducts)" class="group-card collapsible" th:id="${'group-' + g.id}" data-collapsible>
+  <summary class="collapsible-head">
+    <span class="t-label" th:text="${g.name}">Flavor</span>
+    <span class="t-small muted" th:text="${g.activeChoices.size() + (g.activeChoices.size() == 1 ? ' choice' : ' choices') + (g.swatches ? ' · photo swatches' : '')}">4 choices</span>
+  </summary>
+  <div class="collapsible-body stack" style="gap: 14px">
+  <form method="post" th:action="@{/admin/groups/{id}/save(id=${g.id})}" class="stack" style="gap: 14px" data-autosave>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: end">
+      <div class="field" style="flex: 1 1 180px"><label th:for="${'g-n-' + g.id}">Group name</label><input type="text" th:id="${'g-n-' + g.id}" name="name" th:value="${g.name}"></div>
+      <div class="field"><label th:for="${'g-s-' + g.id}">Shown as</label>
+        <select th:id="${'g-s-' + g.id}" name="displayStyle">
+          <option value="buttons" th:selected="${!g.swatches}">Buttons</option>
+          <option value="swatches" th:selected="${g.swatches}">Photo swatches</option>
+        </select></div>
+      <label class="check-row t-small"><input type="checkbox" name="required" value="true" th:checked="${g.required}"> Required</label>
+      <label class="check-row t-small"><input type="checkbox" name="multiple" value="true" th:checked="${g.multiple}"> Pick several</label>
+      <button type="submit" class="btn btn-small" th:text="${'Save ' + g.name}" data-autosave-hide>Save Flavor</button>
+    </div>
+
+    <div class="choice-row" th:each="c, it : ${g.choices}" th:with="p=${'c' + c.id + '.'}">
+      <a class="photo-slot" th:href="@{/admin/photos/edit(target=${'choice-' + c.id})}" th:title="${'Photo for ' + c.name}">
+        <img th:if="${c.photoId != null}" th:src="${photoUrls.src(c.photoId)}" alt="">
+        <span th:unless="${c.photoId != null}">Add photo</span>
+      </a>
+      <input type="hidden" name="choiceIds" th:value="${c.id}">
+      <div class="field"><label class="visually-hidden" th:for="${'c-n-' + c.id}">Name</label><input type="text" th:id="${'c-n-' + c.id}" th:name="${p + 'name'}" th:value="${c.name}"></div>
+      <div class="field"><label class="visually-hidden" th:for="${'c-p-' + c.id}">Price change</label><div class="price-input">+$<input type="number" step="0.01" th:id="${'c-p-' + c.id}" th:name="${p + 'priceChange'}" th:value="${@money.plain(c.priceChange)}" style="width: 88px !important"></div></div>
+      <span th:replace="~{admin/arrows :: arrows(${'c' + c.id + ':'}, ${c.name}, ${it.first}, ${it.last})}"></span>
+      <div class="field desc"><label class="visually-hidden" th:for="${'c-d-' + c.id}">Description</label><textarea th:id="${'c-d-' + c.id}" th:name="${p + 'description'}" rows="2" th:text="${c.description}" placeholder="Short description (shown with photo swatches)"></textarea></div>
+      <div class="field-row desc">
+        <div class="field"><label class="t-small" th:for="${'c-i-' + c.id}">Adds ingredients</label><input type="text" th:id="${'c-i-' + c.id}" th:name="${p + 'ingredients'}" maxlength="500" th:value="${c.ingredients}" placeholder="e.g. rosemary, garlic"></div>
+        <div class="field"><label class="t-small" th:for="${'c-a-' + c.id}">Adds allergens</label><input type="text" th:id="${'c-a-' + c.id}" th:name="${p + 'allergens'}" maxlength="300" th:value="${c.allergens}" placeholder="e.g. milk"></div>
+      </div>
+      <div class="flags">
+        <label><input type="checkbox" th:name="${p + 'active'}" value="true" th:checked="${c.active}"> Offered</label>
+        <label><input type="checkbox" th:name="${p + 'defaultChoice'}" value="true" th:checked="${c.defaultChoice}"> Picked by default</label>
+        <label><input type="checkbox" th:name="${p + 'halvesPrice'}" value="true" th:checked="${c.halvesPrice}"> Half price (half loaf)</label>
+        <label><input type="checkbox" th:name="${p + 'priceTbd'}" value="true" th:checked="${c.priceTbd}"> Price discussed</label>
+        <label><input type="checkbox" th:name="${p + 'needsDesignApproval'}" value="true" th:checked="${c.needsDesignApproval}"> Design needs approval</label>
+        <label>Text up to <input type="number" min="0" max="40" th:name="${p + 'textLimit'}" th:value="${c.textLimit}" style="width: 60px; min-height: 32px; border: 1px solid var(--color-line); border-radius: 6px; padding: 2px 6px"> characters</label>
+      </div>
+      <div style="grid-column: 2 / -1">
+        <button type="submit" class="link-btn" th:formaction="@{/admin/choices/{id}/delete(id=${c.id})}" formnovalidate
+                data-confirm="Remove this choice?" th:text="${'Remove ' + c.name}">Remove</button>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap; border-top: 1px solid var(--color-linen); padding-top: 14px">
+      <div class="field"><label th:for="${'nc-' + g.id}">New choice</label><input type="text" th:id="${'nc-' + g.id}" name="newChoiceName" placeholder="e.g. Cinnamon raisin" data-no-autosave></div>
+      <div class="field"><label th:for="${'ncp-' + g.id}">Price change</label><div class="price-input">+$<input type="number" step="0.01" th:id="${'ncp-' + g.id}" name="newChoicePrice" value="0" data-no-autosave></div></div>
+      <button type="submit" class="btn btn-small">Add choice</button>
+    </div>
+    <p class="t-small muted" style="margin: 0">Changes to this group save as you make them.</p>
+  </form>
+  <form method="post" th:action="@{/admin/groups/{id}/delete(id=${g.id})}" th:data-confirm="${g.shared ? 'Remove this group from every product that uses it?' : 'Remove this whole option group?'}"><button type="submit" class="link-btn" th:text="${'Remove the ' + g.name + ' group'}">Remove group</button></form>
+  <form th:if="${showProducts}" class="stack" style="gap: 6px; border-top: 1px solid var(--color-linen); padding-top: 14px" method="post" th:action="@{/admin/options/{id}/products(id=${g.id})}" data-autosave>
+    <div class="t-label" th:text="${'Products that use ' + g.name}">Products that use Flavor</div>
+    <label class="check-row" th:each="p : ${products}">
+      <input type="checkbox" name="productIds" th:value="${p.id}" th:checked="${p.sharedGroups.contains(g)}">
+      <span th:text="${p.name}">Classic Loaf</span>
+    </label>
+    <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start" data-autosave-hide>Save products</button>
+  </form>
+  </div>
+</details>

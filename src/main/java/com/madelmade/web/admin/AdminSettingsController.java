@@ -22,7 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminSettingsController {
     /** On/off settings. An unticked box isn't posted, so these are read as false when missing. */
     static final List<String> FLAGS = List.of("orders.open", "rules.priorityEnabled", "cert.enabled", "delivery.enabled",
-            "notify.newRequest", "notify.customerReply", "notify.morningSummary");
+            "notify.newRequest", "notify.customerReply", "notify.morningSummary", "tax.enabled", "tax.included");
 
     private final SettingsService settings;
 
@@ -48,11 +48,18 @@ public class AdminSettingsController {
                 values.put(key, form.getFirst(key));
             }
         }
-        for (String key : List.of("rules.noticeDays", "rules.maxLoaves", "rules.priorityNoticeDays")) {
+        for (String key : List.of("rules.noticeDays", "rules.maxLoaves", "rules.maxPerOrder", "rules.priorityNoticeDays")) {
             if (values.containsKey(key) && !values.get(key).trim().matches("\\d{1,2}")) {
-                flash.addFlashAttribute("errors", List.of("Please use a whole number for notice days and the loaf limit."));
+                flash.addFlashAttribute("errors", List.of("Please use a whole number for notice days and the loaf limits."));
                 return "redirect:/admin/settings";
             }
+        }
+        for (String key : List.of("tax.ratePrepared", "tax.rateFood", "tax.rateLocal")) {
+            if (values.containsKey(key) && !values.get(key).trim().replace("%", "").matches("\\d{1,2}(\\.\\d{1,3})?")) {
+                flash.addFlashAttribute("errors", List.of("Please type tax rates as a percent, like 7 or 2.75."));
+                return "redirect:/admin/settings";
+            }
+            if (values.containsKey(key)) values.put(key, values.get(key).trim().replace("%", ""));
         }
         for (String key : List.of("rules.priorityFee", "cert.price")) {
             if (values.containsKey(key) && !values.get(key).trim().replace("$", "").matches("\\d{1,4}(\\.\\d{1,2})?")) {
@@ -72,14 +79,20 @@ public class AdminSettingsController {
     }
 
     @PostMapping("/daysoff/add")
-    public String addDayOff(@RequestParam String from, @RequestParam(required = false) String to, RedirectAttributes flash) {
+    public String addDayOff(@RequestParam String from, @RequestParam(required = false) String to,
+                            @RequestParam(required = false) String note, RedirectAttributes flash) {
         try {
             LocalDate a = LocalDate.parse(from);
             LocalDate b = to == null || to.isBlank() ? a : LocalDate.parse(to);
             if (b.isBefore(a)) { LocalDate t = a; a = b; b = t; }
-            List<String> entries = new ArrayList<>(settings.daysOffEntries());
-            entries.add(a.equals(b) ? a.toString() : a + ".." + b);
-            settings.putAll(Map.of("orders.daysOff", String.join(",", entries)));
+            LocalDate first = a, last = b;
+            // Adding the same days again just updates the note.
+            List<String> entries = new ArrayList<>(settings.daysOffEntries().stream()
+                    .filter(d -> !(d.from().equals(first) && d.to().equals(last)))
+                    .map(SettingsService.DayOff::raw).toList());
+            String why = note == null ? "" : note.replaceAll("[\\r\\n|]+", " ").trim();
+            entries.add((a.equals(b) ? a.toString() : a + ".." + b) + (why.isEmpty() ? "" : "|" + why));
+            settings.putAll(Map.of("orders.daysOff", String.join("\n", entries)));
             flash.addFlashAttribute("ok", "Day off added. Customers can't pick it at checkout.");
         } catch (DateTimeParseException e) {
             flash.addFlashAttribute("errors", List.of("Please pick a date."));
@@ -89,9 +102,9 @@ public class AdminSettingsController {
 
     @PostMapping("/daysoff/remove")
     public String removeDayOff(@RequestParam String entry, RedirectAttributes flash) {
-        List<String> entries = new ArrayList<>(settings.daysOffEntries());
+        List<String> entries = new ArrayList<>(settings.daysOffEntries().stream().map(SettingsService.DayOff::raw).toList());
         entries.remove(entry);
-        settings.putAll(Map.of("orders.daysOff", String.join(",", entries)));
+        settings.putAll(Map.of("orders.daysOff", String.join("\n", entries)));
         flash.addFlashAttribute("ok", "Day off removed.");
         return "redirect:/admin/settings#days-off";
     }

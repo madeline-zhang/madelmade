@@ -4,23 +4,49 @@
 <body>
 <main id="main" class="admin-main">
   <div class="admin-head">
-    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Past loaves</div><h1>Gallery</h1></div>
-    <a class="btn" th:href="@{/admin/photos/edit(target='gallery-new')}">Add a photo</a>
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Past bakes</div><h1>Gallery</h1></div>
+    <a class="btn btn-secondary btn-small" th:href="@{/admin/pages}">Edit the gallery's headings</a>
   </div>
-  <div class="gallery-grid">
-    <div class="card stack" style="padding: 14px; gap: 10px" th:each="g : ${photos}">
-      <a th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}" title="Edit photo"><img th:src="@{/photos/{id}(id=${g.photoId})}" alt="" style="width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px"></a>
-      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px">
+
+  <section class="stack" style="gap: 16px">
+    <div class="admin-head"><h2 class="card-title" style="margin: 0">Loaves</h2>
+      <a class="btn" th:href="@{/admin/photos/edit(target='gallery-new')}">Add a loaf photo</a></div>
+    <div class="gallery-grid">
+    <div class="card stack" style="padding: 14px; gap: 10px" th:each="g, it : ${photos}" th:id="${'photo-' + g.id}">
+      <a th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}" title="Edit photo"><img th:src="${photoUrls.src(g.photoId)}" alt="" style="width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px"></a>
+      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px" data-autosave>
         <div class="field"><label th:for="${'cap-' + g.id}">Caption</label><input type="text" th:id="${'cap-' + g.id}" name="caption" th:value="${g.caption}"></div>
         <div style="display: flex; gap: 8px; align-items: end">
-          <div class="field" style="width: 80px"><label th:for="${'ord-' + g.id}">Order</label><input type="number" th:id="${'ord-' + g.id}" name="displayOrder" th:value="${g.displayOrder}"></div>
-          <button type="submit" class="btn btn-secondary btn-small">Save</button>
+          <span th:replace="~{admin/arrows :: arrows('', 'this photo', ${it.first}, ${it.last})}"></span>
+          <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
           <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}">Edit photo</a>
         </div>
       </form>
     </div>
-  </div>
-  <div class="empty" th:if="${photos.isEmpty()}">No gallery photos yet.</div>
+    </div>
+    <div class="empty" th:if="${photos.isEmpty()}">No loaf photos yet.</div>
+  </section>
+
+  <section class="stack" style="gap: 16px" id="other">
+    <div class="admin-head">
+      <div class="stack" style="gap: 4px"><h2 class="card-title" style="margin: 0">Other bakes</h2>
+        <p class="t-small muted" style="margin: 0">Cookies, cakes, anything that isn't bread. Shown at the bottom of the gallery.</p></div>
+      <a class="btn" th:href="@{/admin/photos/edit(target='other-new')}">Add an other-bakes photo</a></div>
+    <div class="gallery-grid">
+    <div class="card stack" style="padding: 14px; gap: 10px" th:each="g, it : ${otherPhotos}" th:id="${'photo-' + g.id}">
+      <a th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}" title="Edit photo"><img th:src="${photoUrls.src(g.photoId)}" alt="" style="width: 100%; height: auto; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px"></a>
+      <form method="post" th:action="@{/admin/gallery/{id}(id=${g.id})}" class="stack" style="gap: 8px" data-autosave>
+        <div class="field"><label th:for="${'cap-' + g.id}">Caption</label><input type="text" th:id="${'cap-' + g.id}" name="caption" th:value="${g.caption}"></div>
+        <div style="display: flex; gap: 8px; align-items: end">
+          <span th:replace="~{admin/arrows :: arrows('', 'this photo', ${it.first}, ${it.last})}"></span>
+          <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
+          <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'gallery-' + g.id})}">Edit photo</a>
+        </div>
+      </form>
+    </div>
+    </div>
+    <div class="empty" th:if="${otherPhotos.isEmpty()}">No photos yet. The "Not just bread" section stays hidden on the Gallery until you add one.</div>
+  </section>
 </main>
 </body>
 </html>

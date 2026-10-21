@@ -3,8 +3,11 @@
   <a th:href="@{/admin/calendar}" th:classappend="${section == 'calendar'} ? 'is-on'">Calendar</a>
   <a th:href="@{/admin/products}" th:classappend="${section == 'products'} ? 'is-on'">Products</a>
   <a th:href="@{/admin/gallery}" th:classappend="${section == 'gallery'} ? 'is-on'">Gallery</a>
+  <a th:href="@{/admin/promos}" th:classappend="${section == 'promos'} ? 'is-on'">Promo codes</a>
+  <a th:href="@{/admin/pages}" th:classappend="${section == 'pages'} ? 'is-on'">Pages</a>
   <a th:href="@{/admin/customers}" th:classappend="${section == 'customers'} ? 'is-on'">Customers</a>
   <a th:href="@{/admin/settings}" th:classappend="${section == 'settings'} ? 'is-on'">Settings</a>
+  <a th:href="@{/admin/feedback}" th:classappend="${section == 'feedback'} ? 'is-on'">Feedback<span class="pill-count" th:if="${openFeedbackCount > 0}" th:text="${openFeedbackCount}">2</span></a>
   <a th:href="@{/admin/emails}" th:classappend="${section == 'emails'} ? 'is-on'">Emails</a>
 </th:block>
 
@@ -12,8 +15,8 @@
   <a class="admin-brand" th:href="@{/admin}"><span class="name">MadelMade</span><span class="sub">Admin</span></a>
   <div class="admin-nav"><th:block th:replace="~{admin/nav :: links(${section})}"></th:block></div>
   <div class="admin-foot">
-    <a th:href="@{/admin/styleguide}">Style guide</a>
     <a th:href="@{/}" target="_blank" rel="noopener">View site&nbsp;&nbsp;↗</a>
+    <a th:href="@{/profile}">Your profile and orders</a>
     <div th:text="${'Signed in as ' + userEmail}">Signed in as Madeline</div>
     <form method="post" th:action="@{/signout}"><button type="submit">Sign out</button></form>
   </div>
@@ -21,8 +24,18 @@
 
 <nav th:fragment="top(section)" class="admin-topbar" aria-label="Dashboard">
   <div class="bar">
+    <button type="button" class="admin-menu-btn" aria-label="Open admin menu" aria-expanded="false" aria-controls="admin-menu" data-admin-menu-toggle>
+      <svg th:replace="~{components/icons :: menu}"></svg>
+      <span class="pill-count" th:if="${needsReviewCount + openFeedbackCount > 0}" th:text="${needsReviewCount + openFeedbackCount}">3</span>
+    </button>
     <a class="admin-brand" th:href="@{/admin}"><span class="name">MadelMade</span><span class="sub">Admin</span></a>
     <a th:href="@{/}" style="color: #E9E2D3; font-size: .875rem; text-decoration: none">View site ↗</a>
   </div>
-  <div class="admin-nav"><th:block th:replace="~{admin/nav :: links(${section})}"></th:block></div>
+  <div class="admin-menu" id="admin-menu" data-admin-menu>
+    <div class="admin-nav"><th:block th:replace="~{admin/nav :: links(${section})}"></th:block></div>
+    <div class="admin-foot">
+      <a th:href="@{/profile}">Your profile and orders</a>
+      <form method="post" th:action="@{/signout}"><button type="submit">Sign out</button></form>
+    </div>
+  </div>
 </nav>

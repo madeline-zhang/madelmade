@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'products')}">
+<head><title>Shared options · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">Edit once, used everywhere</div><h1>Shared options</h1></div></div>
+  <div th:replace="~{admin/product-tabs :: tabs('options')}"></div>
+  <p class="muted" style="max-width: 760px; margin-top: 0">Option groups like Flavor that several products use. Changes here show on every product that uses the group. To change where a group shows on a product, use "Order on the product page" on that product.</p>
+
+  <div class="stack" style="gap: 16px; max-width: 900px">
+    <div class="empty" th:if="${sharedGroups.isEmpty()}">No shared groups yet.</div>
+
+    <th:block th:each="g : ${sharedGroups}">
+      <details th:replace="~{admin/group-card :: card(${g}, true)}"></details>
+    </th:block>
+
+    <form class="group-card" method="post" th:action="@{/admin/options}" style="flex-direction: row; flex-wrap: wrap; align-items: end">
+      <div class="field" style="flex: 1 1 200px"><label for="ng">New shared group</label><input type="text" id="ng" name="name" placeholder="e.g. Flavor"></div>
+      <div class="field"><label for="ngs">Shown as</label><select id="ngs" name="displayStyle"><option value="buttons">Buttons</option><option value="swatches">Photo swatches</option></select></div>
+      <button type="submit" class="btn btn-small">Add group</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

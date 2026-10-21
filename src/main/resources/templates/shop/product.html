@@ -11,8 +11,7 @@
 
       <div class="product-media">
         <img class="main-photo" data-preview-img
-             th:src="${product.photoId != null} ? @{/photos/{id}(id=${product.photoId})} : @{/img/madelmade-logo-simple.svg}"
-             th:data-default="${product.photoId != null ? '/photos/' + product.photoId : ''}"
+             th:src="${product.photoId != null} ? ${photoUrls.src(product.photoId)} : @{/img/madelmade-logo-simple.svg}"
              th:alt="${product.name}" width="700" height="700">
         <div class="stack" style="gap: 4px" data-preview-text hidden>
           <div class="preview-name" data-preview-name></div>
@@ -27,24 +26,41 @@
           <div class="price-row">
             <div class="t-price" data-price-text th:text="${@money.fmt(product.basePrice)}">$10</div>
             <div class="t-small muted" data-tbd-note hidden>+ custom price to be discussed</div>
-            <span class="tag" th:if="${product.badge != null}" th:text="${product.badge}">Not sourdough</span>
+            <span class="tag" th:if="${product.badge != null}" th:text="${product.badge}">Yeast-risen</span>
+            <span class="tag" th:if="${product.pickupOnly}">Pickup only</span>
           </div>
           <p class="t-subtitle" style="font-size: 1rem; max-width: 520px" th:text="${product.description}">Our everyday sourdough.</p>
+          <!-- site.js adds the picked flavor's ingredients and allergens to the base lists. -->
+          <dl class="label-info t-small" th:if="${product.hasLabelInfo}">
+            <dt>Ingredients</dt><dd data-label="ingredients" th:data-base="${product.ingredients}" th:text="${product.ingredients}">Flour, water, salt</dd>
+            <dt>Allergens</dt><dd data-label="allergens" th:data-base="${product.allergens}" th:text="${product.allergens}">Wheat</dd>
+          </dl>
+          <p class="t-small muted" th:unless="${product.hasLabelInfo}">Ask Madeline about ingredients and allergens at <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
           <div class="alert alert-info" th:if="${product.soldOut}">Sold out for now. Check back soon!</div>
         </div>
 
         <div th:replace="~{components/option-picker :: picker(${product}, ${selected})}"></div>
 
-        <div class="field letters-box" data-letters-box hidden>
-          <label for="letters">Your letters</label>
-          <input type="text" id="letters" name="letters" maxlength="40" autocomplete="off" th:value="${form_letters}" placeholder="e.g. HAPPY 40">
-          <div class="char-count" data-char-count></div>
+        <div class="stack letters-box" style="gap: 14px" data-letters-box hidden>
+          <div class="field">
+            <label for="letters">Your text</label>
+            <input type="text" id="letters" name="letters" maxlength="40" autocomplete="off" th:value="${form_letters}" placeholder="e.g. HAPPY 40">
+            <div class="char-count" data-char-count></div>
+          </div>
+          <div class="field" th:unless="${settings.fonts().isEmpty()}">
+            <label for="font">Font</label>
+            <select id="font" name="font" data-font data-required-msg="Please pick a font for your text.">
+              <option value="" th:selected="${#strings.isEmpty(form_font)}">Choose a font</option>
+              <option th:each="f : ${settings.fonts()}" th:value="${f}" th:text="${f}" th:selected="${f == form_font}"
+                      th:data-custom="${#strings.startsWith(#strings.toLowerCase(f), 'custom')}">Script</option>
+            </select>
+          </div>
         </div>
 
         <div class="field custom-box">
           <label for="notes" data-notes-label>Anything special? (optional)</label>
           <textarea id="notes" name="notes" rows="3" maxlength="1000" th:text="${form_notes}"
-                    placeholder="e.g. Happy birthday Miriam scored on top"></textarea>
+                    th:placeholder="${product.notesHint == null ? null : (#strings.startsWith(product.notesHint, 'e.g.') ? product.notesHint : 'e.g. ' + product.notesHint)}"></textarea>
         </div>
 
         <div class="stack" style="gap: 14px" th:if="${product.allowsBirthCertificate and settings.certificatesEnabled()}">
@@ -53,7 +69,7 @@
             <span>Add a birth certificate <span class="t-price" style="font-size: 1rem" th:text="${'+' + @money.fmt(settings.certificatePrice())}">+$1</span></span>
           </label>
           <div class="cert-box" data-cert-box th:hidden="${!form_cert}">
-            <img th:src="@{/img/certificate-example.jpg}" alt="Example birth certificate for a loaf named Jacob" loading="lazy">
+            <img th:src="${settings.certPhotoId() != null ? photoUrls.src(settings.certPhotoId()) : '/img/certificate-example.jpg'}" alt="Example birth certificate" loading="lazy">
             <div class="t-small muted">Madeline hand-draws your loaf, adds your description and fills in the date, weight and labor time on bake day.</div>
             <div class="field">
               <label for="certName">Bread's name</label>
@@ -69,7 +85,8 @@
         <div class="add-bar">
           <div class="qty" title="Quantity">
             <button type="button" aria-label="One fewer" data-qty="-1">−</button>
-            <input type="number" name="quantity" value="1" min="1" max="6" aria-label="Quantity" data-qty-input>
+            <input type="number" name="quantity" value="1" min="1" th:max="${product.countsAsLoaf ? settings.maxPerOrder() : 12}" aria-label="Quantity" data-qty-input
+                   th:data-max-msg="${product.countsAsLoaf ? 'You can order up to ' + settings.maxPerOrder() + ' loaves per order.' : 'That''s the most for one order.'}">
             <button type="button" aria-label="One more" data-qty="1">+</button>
           </div>
           <button type="submit" class="btn" th:disabled="${product.soldOut or !settings.ordersOpen()}">

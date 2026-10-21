@@ -1,0 +1,22 @@
+<!-- Feedback and bug reports: a small button in the corner that opens a short form. Works without JS. -->
+<details th:fragment="button" class="feedback" data-feedback>
+  <summary aria-label="Send feedback or report a problem" title="Feedback">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4A1.5 1.5 0 0 1 4 14.5z"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M8.5 8.5h7M8.5 11.5h4.5"/></svg>
+  </summary>
+  <form class="feedback-panel" method="post" th:action="@{/feedback}" data-feedback-form>
+    <div class="feedback-head">
+      <strong>Tell Madeline</strong>
+      <button type="button" class="link-btn" data-feedback-close aria-label="Close">✕</button>
+    </div>
+    <div class="segmented" role="radiogroup" aria-label="What kind of note">
+      <label><input type="radio" name="kind" value="feedback" checked><span class="pill">Feedback</span></label>
+      <label><input type="radio" name="kind" value="bug"><span class="pill">Something's broken</span></label>
+    </div>
+    <div class="field"><label for="fb-message" class="visually-hidden">Message</label>
+      <textarea id="fb-message" name="message" rows="4" maxlength="4000" required data-required-msg="Please write a message first." placeholder="What's on your mind? If something broke, what were you trying to do?"></textarea></div>
+    <input type="hidden" name="page" th:value="${path}">
+    <div class="visually-hidden" aria-hidden="true"><label for="fb-website">Leave this empty</label><input type="text" id="fb-website" name="website" tabindex="-1" autocomplete="off"></div>
+    <div class="t-small" data-feedback-result role="status" hidden></div>
+    <button type="submit" class="btn btn-small">Send</button>
+  </form>
+</details>

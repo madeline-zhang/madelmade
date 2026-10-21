@@ -6,4 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GalleryPhotoRepository extends JpaRepository<GalleryPhoto, Long> {
     List<GalleryPhoto> findAllByOrderByDisplayOrderAscIdAsc();
+
+    List<GalleryPhoto> findBySectionOrderByDisplayOrderAscIdAsc(String section);
+
+    long countBySection(String section);
 }

@@ -2,6 +2,7 @@ package com.madelmade.service;
 
 import com.madelmade.config.AppProperties;
 import com.madelmade.domain.CustomerOrder;
+import com.madelmade.domain.Feedback;
 import com.madelmade.domain.OrderMessage;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -58,6 +59,10 @@ public class Notifier {
         // Madeline's address is only ever shared privately, once she has approved a pickup.
         boolean shareAddress = wording == EmailWording.APPROVED && !o.isDelivery();
         vars.put("pickupAddress", shareAddress ? settings.get("pickup.address") : "");
+        // Tennessee's home food law asks for the producer's name and phone with the order.
+        vars.put("producerName", wording == EmailWording.APPROVED ? settings.get("producer.name") : "");
+        vars.put("producerPhone", wording == EmailWording.APPROVED ? settings.get("producer.phone") : "");
+        vars.put("homeKitchen", settings.get("notice.homeKitchen"));
         String html = render("email/order", vars);
         mail.send(o.getContactEmail(), o.getContactName(), settings.subject(wording) + " (" + o.getNumber() + ")", html);
     }
@@ -94,6 +99,14 @@ public class Notifier {
                 "note", "",
                 "reviewUrl", props.url("/admin/orders/" + o.getId())));
         mail.send(settings.notifyEmail(), "Madeline", "Cancelled: " + o.getNumber() + " from " + o.getContactName(), html);
+    }
+
+    public void feedbackToMadeline(Feedback f) {
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("feedback", f);
+        vars.put("adminUrl", props.url("/admin/feedback"));
+        String html = render("email/feedback", vars);
+        mail.send(settings.notifyEmail(), "Madeline", (f.isBug() ? "Bug report" : "Feedback") + " from the site", html);
     }
 
     public void signInCode(String email, String code) {
