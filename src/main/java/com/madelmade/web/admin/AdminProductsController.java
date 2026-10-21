@@ -76,6 +76,7 @@ public class AdminProductsController {
                        @RequestParam(defaultValue = "false") boolean countsAsLoaf,
                        @RequestParam(defaultValue = "false") boolean pickupOnly,
                        @RequestParam(defaultValue = "false") boolean allowsBirthCertificate,
+                       @RequestParam(defaultValue = "false") boolean buildYourOwnTag,
                        @RequestParam(required = false) String badge,
                        @RequestParam(required = false) String ingredients, @RequestParam(required = false) String allergens,
                        @RequestParam(required = false) String notesHint,
@@ -99,6 +100,7 @@ public class AdminProductsController {
         p.setCountsAsLoaf(countsAsLoaf);
         p.setPickupOnly(pickupOnly);
         p.setAllowsBirthCertificate(allowsBirthCertificate);
+        p.setBuildYourOwnTag(buildYourOwnTag);
         p.setBadge(blank(badge));
         p.setIngredients(blank(ingredients));
         p.setAllergens(blank(allergens));

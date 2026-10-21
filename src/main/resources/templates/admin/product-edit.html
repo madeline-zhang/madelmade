@@ -49,6 +49,8 @@
             <label class="switch"><input type="checkbox" name="pickupOnly" value="true" th:checked="${product.pickupOnly}" aria-label="Pickup only"><span></span></label></div>
           <div class="toggle-row"><div><div class="t">Offer a birth certificate</div><div class="d">Shows the certificate add-on on this item.</div></div>
             <label class="switch"><input type="checkbox" name="allowsBirthCertificate" value="true" th:checked="${product.allowsBirthCertificate}" aria-label="Offer a birth certificate"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">"Build your own" tag</div><div class="d">Shows "build your own" on the menu card. Leave off for preset loaves, even with a size choice.</div></div>
+            <label class="switch"><input type="checkbox" name="buildYourOwnTag" value="true" th:checked="${product.buildYourOwnTag}" aria-label="Show the build your own tag"><span></span></label></div>
         </div>
         <button type="submit" class="btn" style="align-self: flex-start" th:data-autosave-hide="${product.id != null ? 'true' : null}" th:text="${product.id == null ? 'Add product' : 'Save details'}">Save details</button>
       </form>

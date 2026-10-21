@@ -50,6 +50,7 @@ public class DataSeeder implements ApplicationRunner {
         Product classic = product(bread, "Classic Loaf", "classic-loaf", 10, "miriam.jpg", 0,
                 "Build your own: size, flavor and score.",
                 "Our everyday sourdough, about 2 lb whole. Pick a flavor and a score, and Madeline will confirm your request.");
+        classic.setBuildYourOwnTag(true);
         OptionGroup flavors = flavors();
         sizes(classic);
         classic.getSharedGroups().add(flavors);
@@ -66,6 +67,7 @@ public class DataSeeder implements ApplicationRunner {
         Product stencil = product(bread, "Stencil Loaf", "stencil-loaf", 13, "peter.jpg", 1,
                 "A flour-stencil design on top.",
                 "Sourdough with a flour stencil on top: a butterfly, your own words, or a custom design. About 2 lb whole.");
+        stencil.setBuildYourOwnTag(true);
         sizes(stencil);
         stencil.getSharedGroups().add(flavors);
         OptionGroup design = group(stencil, "Design", OptionGroup.STYLE_SWATCHES, 2);

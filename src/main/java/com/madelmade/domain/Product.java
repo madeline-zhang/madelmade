@@ -35,6 +35,8 @@ public class Product {
     private String allergens;
     private String notesHint;
     private boolean allowsBirthCertificate;
+    /** Shows "build your own" on the menu card; Madeline turns it on per product. */
+    private boolean buildYourOwnTag;
     private String badge;
     private Long photoId;
     private Instant createdAt = Instant.now();
@@ -104,6 +106,8 @@ public class Product {
                 .flatMap(g -> g.getActiveChoices().stream())
                 .anyMatch(c -> c.getIngredients() != null || c.getAllergens() != null);
     }
+    public boolean isBuildYourOwnTag() { return buildYourOwnTag; }
+    public void setBuildYourOwnTag(boolean buildYourOwnTag) { this.buildYourOwnTag = buildYourOwnTag; }
     public boolean isAllowsBirthCertificate() { return allowsBirthCertificate; }
     public void setAllowsBirthCertificate(boolean allowsBirthCertificate) { this.allowsBirthCertificate = allowsBirthCertificate; }
     public String getBadge() { return badge; }

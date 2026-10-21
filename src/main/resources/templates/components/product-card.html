@@ -10,7 +10,7 @@
   <div class="product-card-body">
     <div class="product-card-name" th:text="${p.name}">Classic Loaf</div>
     <div class="product-card-price">
-      <span th:text="${(p.buildYourOwn and p.category.slug == 'bread' ? 'from ' : '') + @money.fmt(p.basePrice)}">$10</span><span th:if="${p.shortDescription != null and p.category.slug != 'bread'}" th:text="${' · ' + p.shortDescription}"> · hot or iced</span><span th:if="${p.category.slug == 'bread' and p.buildYourOwn}"> · build your own</span>
+      <span th:text="${(p.buildYourOwn and p.category.slug == 'bread' ? 'from ' : '') + @money.fmt(p.basePrice)}">$10</span><span th:if="${p.shortDescription != null and p.category.slug != 'bread'}" th:text="${' · ' + p.shortDescription}"> · hot or iced</span><span th:if="${p.buildYourOwnTag}"> · build your own</span>
     </div>
   </div>
 </a>
