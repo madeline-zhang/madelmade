@@ -134,19 +134,56 @@
   $$('[data-cart-open]').forEach(function (el) {
     el.addEventListener('click', function (e) { e.preventDefault(); openDrawer(); });
   });
-  $$('[data-cart-close], [data-modal-close]').forEach(function (el) { el.addEventListener('click', closeAll); });
-  if (scrim) scrim.addEventListener('click', closeAll);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
-  var popupBtn = $('[data-checkout-popup]');
-  if (popupBtn && modal) {
-    popupBtn.addEventListener('click', function () {
+  $$('[data-modal-close]').forEach(function (el) { el.addEventListener('click', closeAll); });
+  // The drawer's insides get swapped after a quantity change, so its buttons are handled here.
+  if (drawer) drawer.addEventListener('click', function (e) {
+    if (e.target.closest('[data-cart-close]')) closeAll();
+    if (e.target.closest('[data-checkout-popup]') && modal) {
       drawer.classList.remove('is-open');
       modal.classList.remove('hidden');
       scrim.classList.remove('hidden');
       var first = $('a, button', modal);
       if (first) first.focus();
-    });
-  }
+    }
+  });
+  // Quantity and Remove in the drawer: save in the background and refresh the drawer in place,
+  // instead of reloading the page (which made the drawer slide in again).
+  if (drawer && window.fetch && window.DOMParser) drawer.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!/\/cart\/(update|remove)$/.test(form.getAttribute('action') || '')) return;
+    e.preventDefault();
+    var data = new URLSearchParams(new FormData(form));
+    if (e.submitter && e.submitter.name) data.append(e.submitter.name, e.submitter.value);
+    drawer.setAttribute('aria-busy', 'true');
+    fetch(form.action, { method: 'POST', body: data, credentials: 'same-origin' })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var fresh = $('[data-drawer]', doc);
+        if (!fresh) { window.location.reload(); return; }
+        drawer.innerHTML = fresh.innerHTML;
+        var cartLink = $('[data-cart-open]');
+        var freshLink = $('[data-cart-open]', doc);
+        if (cartLink && freshLink) {
+          cartLink.innerHTML = freshLink.innerHTML;
+          cartLink.setAttribute('aria-label', freshLink.getAttribute('aria-label'));
+        }
+        var errors = $$('[data-flash] .alert-error li', doc).map(function (li) { return li.textContent; });
+        if (errors.length) {
+          var box = document.createElement('div');
+          box.className = 'field-error';
+          box.setAttribute('role', 'alert');
+          box.style.margin = '12px 20px 0';
+          box.textContent = errors.join(' ');
+          var body = $('.drawer-body', drawer);
+          if (body) body.insertBefore(box, body.firstChild);
+        }
+      })
+      .catch(function () { window.location.reload(); })
+      .then(function () { drawer.removeAttribute('aria-busy'); });
+  });
+  if (scrim) scrim.addEventListener('click', closeAll);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
 
   // Menu category tabs filter without reloading.
   var tabs = $('[data-menu-tabs]');
