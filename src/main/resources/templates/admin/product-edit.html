@@ -36,6 +36,10 @@
         <div class="field"><label for="notesHint">Example in "Anything special?"</label><input type="text" id="notesHint" name="notesHint" maxlength="120" th:value="${product.notesHint}" placeholder="Higher hydration, if possible">
           <div class="help">Light grey example text customers see in the notes box. "e.g." is added in front for you.</div></div>
         <div class="field-row">
+          <div class="field"><label for="taxCategory">Sales tax kind</label>
+            <select id="taxCategory" name="taxCategory">
+              <option th:each="c : ${taxCategories}" th:value="${c.name()}" th:text="${c.label}" th:selected="${product.taxCategory == c}">Prepared food</option>
+            </select></div>
           <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Yeast-risen"></div>
         </div>
         <div>

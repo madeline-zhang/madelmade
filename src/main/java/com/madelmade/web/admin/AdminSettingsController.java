@@ -22,7 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminSettingsController {
     /** On/off settings. An unticked box isn't posted, so these are read as false when missing. */
     static final List<String> FLAGS = List.of("orders.open", "rules.priorityEnabled", "cert.enabled", "delivery.enabled",
-            "notify.newRequest", "notify.customerReply", "notify.morningSummary");
+            "notify.newRequest", "notify.customerReply", "notify.morningSummary", "tax.enabled", "tax.included");
 
     private final SettingsService settings;
 
@@ -53,6 +53,13 @@ public class AdminSettingsController {
                 flash.addFlashAttribute("errors", List.of("Please use a whole number for notice days and the loaf limits."));
                 return "redirect:/admin/settings";
             }
+        }
+        for (String key : List.of("tax.ratePrepared", "tax.rateFood", "tax.rateLocal")) {
+            if (values.containsKey(key) && !values.get(key).trim().replace("%", "").matches("\\d{1,2}(\\.\\d{1,3})?")) {
+                flash.addFlashAttribute("errors", List.of("Please type tax rates as a percent, like 7 or 2.75."));
+                return "redirect:/admin/settings";
+            }
+            if (values.containsKey(key)) values.put(key, values.get(key).trim().replace("%", ""));
         }
         for (String key : List.of("rules.priorityFee", "cert.price")) {
             if (values.containsKey(key) && !values.get(key).trim().replace("$", "").matches("\\d{1,4}(\\.\\d{1,2})?")) {

@@ -230,23 +230,72 @@ public class AdminOrdersController {
         return act(find(id), flash, "Notes saved.", o -> orderService.savePrivateNotes(o, notes));
     }
 
+    /**
+     * Orders for bookkeeping and sales tax returns, one row per order. With dates, only orders picked up or
+     * delivered in that range (customers pay then). Cancelled and declined orders are left out of the totals.
+     */
     @GetMapping("/orders/export.csv")
-    public ResponseEntity<String> export() {
-        StringBuilder sb = new StringBuilder("Order,Created,Status,Name,Email,Phone,Fulfillment,Date,Items,Subtotal,Priority fee,Delivery fee,Promo code,Discount,Adjustment,Total,Paid\n");
-        for (CustomerOrder o : orders.findAllByOrderByCreatedAtDesc()) {
+    public ResponseEntity<String> export(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to) {
+        List<String> head = List.of("Order", "Order date", "Completed date", "Status", "Customer", "Email", "Phone", "Fulfillment",
+                "Requested date", "Items", "Items subtotal", "Promo code", "Discount", "Priority fee", "Delivery fee", "Adjustment",
+                "Taxable (prepared food)", "Taxable (food or grocery)", "Not taxable", "State rate prepared %", "State rate food %",
+                "Local rate %", "State tax", "Local tax", "Total tax", "Total collected", "Tax mode", "Paid");
+        StringBuilder sb = new StringBuilder(String.join(",", head.stream().map(AdminOrdersController::csv).toList())).append('\n');
+        BigDecimal[] sums = new BigDecimal[11];
+        java.util.Arrays.fill(sums, BigDecimal.ZERO);
+        BigDecimal collected = BigDecimal.ZERO;
+        List<CustomerOrder> all = new ArrayList<>(orders.findAllByOrderByCreatedAtDesc());
+        java.util.Collections.reverse(all);
+        for (CustomerOrder o : all) {
+            LocalDate done = completedOn(o);
+            if ((from != null || to != null) && (done == null || from != null && done.isBefore(from) || to != null && done.isAfter(to))) continue;
+            BigDecimal[] row = {o.getSubtotal(), o.getDiscount(), o.getPriorityFee(), o.getDeliveryFee() == null ? BigDecimal.ZERO : o.getDeliveryFee(),
+                    o.getAdjustment(), o.getTaxablePrepared(), o.getTaxableFood(), o.getNonTaxable(), o.getStateTax(), o.getLocalTax(), o.getTax()};
+            boolean counts = o.getStatus() == OrderStatus.COMPLETED;
+            if (counts) {
+                for (int k = 0; k < sums.length; k++) sums[k] = sums[k].add(row[k] == null ? BigDecimal.ZERO : row[k]);
+                collected = collected.add(o.getTotal());
+            }
             sb.append(String.join(",", List.of(
-                    o.getNumber(), formats.stamp(o.getCreatedAt()), o.getStatus().getLabel(), o.getContactName(),
-                    o.getContactEmail(), o.getContactPhone() == null ? "" : o.getContactPhone(), o.getFulfillment().getLabel(),
-                    o.getRequestedDate().toString(), o.getItemsSummary(), money.plain(o.getSubtotal()), money.plain(o.getPriorityFee()),
-                    o.getDeliveryFee() == null ? "" : money.plain(o.getDeliveryFee()),
-                    o.getPromoCode() == null ? "" : o.getPromoCode(), money.plain(o.getDiscount()), money.plain(o.getAdjustment()),
-                    money.plain(o.getTotal()), o.isPaid() ? "yes" : "no").stream().map(AdminOrdersController::csv).toList()));
+                    o.getNumber(), formats.iso(o.getCreatedAt().atZone(props.zoneId()).toLocalDate()), done == null ? "" : formats.iso(done),
+                    o.getStatus().getLabel(), o.getContactName(), o.getContactEmail(), o.getContactPhone() == null ? "" : o.getContactPhone(),
+                    o.getFulfillment().getLabel(), o.getRequestedDate() == null ? "" : formats.iso(o.getRequestedDate()), o.getItemsSummary(),
+                    money.plain(o.getSubtotal()), o.getPromoCode() == null ? "" : o.getPromoCode(), money.plain(o.getDiscount()),
+                    money.plain(o.getPriorityFee()), o.getDeliveryFee() == null ? "" : money.plain(o.getDeliveryFee()), money.plain(o.getAdjustment()),
+                    money.plain(o.getTaxablePrepared()), money.plain(o.getTaxableFood()), money.plain(o.getNonTaxable()),
+                    rate(o, o.getTaxRates().prepared()), rate(o, o.getTaxRates().food()), rate(o, o.getTaxRates().local()),
+                    money.plain(o.getStateTax()), money.plain(o.getLocalTax()), money.plain(o.getTax()), money.plain(o.getTotal()),
+                    o.getTaxMode(), o.isPaid() ? "yes" : "no").stream().map(AdminOrdersController::csv).toList()));
             sb.append('\n');
         }
+        List<String> totals = new ArrayList<>(List.of("Totals (completed orders)", "", "", "", "", "", "", "", "", ""));
+        totals.add(money.plain(sums[0]));
+        totals.add("");
+        for (int k = 1; k <= 7; k++) totals.add(money.plain(sums[k]));
+        totals.addAll(List.of("", "", ""));
+        for (int k = 8; k <= 10; k++) totals.add(money.plain(sums[k]));
+        totals.add(money.plain(collected));
+        totals.addAll(List.of("", ""));
+        sb.append(String.join(",", totals.stream().map(AdminOrdersController::csv).toList())).append('\n');
+        String name = from == null && to == null ? "madelmade-orders-" + formats.today()
+                : "madelmade-orders-" + (from == null ? "start" : from) + "-to-" + (to == null ? formats.today() : to);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"madelmade-orders-" + formats.today() + ".csv\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + ".csv\"")
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .body(sb.toString());
+    }
+
+    /** The day an order was picked up or delivered, from its history. */
+    private LocalDate completedOn(CustomerOrder o) {
+        LocalDate d = null;
+        for (var e : o.getEvents()) {
+            if (e.getNewStatus() == OrderStatus.COMPLETED) d = e.getCreatedAt().atZone(props.zoneId()).toLocalDate();
+        }
+        return o.getStatus() == OrderStatus.COMPLETED ? d : null;
+    }
+
+    private static String rate(CustomerOrder o, BigDecimal r) {
+        return o.isTaxEnabled() && r != null ? r.stripTrailingZeros().toPlainString() : "";
     }
 
     private String act(CustomerOrder o, RedirectAttributes flash, String ok, Consumer<CustomerOrder> action) {

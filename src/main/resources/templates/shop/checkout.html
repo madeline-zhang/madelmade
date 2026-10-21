@@ -110,12 +110,14 @@
         <h2 class="card-title">Your order</h2>
         <div th:replace="~{components/order-summary :: cartLines(false)}"></div>
         <div class="summary-totals">
+          <div th:if="${promo != null or (taxRates.enabled() and !taxRates.included() and taxEst.tax().signum() > 0)}"><span>Items</span><span th:text="${@money.fmt(cart.total)}">$26</span></div>
           <th:block th:if="${promo != null}">
-            <div><span>Items</span><span th:text="${@money.fmt(cart.total)}">$26</span></div>
             <div class="discount"><span th:text="${'Promo ' + promo.code}">Promo FRIENDS50</span><span th:text="${'−' + @money.fmt(promoDiscount)}">−$13</span></div>
           </th:block>
-          <div class="grand"><span>Total</span><span th:text="${@money.fmt(promo != null ? promoTotal : cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</span></div>
-          <div class="t-small muted">Plus priority or delivery fees if chosen. You pay at pickup or delivery.</div>
+          <div th:if="${taxRates.enabled() and !taxRates.included() and taxEst.tax().signum() > 0}"><span th:text="${'Estimated ' + #strings.toLowerCase(taxLabel)}">Estimated sales tax (9.75%)</span><span th:text="${@money.fmt(taxEst.tax())}">$2.54</span></div>
+          <div class="grand"><span>Total</span><span th:text="${@money.fmt(checkoutTotal) + (cart.priceTbd ? ' + custom' : '')}">$26</span></div>
+          <div class="t-small muted" th:if="${taxRates.enabled() and taxRates.included()}" th:text="${taxLabel + ': ' + @money.fmt(taxEst.tax())}">Includes sales tax (9.75%): $2.32</div>
+          <div class="t-small muted" th:text="${'Plus priority or delivery fees if chosen' + (taxRates.enabled() and !taxRates.included() ? ', and the sales tax on them' : '') + '. You pay at pickup or delivery.'}">Plus priority or delivery fees if chosen. You pay at pickup or delivery.</div>
         </div>
         <p style="margin: 16px 0 0"><a th:href="@{/cart}" class="t-small">Edit cart</a></p>
         <div style="margin-top: 16px"><p th:replace="~{components/notices :: homeKitchen}"></p></div>

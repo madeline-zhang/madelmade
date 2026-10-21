@@ -107,6 +107,20 @@
             <div class="help">Separate with commas. They sign in with Google or an emailed code.</div></div>
         </section>
 
+        <section class="card stack" id="sales-tax">
+          <h2 class="card-title">Sales tax</h2>
+          <div class="toggle-row"><div><div class="t">Charge sales tax</div><div class="d">Turn on once your Tennessee sales tax account is open. Orders placed before then stay untaxed.</div></div>
+            <label class="switch"><input type="checkbox" name="tax.enabled" th:checked="${settings.flag('tax.enabled')}" aria-label="Charge sales tax"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">Prices include tax</div><div class="d">Off: tax is added as its own line at checkout. On: menu prices already include it, and the site works out the tax inside them for your records.</div></div>
+            <label class="switch"><input type="checkbox" name="tax.included" th:checked="${settings.flag('tax.included')}" aria-label="Prices include tax"><span></span></label></div>
+          <div class="field-row">
+            <div class="field"><label for="ratePrepared">State rate, prepared food (%)</label><input type="text" inputmode="decimal" id="ratePrepared" name="tax.ratePrepared" th:value="${settings.get('tax.ratePrepared')}"></div>
+            <div class="field"><label for="rateFood">State rate, food or grocery (%)</label><input type="text" inputmode="decimal" id="rateFood" name="tax.rateFood" th:value="${settings.get('tax.rateFood')}"></div>
+          </div>
+          <div class="field"><label for="rateLocal">Local rate (%)</label><input type="text" inputmode="decimal" id="rateLocal" name="tax.rateLocal" th:value="${settings.get('tax.rateLocal')}" style="max-width: 160px">
+            <div class="help">Williamson County is 2.75%, which covers Brentwood and Nolensville. Set each product's kind (prepared food, food or grocery, or not taxed) on its page under Products. The tax applies to items after promo codes, plus priority and delivery fees.</div></div>
+        </section>
+
         <section class="card stack">
           <h2 class="card-title">Photo look</h2>
           <p class="t-small muted" style="margin: 0">Where the editor's sliders start for new photos, from -100 to 100 (0 is no change).</p>

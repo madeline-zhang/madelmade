@@ -13,6 +13,7 @@
     </div>
     <div class="drawer-foot" th:if="${!cart.empty}">
       <div class="total-row"><span>Total</span><strong th:text="${@money.fmt(cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</strong></div>
+      <div class="t-small muted" th:if="${settings.taxRates().enabled()}" th:text="${settings.taxRates().included() ? 'Prices include sales tax.' : 'Plus sales tax, added at checkout.'}">Plus sales tax, added at checkout.</div>
       <div th:replace="~{components/notices :: pickupOnly}"></div>
       <div th:replace="~{components/notices :: busy}"></div>
       <div class="t-small muted">Nothing is charged now. Madeline confirms every order, and you pay at pickup or delivery.</div>

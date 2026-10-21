@@ -15,7 +15,17 @@
         <input type="hidden" name="tab" th:value="${tab}">
         <input type="search" name="q" th:value="${q}" placeholder="Search order #, name, email or product" aria-label="Search orders">
       </form>
-      <a class="btn btn-secondary btn-small" th:href="@{/admin/orders/export.csv}">Export CSV</a>
+      <details class="export-menu">
+        <summary class="btn btn-secondary btn-small">Export CSV</summary>
+        <form method="get" th:action="@{/admin/orders/export.csv}" class="stack card" style="gap: 10px">
+          <p class="t-small muted" style="margin: 0">For bookkeeping and sales tax. Pick dates to get only the orders picked up or delivered then, or leave them empty for every order.</p>
+          <div class="field-row">
+            <div class="field"><label for="exFrom">From</label><input type="date" id="exFrom" name="from"></div>
+            <div class="field"><label for="exTo">To</label><input type="date" id="exTo" name="to"></div>
+          </div>
+          <button type="submit" class="btn btn-small" style="align-self: flex-start">Download</button>
+        </form>
+      </details>
     </div>
   </div>
 

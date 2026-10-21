@@ -20,6 +20,8 @@ public class OrderItem {
     private String customNotes;
     private String lettersText;
     private String lettersFont;
+    @Enumerated(EnumType.STRING)
+    private TaxCategory taxCategory = TaxCategory.PREPARED;
     private BigDecimal unitPrice = BigDecimal.ZERO;
     private BigDecimal lineTotal = BigDecimal.ZERO;
     private boolean priceTbd;
@@ -60,6 +62,8 @@ public class OrderItem {
     public void setCustomNotes(String customNotes) { this.customNotes = customNotes; }
     public String getLettersText() { return lettersText; }
     public void setLettersText(String lettersText) { this.lettersText = lettersText; }
+    public TaxCategory getTaxCategory() { return taxCategory; }
+    public void setTaxCategory(TaxCategory taxCategory) { this.taxCategory = taxCategory == null ? TaxCategory.PREPARED : taxCategory; }
     public String getLettersFont() { return lettersFont; }
     public void setLettersFont(String lettersFont) { this.lettersFont = lettersFont; }
     public BigDecimal getUnitPrice() { return unitPrice; }

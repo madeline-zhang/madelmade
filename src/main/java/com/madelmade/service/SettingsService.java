@@ -32,6 +32,12 @@ public class SettingsService {
         DEFAULTS.put("rules.priorityNoticeDays", "1");
         DEFAULTS.put("rules.priorityFee", "5");
         DEFAULTS.put("design.fonts", "Block letters\nBubble\nScript\nCustom");
+        // Sales tax stays off until Madeline has her Tennessee sales tax account.
+        DEFAULTS.put("tax.enabled", "false");
+        DEFAULTS.put("tax.included", "false");
+        DEFAULTS.put("tax.ratePrepared", "7");
+        DEFAULTS.put("tax.rateFood", "4");
+        DEFAULTS.put("tax.rateLocal", "2.75");
         DEFAULTS.put("cert.enabled", "true");
         DEFAULTS.put("cert.price", "1");
         DEFAULTS.put("cert.starter", "Manna");
@@ -151,6 +157,10 @@ public class SettingsService {
     /** Fonts customers pick from for text on a loaf, one per line in Settings. */
     public List<String> fonts() {
         return Arrays.stream(get("design.fonts").split("\\R")).map(String::trim).filter(f -> !f.isEmpty()).distinct().toList();
+    }
+    public TaxCalculator.Rates taxRates() {
+        return new TaxCalculator.Rates(flag("tax.enabled"), flag("tax.included"),
+                money("tax.ratePrepared"), money("tax.rateFood"), money("tax.rateLocal"));
     }
     public boolean certificatesEnabled() { return flag("cert.enabled"); }
     public BigDecimal certificatePrice() { return money("cert.price"); }

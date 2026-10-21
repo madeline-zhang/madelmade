@@ -14,7 +14,9 @@ import com.madelmade.service.OrderService;
 import com.madelmade.service.PromoService;
 import com.madelmade.domain.PromoCode;
 import com.madelmade.service.SettingsService;
+import com.madelmade.service.TaxCalculator;
 import com.madelmade.service.UserFacingException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -95,6 +97,7 @@ public class CheckoutController {
         LocalDate minPriority = orderService.earliestDate(cart, true);
         model.addAttribute("form", form);
         model.addAttribute("formErrors", errors);
+        BigDecimal promoOff = BigDecimal.ZERO;
         try {
             PromoCode promo = promos.check(form.getPromoCode(), CurrentUser.email().orElse(form.getEmail()));
             if (promo != null) {
@@ -102,10 +105,18 @@ public class CheckoutController {
                 model.addAttribute("promo", promo);
                 model.addAttribute("promoDiscount", PromoService.discountOn(cart.getTotal(), promo.getPercentOff()));
                 model.addAttribute("promoTotal", cart.getTotal().subtract(PromoService.discountOn(cart.getTotal(), promo.getPercentOff())));
+                promoOff = PromoService.discountOn(cart.getTotal(), promo.getPercentOff());
             }
         } catch (UserFacingException e) {
             model.addAttribute("promoError", String.join(" ", e.getMessages()));
         }
+        // Estimated sales tax on the items; tax on priority and delivery fees is added with the fees.
+        TaxCalculator.Rates rates = settings.taxRates();
+        TaxCalculator.Result tax = orderService.estimateTax(cart, promoOff);
+        model.addAttribute("taxRates", rates);
+        model.addAttribute("taxEst", tax);
+        model.addAttribute("taxLabel", TaxCalculator.label(rates, tax));
+        model.addAttribute("checkoutTotal", cart.getTotal().subtract(promoOff).add(rates.enabled() && !rates.included() ? tax.tax() : BigDecimal.ZERO));
         model.addAttribute("minStandard", minStandard.toString());
         model.addAttribute("minStandardText", formats.longDay(minStandard));
         model.addAttribute("minPriority", minPriority.toString());

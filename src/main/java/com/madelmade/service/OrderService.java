@@ -194,6 +194,7 @@ public class OrderService {
             o.setPromoPercent(promo.getPercentOff());
         }
         items.forEach(o::addItem);
+        o.applyTaxRates(settings.taxRates());
         o.recalculate();
         o.setOverCapacity(wouldBeOverCapacity(o.getLoafCount()));
         o.changeStatus(OrderStatus.NEEDS_REVIEW, "Request submitted");
@@ -216,6 +217,7 @@ public class OrderService {
         i.setCustomNotes(trim(line.getCustomNotes()));
         i.setLettersText(trim(line.getLettersText()));
         i.setLettersFont(trim(line.getLettersFont()));
+        i.setTaxCategory(p.getTaxCategory());
         i.setUnitPrice(q.unitPrice());
         i.setPriceTbd(q.priceTbd());
         i.setCountsAsLoaf(p.isCountsAsLoaf());
@@ -301,7 +303,16 @@ public class OrderService {
         l.setPriceTbd(q.priceTbd());
         l.setCountsAsLoaf(p.isCountsAsLoaf());
         l.setPickupOnly(p.isPickupOnly());
+        l.setTaxCategory(p.getTaxCategory());
         return l;
+    }
+
+    /** Tax on the cart's items after any promo, shown at checkout before fees are known. */
+    public TaxCalculator.Result estimateTax(Cart cart, BigDecimal discount) {
+        Map<com.madelmade.domain.TaxCategory, BigDecimal> byCategory = new java.util.EnumMap<>(com.madelmade.domain.TaxCategory.class);
+        for (CartLine l : cart.getLines()) byCategory.merge(l.getTaxCategory() == null ? com.madelmade.domain.TaxCategory.PREPARED : l.getTaxCategory(), l.getLineTotal(), BigDecimal::add);
+        BigDecimal charged = cart.getTotal().subtract(discount == null ? BigDecimal.ZERO : discount);
+        return TaxCalculator.compute(settings.taxRates(), byCategory, charged);
     }
 
     // ---- Madeline's side ----

@@ -37,6 +37,8 @@ public class Product {
     private boolean allowsBirthCertificate;
     /** Shows "build your own" on the menu card; Madeline turns it on per product. */
     private boolean buildYourOwnTag;
+    @Enumerated(EnumType.STRING)
+    private TaxCategory taxCategory = TaxCategory.PREPARED;
     private String badge;
     private Long photoId;
     private Instant createdAt = Instant.now();
@@ -106,6 +108,8 @@ public class Product {
                 .flatMap(g -> g.getActiveChoices().stream())
                 .anyMatch(c -> c.getIngredients() != null || c.getAllergens() != null);
     }
+    public TaxCategory getTaxCategory() { return taxCategory; }
+    public void setTaxCategory(TaxCategory taxCategory) { this.taxCategory = taxCategory == null ? TaxCategory.PREPARED : taxCategory; }
     public boolean isBuildYourOwnTag() { return buildYourOwnTag; }
     public void setBuildYourOwnTag(boolean buildYourOwnTag) { this.buildYourOwnTag = buildYourOwnTag; }
     public boolean isAllowsBirthCertificate() { return allowsBirthCertificate; }

@@ -4,6 +4,7 @@ import com.madelmade.domain.Category;
 import com.madelmade.domain.OptionChoice;
 import com.madelmade.domain.OptionGroup;
 import com.madelmade.domain.Product;
+import com.madelmade.domain.TaxCategory;
 import com.madelmade.repo.CategoryRepository;
 import com.madelmade.repo.OptionChoiceRepository;
 import com.madelmade.repo.OptionGroupRepository;
@@ -55,6 +56,7 @@ public class AdminProductsController {
         p.setDisplayOrder((int) products.count());
         model.addAttribute("product", p);
         model.addAttribute("categories", categories.findAllByOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("taxCategories", TaxCategory.values());
         return "admin/product-edit";
     }
 
@@ -63,6 +65,7 @@ public class AdminProductsController {
         model.addAttribute("product", find(id));
         model.addAttribute("sharedGroups", groups.findByProductIsNullOrderByDisplayOrderAscIdAsc());
         model.addAttribute("categories", categories.findAllByOrderByDisplayOrderAscIdAsc());
+        model.addAttribute("taxCategories", TaxCategory.values());
         return "admin/product-edit";
     }
 
@@ -77,6 +80,7 @@ public class AdminProductsController {
                        @RequestParam(defaultValue = "false") boolean pickupOnly,
                        @RequestParam(defaultValue = "false") boolean allowsBirthCertificate,
                        @RequestParam(defaultValue = "false") boolean buildYourOwnTag,
+                       @RequestParam(required = false) TaxCategory taxCategory,
                        @RequestParam(required = false) String badge,
                        @RequestParam(required = false) String ingredients, @RequestParam(required = false) String allergens,
                        @RequestParam(required = false) String notesHint,
@@ -101,6 +105,7 @@ public class AdminProductsController {
         p.setPickupOnly(pickupOnly);
         p.setAllowsBirthCertificate(allowsBirthCertificate);
         p.setBuildYourOwnTag(buildYourOwnTag);
+        if (taxCategory != null) p.setTaxCategory(taxCategory);
         p.setBadge(blank(badge));
         p.setIngredients(blank(ingredients));
         p.setAllergens(blank(allergens));
