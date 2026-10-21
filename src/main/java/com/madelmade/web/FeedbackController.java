@@ -1,5 +1,6 @@
 package com.madelmade.web;
 
+import com.madelmade.config.CurrentUser;
 import com.madelmade.config.SafeRedirect;
 import com.madelmade.domain.Feedback;
 import com.madelmade.repo.FeedbackRepository;
@@ -31,32 +32,33 @@ public class FeedbackController {
     @ResponseBody
     public ResponseEntity<String> sendFromPanel(@RequestParam(defaultValue = Feedback.FEEDBACK) String kind,
                                                 @RequestParam(required = false) String message,
-                                                @RequestParam(required = false) String email,
                                                 @RequestParam(required = false) String page,
                                                 @RequestParam(required = false) String website) {
-        if (!save(kind, message, email, page, website)) return ResponseEntity.badRequest().body(EMPTY);
+        if (!save(kind, message, page, website)) return ResponseEntity.badRequest().body(EMPTY);
         return ResponseEntity.ok(THANKS);
     }
 
     /** Without JavaScript the form posts normally and comes back to the same page. */
     @PostMapping("/feedback")
     public String send(@RequestParam(defaultValue = Feedback.FEEDBACK) String kind, @RequestParam(required = false) String message,
-                       @RequestParam(required = false) String email, @RequestParam(required = false) String page,
+                       @RequestParam(required = false) String page,
                        @RequestParam(required = false) String website, RedirectAttributes flash) {
-        if (save(kind, message, email, page, website)) flash.addFlashAttribute("ok", THANKS);
+        if (save(kind, message, page, website)) flash.addFlashAttribute("ok", THANKS);
         else flash.addFlashAttribute("errors", List.of(EMPTY));
         return "redirect:" + SafeRedirect.orDefault(page, "/");
     }
 
-    private boolean save(String kind, String message, String email, String page, String website) {
+    private boolean save(String kind, String message, String page, String website) {
         if (message == null || message.isBlank()) return false;
         // "website" is a hidden field people never see; bots fill it in. Pretend it worked.
         if (website != null && !website.isBlank()) return true;
         Feedback f = new Feedback();
         f.setKind(Feedback.BUG.equals(kind) ? Feedback.BUG : Feedback.FEEDBACK);
         f.setMessage(clip(message.trim(), 4000));
-        f.setEmail(email == null || email.isBlank() ? null : clip(email.trim(), 200));
-        f.setPage(page == null || page.isBlank() ? null : clip(page, 500));
+        // Signed-in visitors are known by their email; everyone else shows as a guest.
+        f.setEmail(CurrentUser.email().orElse(null));
+        // For a bug, the page they were on helps track it down.
+        if (f.isBug() && page != null && !page.isBlank()) f.setPage(clip(page, 500));
         feedback.save(f);
         notifier.feedbackToMadeline(f);
         return true;

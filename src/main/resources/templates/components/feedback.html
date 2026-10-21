@@ -14,8 +14,6 @@
     </div>
     <div class="field"><label for="fb-message" class="visually-hidden">Message</label>
       <textarea id="fb-message" name="message" rows="4" maxlength="4000" required data-required-msg="Please write a message first." placeholder="What's on your mind? If something broke, what were you trying to do?"></textarea></div>
-    <div class="field"><label for="fb-email" class="t-small">Your email <span class="muted">(optional, if you'd like a reply)</span></label>
-      <input type="email" id="fb-email" name="email" th:value="${userEmail}" autocomplete="email"></div>
     <input type="hidden" name="page" th:value="${path}">
     <div class="visually-hidden" aria-hidden="true"><label for="fb-website">Leave this empty</label><input type="text" id="fb-website" name="website" tabindex="-1" autocomplete="off"></div>
     <div class="t-small" data-feedback-result role="status" hidden></div>
