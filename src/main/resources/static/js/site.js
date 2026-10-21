@@ -24,6 +24,7 @@
     }
     if (v.typeMismatch && el.type === 'email') return 'Please enter a valid email address, like name@example.com.';
     if (v.rangeUnderflow && el.type === 'date') return 'Please choose a later date.';
+    if (v.rangeOverflow && el.getAttribute('data-max-msg')) return el.getAttribute('data-max-msg');
     return el.validationMessage;
   };
   var clearInvalid = function (el) {
@@ -257,7 +258,7 @@
     $$('[data-qty]', form).forEach(function (b) {
       b.addEventListener('click', function () {
         var v = (parseInt(qtyInput.value, 10) || 1) + parseInt(b.getAttribute('data-qty'), 10);
-        qtyInput.value = Math.max(1, Math.min(6, v));
+        qtyInput.value = Math.max(1, Math.min(parseInt(qtyInput.max, 10) || 12, v));
         update(null);
       });
     });

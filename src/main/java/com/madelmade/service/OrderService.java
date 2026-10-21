@@ -77,10 +77,26 @@ public class OrderService {
         return settings.priorityEnabled() && settings.priorityNoticeDays() < standardNotice(cart);
     }
 
-    public int loavesInProgress() {
-        return orders.findByStatusInOrderByCreatedAtDesc(OrderStatus.IN_PROGRESS).stream()
+    /** Loaves in every order that's still open: waiting for review, approved or baked. */
+    public int loavesBooked() {
+        return orders.findByStatusInOrderByCreatedAtDesc(OrderStatus.OPEN).stream()
                 .mapToInt(CustomerOrder::getLoafCount).sum();
     }
+
+    /** True when this cart would put Madeline over the loaves she can have on the go at once. */
+    public boolean wouldBeOverCapacity(int cartLoaves) {
+        return cartLoaves > 0 && loavesBooked() + cartLoaves > settings.maxLoaves();
+    }
+
+    public String perOrderLimitMessage(int inCart) {
+        int max = settings.maxPerOrder();
+        String msg = "You can order up to " + max + " loa" + (max == 1 ? "f" : "ves") + " per order.";
+        if (inCart <= 0) return msg;
+        int left = Math.max(0, max - inCart);
+        return msg + " You have " + inCart + " in your cart, so you can add "
+                + (left == 0 ? "no more." : left + " more.");
+    }
+
 
     // ---- Customer side ----
 
@@ -94,8 +110,8 @@ public class OrderService {
         };
         if (!settings.ordersOpen()) throw new UserFacingException(settings.get("orders.pausedNote"));
         if (cart.isEmpty()) throw new UserFacingException("Your cart is empty.");
-        if (cart.getLoafCount() > settings.maxLoaves()) {
-            error.accept("cart", "Madeline can bake up to " + settings.maxLoaves() + " loaves per order. Please remove a loaf or two.");
+        if (cart.getLoafCount() > settings.maxPerOrder()) {
+            error.accept("cart", "You can order up to " + settings.maxPerOrder() + " loaves per order. Please remove a loaf or two.");
         }
 
         String email = signedInEmail.orElse(trim(f.getEmail())).toLowerCase();
@@ -179,7 +195,7 @@ public class OrderService {
         }
         items.forEach(o::addItem);
         o.recalculate();
-        o.setOverCapacity(loavesInProgress() + o.getLoafCount() > settings.maxLoaves());
+        o.setOverCapacity(wouldBeOverCapacity(o.getLoafCount()));
         o.changeStatus(OrderStatus.NEEDS_REVIEW, "Request submitted");
         orders.save(o);
         if (promo != null) promos.recordUse(promo);
@@ -253,6 +269,10 @@ public class OrderService {
                 skipped.add(i.getProductName());
                 continue;
             }
+            if (p.get().isCountsAsLoaf() && cart.getLoafCount() + i.getQuantity() > settings.maxPerOrder()) {
+                skipped.add(i.getProductName());
+                continue;
+            }
             cart.add(toCartLine(p.get(), q, i.getQuantity(), i.getLettersText(), i.getCustomNotes(), cert,
                     i.getCertName(), i.getCertMessage()));
         }
@@ -275,7 +295,7 @@ public class OrderService {
         l.setCertMessage(cert ? trim(certMessage) : null);
         l.setCertPrice(q.certPrice());
         l.setUnitPrice(q.unitPrice());
-        l.setQuantity(Math.max(1, Math.min(qty, 6)));
+        l.setQuantity(Math.max(1, Math.min(qty, 12)));
         l.setPriceTbd(q.priceTbd());
         l.setCountsAsLoaf(p.isCountsAsLoaf());
         l.setPickupOnly(p.isPickupOnly());

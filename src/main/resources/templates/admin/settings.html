@@ -20,7 +20,9 @@
           <div class="field-row">
             <div class="field"><label for="noticeDays">Days of notice</label><input type="number" min="0" max="60" id="noticeDays" name="rules.noticeDays" th:value="${settings.get('rules.noticeDays')}"></div>
             <div class="field"><label for="maxLoaves">Loaves at a time</label><input type="number" min="1" max="50" id="maxLoaves" name="rules.maxLoaves" th:value="${settings.get('rules.maxLoaves')}">
-              <div class="help">Approved and baked loaves count. Also the most loaves in one order.</div></div>
+              <div class="help">Every open order counts: waiting for review, approved or baked. Customers see a heads-up that you may move their date when an order would go over.</div></div>
+            <div class="field"><label for="maxPerOrder">Most loaves in one order</label><input type="number" min="1" max="50" id="maxPerOrder" name="rules.maxPerOrder" th:value="${settings.get('rules.maxPerOrder')}">
+              <div class="help">Customers can't add more than this to one cart.</div></div>
           </div>
           <div class="toggle-row"><div><div class="t">Offer priority</div><div class="d">Customers can pay extra for shorter notice.</div></div>
             <label class="switch"><input type="checkbox" name="rules.priorityEnabled" th:checked="${settings.flag('rules.priorityEnabled')}" aria-label="Offer priority"><span></span></label></div>

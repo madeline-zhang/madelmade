@@ -27,6 +27,7 @@ public class SettingsService {
         DEFAULTS.put("orders.daysOff", "");
         DEFAULTS.put("rules.noticeDays", "3");
         DEFAULTS.put("rules.maxLoaves", "3");
+        DEFAULTS.put("rules.maxPerOrder", "3");
         DEFAULTS.put("rules.priorityEnabled", "true");
         DEFAULTS.put("rules.priorityNoticeDays", "1");
         DEFAULTS.put("rules.priorityFee", "5");
@@ -135,7 +136,10 @@ public class SettingsService {
 
     public boolean ordersOpen() { return flag("orders.open"); }
     public int noticeDays() { return number("rules.noticeDays"); }
+    /** How many loaves Madeline can have on the go at once, across all orders. */
     public int maxLoaves() { return number("rules.maxLoaves"); }
+    /** The most loaves one order can have. */
+    public int maxPerOrder() { return number("rules.maxPerOrder"); }
     public boolean priorityEnabled() { return flag("rules.priorityEnabled"); }
     public int priorityNoticeDays() { return number("rules.priorityNoticeDays"); }
     public BigDecimal priorityFee() { return money("rules.priorityFee"); }

@@ -10,6 +10,7 @@
       <div class="stack" style="margin-top: 16px" th:if="${!cart.empty}">
         <div class="total-row"><span>Total</span><strong th:text="${@money.fmt(cart.total) + (cart.priceTbd ? ' + custom' : '')}">$26</strong></div>
         <div th:replace="~{components/notices :: pickupOnly}"></div>
+        <div th:replace="~{components/notices :: busy}"></div>
         <a class="btn" th:href="${signedIn} ? @{/checkout} : @{/checkout/start}">Checkout</a>
       </div>
     </div>

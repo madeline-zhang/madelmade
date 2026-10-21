@@ -75,7 +75,8 @@
         <div class="add-bar">
           <div class="qty" title="Quantity">
             <button type="button" aria-label="One fewer" data-qty="-1">−</button>
-            <input type="number" name="quantity" value="1" min="1" max="6" aria-label="Quantity" data-qty-input>
+            <input type="number" name="quantity" value="1" min="1" th:max="${product.countsAsLoaf ? settings.maxPerOrder() : 12}" aria-label="Quantity" data-qty-input
+                   th:data-max-msg="${product.countsAsLoaf ? 'You can order up to ' + settings.maxPerOrder() + ' loaves per order.' : 'That''s the most for one order.'}">
             <button type="button" aria-label="One more" data-qty="1">+</button>
           </div>
           <button type="submit" class="btn" th:disabled="${product.soldOut or !settings.ordersOpen()}">

@@ -64,12 +64,11 @@ public class CartController {
         });
         PricingService.Quote q = pricing.quote(p, new PricingService.Selection(picked, letters, notes, cert, certName, certMessage));
         List<String> errors = new ArrayList<>(q.errors());
-        int qty = Math.max(1, Math.min(quantity, 6));
+        int qty = Math.max(1, Math.min(quantity, 12));
         if (!settings.ordersOpen()) errors.add(settings.get("orders.pausedNote"));
         if (p.isSoldOut()) errors.add(p.getName() + " is sold out right now.");
-        if (p.isCountsAsLoaf() && cart.getLoafCount() + qty > settings.maxLoaves()) {
-            errors.add("Madeline can bake up to " + settings.maxLoaves() + " loaves per order, and your cart already has "
-                    + cart.getLoafCount() + ".");
+        if (p.isCountsAsLoaf() && cart.getLoafCount() + qty > settings.maxPerOrder()) {
+            errors.add(orders.perOrderLimitMessage(cart.getLoafCount()));
         }
         if (!errors.isEmpty()) {
             flash.addFlashAttribute("errors", errors);
@@ -95,10 +94,10 @@ public class CartController {
                 cart.remove(line);
                 return;
             }
-            int next = Math.min(quantity, 6);
+            int next = Math.min(quantity, 12);
             int otherLoaves = cart.getLoafCount() - (l.isCountsAsLoaf() ? l.getQuantity() : 0);
-            if (l.isCountsAsLoaf() && otherLoaves + next > settings.maxLoaves()) {
-                flash.addFlashAttribute("errors", List.of("Madeline can bake up to " + settings.maxLoaves() + " loaves per order."));
+            if (l.isCountsAsLoaf() && otherLoaves + next > settings.maxPerOrder()) {
+                flash.addFlashAttribute("errors", List.of("You can order up to " + settings.maxPerOrder() + " loaves per order."));
                 return;
             }
             l.setQuantity(next);

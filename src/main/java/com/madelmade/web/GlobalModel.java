@@ -2,6 +2,7 @@ package com.madelmade.web;
 
 import com.madelmade.config.CurrentUser;
 import com.madelmade.service.Cart;
+import com.madelmade.service.OrderService;
 import com.madelmade.service.PhotoUrls;
 import com.madelmade.service.SettingsService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,8 +19,11 @@ public class GlobalModel {
     private final SettingsService settings;
     private final ObjectProvider<ClientRegistrationRepository> google;
     private final PhotoUrls photoUrls;
+    private final ObjectProvider<OrderService> orders;
 
-    public GlobalModel(Cart cart, SettingsService settings, ObjectProvider<ClientRegistrationRepository> google, PhotoUrls photoUrls) {
+    public GlobalModel(Cart cart, SettingsService settings, ObjectProvider<ClientRegistrationRepository> google, PhotoUrls photoUrls,
+                       ObjectProvider<OrderService> orders) {
+        this.orders = orders;
         this.cart = cart;
         this.settings = settings;
         this.google = google;
@@ -38,5 +42,6 @@ public class GlobalModel {
         String q = request.getQueryString();
         model.addAttribute("path", request.getRequestURI() + (q == null ? "" : "?" + q));
         if (!model.containsAttribute("openCart")) model.addAttribute("openCart", false);
+        model.addAttribute("overCapacity", orders.getObject().wouldBeOverCapacity(cart.getLoafCount()));
     }
 }

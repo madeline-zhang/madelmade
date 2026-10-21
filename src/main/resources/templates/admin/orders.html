@@ -9,7 +9,7 @@
       <h1>Orders</h1>
     </div>
     <div class="admin-tools">
-      <div class="t-small muted">Loaves in progress: <strong style="color: var(--color-ink)" th:text="${inProgress + ' of ' + settings.maxLoaves()}">2 of 3</strong></div>
+      <div class="t-small muted">Loaves booked: <strong style="color: var(--color-ink)" th:text="${inProgress + ' of ' + settings.maxLoaves()}">2 of 3</strong></div>
       <form class="search" method="get" th:action="@{/admin/orders}" role="search">
         <svg th:replace="~{components/icons :: search}"></svg>
         <input type="hidden" name="tab" th:value="${tab}">

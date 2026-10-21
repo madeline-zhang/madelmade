@@ -64,6 +64,7 @@
 
         <section class="card stack">
           <h2 class="card-title">When</h2>
+          <div th:replace="~{components/notices :: busy}"></div>
           <label class="check-row" th:if="${priorityHelps}">
             <input type="checkbox" th:field="*{priority}" data-priority>
             <span>Priority: ready in <span th:text="${settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's')}">1 day</span> <span class="t-price" style="font-size: 1rem" th:text="${'+' + @money.fmt(settings.priorityFee())}">+$5</span></span>
