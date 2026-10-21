@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    @Query("select p from Product p where p.active = true order by p.category.displayOrder, p.displayOrder, p.id")
+    @Query("select p from Product p where p.active = true order by p.category.displayOrder, p.soldOut, p.displayOrder, p.id")
     List<Product> findMenu();
 
     @Query("select p from Product p order by p.category.displayOrder, p.displayOrder, p.id")

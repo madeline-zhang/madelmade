@@ -33,7 +33,7 @@ public enum OrderStatus {
     public String getBadge() { return badge; }
 
     public boolean isCancellableByCustomer() {
-        return this == NEEDS_REVIEW || this == CHANGES_REQUESTED || this == APPROVED;
+        return this == NEEDS_REVIEW || this == CHANGES_REQUESTED;
     }
 
     public boolean isClosed() {

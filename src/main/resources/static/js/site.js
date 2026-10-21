@@ -4,6 +4,91 @@
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
 
+  // Missing or invalid fields: instead of the browser's brief bubble, put a clear message right
+  // under the field (e.g. "Please provide your name.") and bring the first one into view.
+  var lastInvalidAt = 0;
+  var labelFor = function (el, field) {
+    var label = (el.id && $('label[for="' + el.id + '"]')) || (field && $('label, .label', field));
+    var text = label ? label.textContent.replace(/\(.*?\)/g, '').trim() : '';
+    return text.toLowerCase();
+  };
+  var invalidMessage = function (el, field) {
+    if (el.getAttribute('data-required-msg')) return el.getAttribute('data-required-msg');
+    var v = el.validity;
+    var label = labelFor(el, field);
+    if (v.valueMissing) {
+      if (el.type === 'radio' || el.type === 'checkbox' || el.tagName === 'SELECT') return 'Please choose ' + (label ? 'a ' + label : 'an option') + '.';
+      if (el.type === 'date') return 'Please choose a date.';
+      var personal = /name|email|phone|address/.test(label) && !!el.closest('[data-checkout-form], form[action*="signin"], form[action*="profile"], [data-feedback-form]');
+      return label ? (personal ? 'Please provide your ' + label + '.' : 'Please fill in ' + label + '.') : 'Please fill this in.';
+    }
+    if (v.typeMismatch && el.type === 'email') return 'Please enter a valid email address, like name@example.com.';
+    if (v.rangeUnderflow && el.type === 'date') return 'Please choose a later date.';
+    return el.validationMessage;
+  };
+  var clearInvalid = function (el) {
+    var field = el.closest('.field') || el.parentNode;
+    var box = field && $('.field-error[data-live]', field);
+    if (box) box.remove();
+    el.removeAttribute('aria-invalid');
+  };
+  document.addEventListener('invalid', function (e) {
+    var el = e.target;
+    if (!el || !el.closest) return;
+    e.preventDefault();
+    var field = el.closest('.field') || el.closest('fieldset') || el.parentNode;
+    var box = $('.field-error[data-live]', field);
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'field-error';
+      box.setAttribute('data-live', '');
+      box.setAttribute('role', 'alert');
+      field.appendChild(box);
+    }
+    box.textContent = invalidMessage(el, field);
+    el.setAttribute('aria-invalid', 'true');
+    var now = Date.now();
+    if (now - lastInvalidAt > 300) {
+      el.focus({ preventScroll: true });
+      el.scrollIntoView({ block: 'center' });
+    }
+    lastInvalidAt = now;
+  }, true);
+  ['input', 'change'].forEach(function (type) {
+    document.addEventListener(type, function (e) {
+      var el = e.target;
+      if (el && el.getAttribute && el.getAttribute('aria-invalid') === 'true' && el.checkValidity && el.validity.valid) clearInvalid(el);
+    });
+  });
+
+  // Feedback button: send without leaving the page.
+  var fb = $('[data-feedback]');
+  if (fb) {
+    var fbForm = $('[data-feedback-form]', fb);
+    var fbResult = $('[data-feedback-result]', fb);
+    var closeFb = function () { fb.open = false; };
+    $('[data-feedback-close]', fb).addEventListener('click', closeFb);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && fb.open) closeFb(); });
+    fb.addEventListener('toggle', function () {
+      if (fb.open) { fbResult.hidden = true; $('textarea', fb).focus(); }
+    });
+    fbForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var button = $('button[type=submit]', fbForm);
+      button.disabled = true;
+      fetch(fbForm.action, { method: 'POST', body: new URLSearchParams(new FormData(fbForm)),
+        headers: { 'X-Requested-With': 'fetch' }, credentials: 'same-origin' })
+        .then(function (r) { return r.text().then(function (t) { return { ok: r.ok, text: t }; }); })
+        .then(function (res) {
+          fbResult.hidden = false;
+          fbResult.textContent = res.ok ? res.text : (res.text || 'That didn\'t send. Please try again.');
+          if (res.ok) { $('textarea', fbForm).value = ''; setTimeout(closeFb, 2500); }
+        })
+        .catch(function () { fbResult.hidden = false; fbResult.textContent = 'That didn\'t send. Please try again.'; })
+        .then(function () { button.disabled = false; });
+    });
+  }
+
   // Header turns solid once the hero scrolls away.
   var header = $('[data-header]');
   if (header && header.classList.contains('is-over-hero')) {

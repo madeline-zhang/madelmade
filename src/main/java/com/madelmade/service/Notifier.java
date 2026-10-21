@@ -2,6 +2,7 @@ package com.madelmade.service;
 
 import com.madelmade.config.AppProperties;
 import com.madelmade.domain.CustomerOrder;
+import com.madelmade.domain.Feedback;
 import com.madelmade.domain.OrderMessage;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -98,6 +99,14 @@ public class Notifier {
                 "note", "",
                 "reviewUrl", props.url("/admin/orders/" + o.getId())));
         mail.send(settings.notifyEmail(), "Madeline", "Cancelled: " + o.getNumber() + " from " + o.getContactName(), html);
+    }
+
+    public void feedbackToMadeline(Feedback f) {
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("feedback", f);
+        vars.put("adminUrl", props.url("/admin/feedback"));
+        String html = render("email/feedback", vars);
+        mail.send(settings.notifyEmail(), "Madeline", (f.isBug() ? "Bug report" : "Feedback") + " from the site", html);
     }
 
     public void signInCode(String email, String code) {

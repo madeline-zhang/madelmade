@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'feedback')}">
+<head><title>Feedback · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">From the button in the corner</div><h1>Feedback</h1></div></div>
+  <p class="muted" style="max-width: 760px; margin-top: 0">Notes and bug reports visitors send from the site. You also get an email for each one.</p>
+
+  <div class="empty" th:if="${items.isEmpty()}">Nothing yet.</div>
+  <div class="stack" style="gap: 14px; max-width: 900px">
+    <article class="card stack" style="gap: 8px" th:each="f : ${items}" th:style="${f.resolved} ? 'opacity: 0.6' : ''">
+      <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center">
+        <div style="display: flex; gap: 10px; align-items: center">
+          <span class="tag" th:text="${f.bug ? 'Bug report' : 'Feedback'}">Feedback</span>
+          <span class="t-small muted" th:text="${@fmt.stamp(f.createdAt)}">Oct 20, 3:14 PM</span>
+          <span class="t-small muted" th:if="${f.resolved}">Done</span>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <form method="post" th:action="@{/admin/feedback/{id}/resolve(id=${f.id})}"><button type="submit" class="btn btn-secondary btn-small" th:text="${f.resolved ? 'Reopen' : 'Mark done'}">Mark done</button></form>
+          <form method="post" th:action="@{/admin/feedback/{id}/delete(id=${f.id})}" data-confirm="Delete this note?"><button type="submit" class="link-btn t-small">Delete</button></form>
+        </div>
+      </div>
+      <p style="margin: 0; white-space: pre-wrap" th:text="${f.message}">Love the site!</p>
+      <div class="t-small muted">
+        <span th:if="${f.email != null}">From <a th:href="${'mailto:' + f.email}" th:text="${f.email}">sarah@example.com</a></span>
+        <span th:if="${f.email == null}">No email given</span>
+        <span th:if="${f.page != null}" th:text="${' · sent from ' + f.page}"> · sent from /p/classic-loaf</span>
+      </div>
+    </article>
+  </div>
+</main>
+</body>
+</html>

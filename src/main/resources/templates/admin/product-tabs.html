@@ -1,0 +1,7 @@
+<!-- Switches between the product list and the shared options (like Flavor). -->
+<div th:fragment="tabs(tab)" style="margin-bottom: 20px">
+  <div class="tabs">
+    <a class="pill" th:classappend="${tab == 'products'} ? 'is-on'" th:href="@{/admin/products}">Products</a>
+    <a class="pill" th:classappend="${tab == 'options'} ? 'is-on'" th:href="@{/admin/options}">Shared options</a>
+  </div>
+</div>

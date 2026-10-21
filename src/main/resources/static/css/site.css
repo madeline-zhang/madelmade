@@ -147,7 +147,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .product-card-body { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 4px; }
 .product-card-name { font-family: var(--font-title); font-weight: 800; font-size: 1.375rem; line-height: 1.2; }
 .product-card-price { font-size: 0.9375rem; color: var(--color-crust); }
-.product-card.is-sold-out .photo { filter: grayscale(0.8); opacity: 0.6; }
+.product-card.is-sold-out .photo { filter: grayscale(0.35); opacity: 0.85; }
 .card-badge { position: absolute; top: 12px; left: 12px; background: var(--color-crumb); color: var(--color-ink); padding: 4px 12px; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-card); }
 .paused-note { background: var(--badge-review-bg); color: var(--badge-review-fg); padding: 14px 18px; border-radius: var(--radius); font-weight: 500; }
 
@@ -389,3 +389,18 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 
 /* An error shown right beside the part of the form it's about. */
 .field-error { background: var(--badge-declined-bg); color: var(--badge-declined-fg); border-radius: 10px; padding: 10px 14px; font-size: 0.875rem; display: grid; gap: 4px; }
+.field-error[data-live] { margin-top: 6px; }
+[aria-invalid="true"] { border-color: var(--badge-declined-fg) !important; }
+
+/* Feedback button in the corner, opening a short form. */
+.feedback { position: fixed; z-index: 35; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); }
+.feedback > summary { list-style: none; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--color-ink); color: var(--color-crumb); box-shadow: var(--shadow-card); }
+.feedback > summary::-webkit-details-marker { display: none; }
+.feedback[open] > summary { display: none; }
+.feedback-panel { width: min(340px, calc(100vw - 32px)); background: var(--color-cream); border: 1px solid var(--color-linen); border-radius: var(--radius-lg); box-shadow: var(--shadow-sheet); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.feedback-head { display: flex; justify-content: space-between; align-items: center; }
+.feedback-panel textarea { min-height: 96px; }
+.feedback-panel .btn { align-self: flex-start; }
+.feedback-panel .segmented .pill { font-size: 0.8125rem; padding: 6px 12px; }
+@media (max-width: 760px) { body:has(.add-bar) .feedback { bottom: calc(88px + env(safe-area-inset-bottom)); } }
+.about-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 0; }

@@ -1,0 +1,9 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{email/frame :: frame(~{::content})}">
+<th:block th:fragment="content">
+  <h1 style="font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:26px;margin:0 0 12px;" th:text="${feedback.bug ? 'New bug report' : 'New feedback'}">New feedback</h1>
+  <p style="margin:0 0 18px;white-space:pre-wrap;background:#F4EFE4;border-radius:12px;padding:14px 16px;" th:text="${feedback.message}">Love the site!</p>
+  <p style="margin:0 0 6px;font-size:13px;color:#5C5A50;" th:if="${feedback.email != null}" th:text="${'From ' + feedback.email}">From sarah@example.com</p>
+  <p style="margin:0 0 18px;font-size:13px;color:#5C5A50;" th:if="${feedback.page != null}" th:text="${'Sent from ' + feedback.page}">Sent from /p/classic-loaf</p>
+  <p style="margin:0;"><a th:href="${adminUrl}" style="color:#A4512F;">See all feedback</a></p>
+</th:block>
+</html>

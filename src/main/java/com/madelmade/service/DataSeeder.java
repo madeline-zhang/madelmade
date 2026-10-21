@@ -6,6 +6,7 @@ import com.madelmade.repo.GalleryPhotoRepository;
 import com.madelmade.repo.OptionGroupRepository;
 import com.madelmade.repo.ProductRepository;
 import java.math.BigDecimal;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -86,11 +87,12 @@ public class DataSeeder implements ApplicationRunner {
         moms.setBadge("Yeast-risen");
         products.save(moms);
 
-        latte(coffee, "Latte", "latte", 4, 0, "A double shot over milk.", true);
+        List<OptionGroup> latteOptions = latteOptions();
+        latte(coffee, "Latte", "latte", 4, 0, "A double shot over milk.", true, latteOptions);
         latte(coffee, "Cookie Butter Latte", "cookie-butter-latte", 5, 1,
-                "Cookie butter, honey and cinnamon; cold foam when iced.", false);
+                "Cookie butter, honey and cinnamon; cold foam when iced.", false, latteOptions);
         latte(coffee, "Banana Latte", "banana-latte", 5, 2,
-                "Homemade banana syrup, honey and cinnamon; banana cold foam when iced.", false);
+                "Homemade banana syrup, honey and cinnamon; banana cold foam when iced.", false, latteOptions);
 
         String[][] pics = {
                 {"miriam.jpg", "Miriam's double leaf"}, {"peter.jpg", "Peter's butterfly"},
@@ -130,7 +132,24 @@ public class DataSeeder implements ApplicationRunner {
         return p;
     }
 
-    private void latte(Category coffee, String name, String slug, int price, int order, String description, boolean sweetener) {
+    /** Hot or iced, beans and milk are the same on every latte, so they're shared. */
+    private List<OptionGroup> latteOptions() {
+        OptionGroup temp = shared("Hot or iced", 0);
+        button(temp, "Hot", 0, false).setDefaultChoice(true);
+        button(temp, "Iced", 0, false);
+        OptionGroup beans = shared("Beans (double shot)", 1);
+        button(beans, "Just Love Supernova", 0, false).setDefaultChoice(true);
+        button(beans, "Just Love Decaf", 0, false);
+        button(beans, "Lavazza", 0, false);
+        OptionGroup milk = shared("Milk", 3);
+        button(milk, "Whole", 0, false).setDefaultChoice(true);
+        button(milk, "Oat", 0, false);
+        button(milk, "Almond", 0, false);
+        return List.of(groups.save(temp), groups.save(beans), groups.save(milk));
+    }
+
+    private void latte(Category coffee, String name, String slug, int price, int order, String description, boolean sweetener,
+                       List<OptionGroup> sharedOptions) {
         Product p = new Product();
         p.setCategory(coffee);
         p.setName(name);
@@ -144,22 +163,12 @@ public class DataSeeder implements ApplicationRunner {
         p.setNotesHint("Less ice");
         p.setAllowsBirthCertificate(false);
         p.setLeadTimeDays(0);
-        OptionGroup temp = group(p, "Hot or iced", OptionGroup.STYLE_BUTTONS, 0);
-        button(temp, "Hot", 0, false).setDefaultChoice(true);
-        button(temp, "Iced", 0, false);
-        OptionGroup beans = group(p, "Beans (double shot)", OptionGroup.STYLE_BUTTONS, 1);
-        button(beans, "Just Love Supernova", 0, false).setDefaultChoice(true);
-        button(beans, "Just Love Decaf", 0, false);
-        button(beans, "Lavazza", 0, false);
+        p.getSharedGroups().addAll(sharedOptions);
         if (sweetener) {
             OptionGroup sweet = group(p, "Sweetener", OptionGroup.STYLE_BUTTONS, 2);
             button(sweet, "None", 0, false).setDefaultChoice(true);
             for (String s : new String[] {"Honey", "Sugar", "Brown sugar", "Vanilla", "Molasses"}) button(sweet, s, 0, false);
         }
-        OptionGroup milk = group(p, "Milk", OptionGroup.STYLE_BUTTONS, 3);
-        button(milk, "Whole", 0, false).setDefaultChoice(true);
-        button(milk, "Oat", 0, false);
-        button(milk, "Almond", 0, false);
         products.save(p);
     }
 
@@ -171,16 +180,21 @@ public class DataSeeder implements ApplicationRunner {
 
     /** Flavors are shared by the build-your-own loaves, so they're edited in one place. */
     private OptionGroup flavors() {
-        OptionGroup flavor = new OptionGroup();
-        flavor.setName("Flavor");
-        flavor.setDisplayStyle(OptionGroup.STYLE_BUTTONS);
-        flavor.setDisplayOrder(1);
-        flavor.setRequired(true);
+        OptionGroup flavor = shared("Flavor", 1);
         button(flavor, "Plain", 0, false).setDefaultChoice(true);
         button(flavor, "Rosemary garlic", 2, false);
         button(flavor, "Rosemary garlic asiago", 2, false);
         button(flavor, "Custom", 0, true);
         return groups.save(flavor);
+    }
+
+    private OptionGroup shared(String name, int order) {
+        OptionGroup g = new OptionGroup();
+        g.setName(name);
+        g.setDisplayStyle(OptionGroup.STYLE_BUTTONS);
+        g.setDisplayOrder(order);
+        g.setRequired(true);
+        return g;
     }
 
     private OptionGroup group(Product p, String name, String style, int order) {

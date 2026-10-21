@@ -71,6 +71,7 @@
         </section>
         <form method="post" th:action="@{/o/{t}/cancel(t=${order.statusToken})}" th:if="${order.status.cancellableByCustomer}" data-confirm="Cancel this order? Madeline will be told right away.">
           <button type="submit" class="btn btn-danger btn-block">Cancel order</button>
+          <p class="t-small muted" style="margin: 8px 0 0; text-align: center">You can cancel until Madeline approves your order.</p>
         </form>
         <a class="btn btn-secondary" th:if="${order.status.closed}" th:href="@{/#menu}">Order again</a>
       </aside>

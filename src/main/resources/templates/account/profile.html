@@ -31,6 +31,9 @@
               </form>
             </div>
           </div>
+          <form method="post" th:action="@{/o/{t}/cancel(t=${o.statusToken})}" th:if="${o.status.cancellableByCustomer}" data-confirm="Cancel this order? Madeline will be told right away." style="text-align: right">
+            <button type="submit" class="link-btn t-small">Cancel this order</button>
+          </form>
         </article>
       </section>
 

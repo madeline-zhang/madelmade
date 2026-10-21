@@ -9,7 +9,10 @@
         <div class="t-eyebrow">About MadelMade</div>
         <h1 class="t-page-title"><span th:text="${settings.get('about.title')}">It started with</span> <em th:text="${settings.get('about.titleAccent')}">a starter</em></h1>
         <p class="t-subtitle" th:each="para : ${settings.paragraphs('about.body')}" th:text="${para}">I'm Madeline, a home baker in Brentwood, Tennessee.</p>
-        <p><a class="btn" th:href="@{/#menu}">See the menu&nbsp;&nbsp;→</a></p>
+        <p class="about-actions">
+          <a class="btn" th:href="@{/#menu}">See the menu&nbsp;&nbsp;→</a>
+          <a class="btn btn-secondary" href="https://www.instagram.com/madelmadewithlove/" target="_blank" rel="noopener">Instagram @madelmadewithlove</a>
+        </p>
       </div>
       <img class="about-photo" th:if="${settings.aboutPhotoId() != null}" th:src="${photoUrls.src(settings.aboutPhotoId())}" alt="Madeline">
       <div class="about-photo is-placeholder" th:unless="${settings.aboutPhotoId() != null}" aria-hidden="true">
@@ -30,7 +33,7 @@
 
     <section class="stack page-narrow" style="gap: 12px" aria-labelledby="faq">
       <h2 id="faq" class="t-section section-title">Frequently asked questions</h2>
-      <p class="muted">Anything else? Email <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
+      <p class="muted">Anything else? Email <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a> or message <a href="https://www.instagram.com/madelmadewithlove/" target="_blank" rel="noopener">@madelmadewithlove</a> on Instagram.</p>
       <div class="faq">
         <details open><summary>How much notice do you need?</summary>
           <p th:text="${'About ' + settings.noticeDays() + ' days for most loaves.' + (settings.priorityEnabled() ? ' Need it sooner? Priority gets it ready in ' + settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's') + ' for an extra ' + @money.fmt(settings.priorityFee()) + ', when there''s room.' : '')}">Three days for most loaves.</p></details>
