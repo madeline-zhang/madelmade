@@ -37,7 +37,6 @@
           <div class="help">Light grey example text customers see in the notes box. "e.g." is added in front for you.</div></div>
         <div class="field-row">
           <div class="field"><label for="badge">Badge on the card</label><input type="text" id="badge" name="badge" maxlength="60" th:value="${product.badge}" placeholder="e.g. Yeast-risen"></div>
-          <div class="field"><label for="displayOrder">Order on menu</label><input type="number" id="displayOrder" name="displayOrder" th:value="${product.displayOrder}"></div>
         </div>
         <div>
           <div class="toggle-row"><div><div class="t">On the menu</div><div class="d">Hidden products keep their details but don't show.</div></div>
@@ -59,6 +58,21 @@
         <p class="t-small muted" style="margin: -8px 0 0">Groups like Size, Flavor or Milk. Photo swatches suit score and design styles; buttons suit everything else.</p>
 
         <th:block th:each="g : ${product.optionGroups}"><details th:replace="~{admin/group-card :: card(${g}, false)}"></details></th:block>
+
+        <section class="card stack" id="group-order" style="gap: 8px" th:unless="${product.allOptionGroups.size() < 2}">
+          <h2 class="card-title">Order on the product page</h2>
+          <p class="t-small muted" style="margin: -8px 0 4px">Customers see the groups top to bottom in this order. Shared groups like Flavor keep one spot, so moving one here can move it on other products too.</p>
+          <div class="order-row" th:each="g, it : ${product.allOptionGroups}">
+            <form method="post" th:action="@{/admin/products/{id}/groups/{gid}/move(id=${product.id}, gid=${g.id})}">
+              <span class="move-btns">
+                <button type="submit" name="dir" value="up" th:disabled="${it.first}" th:aria-label="${'Move ' + g.name + ' up'}" title="Move up">↑</button>
+                <button type="submit" name="dir" value="down" th:disabled="${it.last}" th:aria-label="${'Move ' + g.name + ' down'}" title="Move down">↓</button>
+              </span>
+            </form>
+            <span th:text="${g.name}">Size</span>
+            <span class="t-small muted" th:if="${g.shared}">Shared</span>
+          </div>
+        </section>
 
         <form class="group-card" method="post" th:action="@{/admin/products/{id}/groups(id=${product.id})}" style="flex-direction: row; flex-wrap: wrap; align-items: end">
           <div class="field" style="flex: 1 1 200px"><label for="ng">New option group</label><input type="text" id="ng" name="name" placeholder="e.g. Flavor, Milk, Score style"></div>

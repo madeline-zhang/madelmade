@@ -71,7 +71,7 @@ public class AdminProductsController {
     public String save(@RequestParam(required = false) Long id, @RequestParam String name,
                        @RequestParam Long categoryId, @RequestParam(required = false) String shortDescription,
                        @RequestParam(required = false) String description, @RequestParam(required = false) String basePrice,
-                       @RequestParam(required = false) Integer leadTimeDays, @RequestParam(defaultValue = "0") int displayOrder,
+                       @RequestParam(required = false) Integer leadTimeDays,
                        @RequestParam(defaultValue = "false") boolean active, @RequestParam(defaultValue = "false") boolean soldOut,
                        @RequestParam(defaultValue = "false") boolean countsAsLoaf,
                        @RequestParam(defaultValue = "false") boolean pickupOnly,
@@ -92,7 +92,8 @@ public class AdminProductsController {
         p.setDescription(blank(description));
         p.setBasePrice(money(basePrice));
         p.setLeadTimeDays(leadTimeDays);
-        p.setDisplayOrder(displayOrder);
+        // New products go to the end of their category; the arrows on the Products list move them.
+        if (id == null) p.setDisplayOrder((int) products.count());
         p.setActive(active);
         p.setSoldOut(soldOut);
         p.setCountsAsLoaf(countsAsLoaf);
@@ -106,6 +107,28 @@ public class AdminProductsController {
         products.save(p);
         flash.addFlashAttribute("ok", id == null ? "Product added. Now add its options and photo." : "Saved.");
         return "redirect:/admin/products/" + p.getId();
+    }
+
+    /** The arrows on the Products list: moves a product within its menu tab. */
+    @PostMapping("/products/{id}/move")
+    @Transactional
+    public String moveProduct(@PathVariable Long id, @RequestParam String dir) {
+        Product p = find(id);
+        List<Product> sameTab = products.findAllOrdered().stream()
+                .filter(o -> o.getCategory().getId().equals(p.getCategory().getId())).toList();
+        Ordering.move(sameTab, p, dir, Product::setDisplayOrder);
+        return "redirect:/admin/products#product-" + id;
+    }
+
+    /** The arrows in "Order on the product page": moves a group among the product's own and shared groups. */
+    @PostMapping("/products/{id}/groups/{gid}/move")
+    @Transactional
+    public String moveGroup(@PathVariable Long id, @PathVariable Long gid, @RequestParam String dir) {
+        Product p = find(id);
+        List<OptionGroup> all = p.getAllOptionGroups();
+        OptionGroup g = all.stream().filter(o -> o.getId().equals(gid)).findFirst().orElseThrow(NotFoundException::new);
+        Ordering.move(all, g, dir, OptionGroup::setDisplayOrder);
+        return "redirect:/admin/products/" + id + "#group-order";
     }
 
     @PostMapping("/products/{id}/toggle")
@@ -160,7 +183,6 @@ public class AdminProductsController {
         String name = form.getFirst("name");
         if (name != null && !name.isBlank()) g.setName(name.trim());
         g.setDisplayStyle(OptionGroup.STYLE_SWATCHES.equals(form.getFirst("displayStyle")) ? OptionGroup.STYLE_SWATCHES : OptionGroup.STYLE_BUTTONS);
-        g.setDisplayOrder(integer(form.getFirst("displayOrder"), g.getDisplayOrder()));
         g.setRequired(form.containsKey("required"));
         g.setMultiple(form.containsKey("multiple"));
 
@@ -176,7 +198,6 @@ public class AdminProductsController {
             c.setAllergens(blank(form.getFirst(p + "allergens")));
             Integer textLimit = integer(form.getFirst(p + "textLimit"), null);
             c.setTextLimit(textLimit != null && textLimit > 0 ? textLimit : null);
-            c.setDisplayOrder(integer(form.getFirst(p + "displayOrder"), c.getDisplayOrder()));
             c.setActive(form.containsKey(p + "active"));
             c.setHalvesPrice(form.containsKey(p + "halvesPrice"));
             c.setPriceTbd(form.containsKey(p + "priceTbd"));
@@ -204,8 +225,15 @@ public class AdminProductsController {
             g.getChoices().add(c);
             added = c.getName();
         }
+        // A choice's arrows submit the whole form with move=c{id}:up, so edits made first aren't lost.
+        String move = form.getFirst("move");
+        if (move != null && move.matches("c\\d+:(up|down)")) {
+            Long cid = Long.valueOf(move.substring(1, move.indexOf(':')));
+            g.getChoices().stream().filter(c -> cid.equals(c.getId())).findFirst()
+                    .ifPresent(c -> Ordering.move(g.getChoices(), c, move.substring(move.indexOf(':') + 1), OptionChoice::setDisplayOrder));
+        }
         groups.save(g);
-        flash.addFlashAttribute("ok", "Saved " + g.getName() + (added != null ? " and added " + added : "") + ".");
+        if (move == null) flash.addFlashAttribute("ok", "Saved " + g.getName() + (added != null ? " and added " + added : "") + ".");
         return redirectTo(g);
     }
 
@@ -315,13 +343,13 @@ public class AdminProductsController {
     @PostMapping("/categories/{id}")
     @Transactional
     public String updateCategory(@PathVariable Long id, @RequestParam String name,
-                                 @RequestParam(defaultValue = "0") int displayOrder, RedirectAttributes flash) {
+                                 @RequestParam(required = false) String move, RedirectAttributes flash) {
         Category c = categories.findById(id).orElseThrow(NotFoundException::new);
         if (name != null && !name.isBlank()) c.setName(name.trim());
-        c.setDisplayOrder(displayOrder);
+        if (move != null) Ordering.move(categories.findAllByOrderByDisplayOrderAscIdAsc(), c, move, Category::setDisplayOrder);
+        else flash.addFlashAttribute("ok", "Saved.");
         categories.save(c);
-        flash.addFlashAttribute("ok", "Saved.");
-        return "redirect:/admin/products";
+        return "redirect:/admin/products#cats";
     }
 
     @PostMapping("/categories/{id}/delete")

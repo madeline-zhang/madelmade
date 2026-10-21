@@ -11,9 +11,15 @@
 
   <div class="table-wrap">
     <table class="table">
-      <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>On menu</th><th>Sold out</th><th></th></tr></thead>
+      <thead><tr><th><span class="visually-hidden">Order</span></th><th></th><th>Name</th><th>Category</th><th>Price</th><th>On menu</th><th>Sold out</th><th></th></tr></thead>
       <tbody>
-        <tr th:each="p : ${products}">
+        <tr th:each="p, it : ${products}" th:id="${'product-' + p.id}"
+            th:with="prev=${it.index > 0 ? products[it.index - 1] : null}, next=${!it.last ? products[it.index + 1] : null}">
+          <td><form method="post" th:action="@{/admin/products/{id}/move(id=${p.id})}">
+            <span class="move-btns">
+              <button type="submit" name="dir" value="up" th:disabled="${prev == null or prev.category.id != p.category.id}" th:aria-label="${'Move ' + p.name + ' up'}" title="Move up">↑</button>
+              <button type="submit" name="dir" value="down" th:disabled="${next == null or next.category.id != p.category.id}" th:aria-label="${'Move ' + p.name + ' down'}" title="Move down">↓</button>
+            </span></form></td>
           <td><a th:href="@{/admin/photos/edit(target=${'product-' + p.id})}" title="Edit photo">
             <img th:if="${p.photoId != null}" class="thumb-sm" th:src="${photoUrls.src(p.photoId)}" alt="">
             <span th:unless="${p.photoId != null}" class="thumb-sm photo-slot" style="border-radius: 10px">Add photo</span></a></td>
@@ -33,12 +39,12 @@
 
   <section class="card" aria-labelledby="cats">
     <h2 id="cats" class="card-title">Categories</h2>
-    <p class="t-small muted" style="margin-top: -6px">These become the menu tabs. Lower numbers show first.</p>
+    <p class="t-small muted" style="margin-top: -6px">These become the menu tabs, in this order. Products move within their tab with the arrows in the list above.</p>
     <div class="stack" style="gap: 10px">
-      <div th:each="c : ${categories}" style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap">
+      <div th:each="c, it : ${categories}" style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap">
         <form method="post" th:action="@{/admin/categories/{id}(id=${c.id})}" style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap">
+          <span th:replace="~{admin/arrows :: arrows('', ${c.name}, ${it.first}, ${it.last})}"></span>
           <div class="field"><label th:for="${'cat-' + c.id}">Name</label><input type="text" th:id="${'cat-' + c.id}" name="name" th:value="${c.name}"></div>
-          <div class="field" style="width: 90px"><label th:for="${'cat-o-' + c.id}">Order</label><input type="number" th:id="${'cat-o-' + c.id}" name="displayOrder" th:value="${c.displayOrder}"></div>
           <button type="submit" class="btn btn-secondary btn-small">Save</button>
         </form>
         <form method="post" th:action="@{/admin/categories/{id}/delete(id=${c.id})}" data-confirm="Delete this category?"><button type="submit" class="link-btn">Delete</button></form>

@@ -4,6 +4,7 @@ import com.madelmade.domain.GalleryPhoto;
 import com.madelmade.repo.GalleryPhotoRepository;
 import com.madelmade.web.NotFoundException;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,13 +30,15 @@ public class AdminGalleryController {
     }
 
     @PostMapping("/{id}")
+    @Transactional
     public String update(@PathVariable Long id, @RequestParam(required = false) String caption,
-                         @RequestParam(defaultValue = "0") int displayOrder, RedirectAttributes flash) {
+                         @RequestParam(required = false) String move, RedirectAttributes flash) {
         GalleryPhoto g = gallery.findById(id).orElseThrow(NotFoundException::new);
         g.setCaption(caption == null || caption.isBlank() ? null : caption.trim());
-        g.setDisplayOrder(displayOrder);
+        // The arrows save the caption too, then swap the photo with its neighbor ("up" is earlier).
+        if (move != null) Ordering.move(gallery.findBySectionOrderByDisplayOrderAscIdAsc(g.getSection()), g, move, GalleryPhoto::setDisplayOrder);
+        else flash.addFlashAttribute("ok", "Saved.");
         gallery.save(g);
-        flash.addFlashAttribute("ok", "Saved.");
-        return "redirect:/admin/gallery" + (g.isOther() ? "#other" : "");
+        return "redirect:/admin/gallery#photo-" + g.getId();
     }
 }

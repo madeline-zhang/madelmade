@@ -333,9 +333,14 @@
     file = e.target.files[0] || null;
     if (!file) return;
     errorBox.classList.add('hidden');
+    // A new photo starts over: no turn or tilt, and every slider back to the starting look from Settings.
+    var fresh = (root.dataset.fresh || '').split(',');
     state.rotate = 0;
     state.tilt = 0;
+    SLIDERS.forEach(function (k, i) { state[k] = num(fresh[i], 0); });
     syncControls();
+    // Lets picking the same file again still count as a new pick.
+    e.target.value = '';
     load(URL.createObjectURL(file), true);
   });
 

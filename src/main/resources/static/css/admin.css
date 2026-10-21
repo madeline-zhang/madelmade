@@ -169,3 +169,11 @@ details[open] > .collapsible-head { border-bottom: 1px solid var(--color-linen);
 .card.is-collapsed > .card-title.is-collapsible::after { transform: rotate(45deg); }
 .card.is-collapsed > :not(.card-title) { display: none !important; }
 .card.is-collapsed > .card-title { margin-bottom: 0; }
+/* Up and down arrows for ordering. */
+.move-btns { display: inline-flex; gap: 4px; flex: none; }
+.move-btns button { width: 32px; height: 32px; border: 1px solid var(--color-line); border-radius: 8px; background: var(--color-white); color: var(--color-ink); font-size: 0.9375rem; line-height: 1; cursor: pointer; }
+.move-btns button:hover:not(:disabled) { border-color: var(--color-ink); }
+.move-btns button:disabled { opacity: 0.3; cursor: default; }
+.order-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-top: 1px solid var(--color-linen); }
+.order-row:first-of-type { border-top: 0; }
+.choice-row > .move-btns { align-self: center; }

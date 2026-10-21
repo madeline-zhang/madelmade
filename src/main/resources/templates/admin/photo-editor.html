@@ -14,7 +14,8 @@
        th:data-aspect="${aspect}"
        th:data-rotate="${defaultRotate}" th:data-tilt="${defaultTilt}" th:data-crop="${defaultCrop}"
        th:data-brightness="${defaultBrightness}" th:data-contrast="${defaultContrast}"
-       th:data-saturation="${defaultSaturation}" th:data-warmth="${defaultWarmth}">
+       th:data-saturation="${defaultSaturation}" th:data-warmth="${defaultWarmth}"
+       th:data-fresh="${settings.get('photos.brightness') + ',' + settings.get('photos.contrast') + ',' + settings.get('photos.saturation') + ',' + settings.get('photos.warmth')}">
     <div class="stack">
       <div class="editor-stage">
         <canvas data-canvas width="800" height="800" aria-label="Photo preview. Drag the corners of the crop box to resize it, or drag inside it to move it."></canvas>
