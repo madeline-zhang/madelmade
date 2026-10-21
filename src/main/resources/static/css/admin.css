@@ -155,7 +155,7 @@
 .editor-stage canvas { touch-action: none; user-select: none; -webkit-user-select: none; background: transparent; box-shadow: none; border-radius: 0; }
 .compare { align-items: center; flex-wrap: wrap; }
 .order-card .order-no { color: var(--color-muted); font-weight: 500; }
-.cert-photo-admin { width: 160px; border-radius: 10px; border: 1px solid var(--color-linen); }
+.cert-photo-admin { width: 240px; max-width: 100%; border-radius: 10px; border: 1px solid var(--color-linen); }
 /* Collapsible option groups (details) and section cards (admin.js adds .is-collapsible to their titles). */
 details.group-card { display: block; padding: 0; }
 .collapsible-head { display: flex; align-items: baseline; gap: 12px; padding: 18px 20px; cursor: pointer; list-style: none; min-height: var(--tap); }

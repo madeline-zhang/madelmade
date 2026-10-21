@@ -106,11 +106,11 @@ public class AdminPhotosController {
         model.addAttribute("defaultContrast", p != null ? p.getContrast() : settings.number("photos.contrast"));
         model.addAttribute("defaultSaturation", p != null ? p.getSaturation() : settings.number("photos.saturation"));
         model.addAttribute("defaultCrop", p != null ? p.getCrop() : "");
-        // Menu cards and swatches are square; gallery and About photos are 4:5; the certificate card is 3:4.
-        model.addAttribute("aspect", switch (t.crop()) { case "square" -> 1.0; case "certificate" -> 0.75; default -> 0.8; });
+        // Menu cards and swatches are square; gallery and About photos are 4:5; the certificate card is 4:3 landscape.
+        model.addAttribute("aspect", switch (t.crop()) { case "square" -> 1.0; case "certificate" -> 4.0 / 3; default -> 0.8; });
         model.addAttribute("aspectLabel", switch (t.crop()) {
             case "square" -> "Square, to match the menu";
-            case "certificate" -> "3:4, like the certificate card";
+            case "certificate" -> "4:3, landscape like the certificate card";
             default -> "4:5, to match the gallery";
         });
         model.addAttribute("defaultRotate", p != null ? p.getRotate() : 0);
