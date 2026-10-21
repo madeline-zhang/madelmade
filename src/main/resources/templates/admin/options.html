@@ -7,19 +7,11 @@
   <div th:replace="~{admin/product-tabs :: tabs('options')}"></div>
   <p class="muted" style="max-width: 760px; margin-top: 0">Option groups like Flavor that several products use. Changes here show on every product that uses the group. "Order" sets where the group sits among each product's own options (Size is 0).</p>
 
-  <div class="stack" style="gap: 24px; max-width: 900px">
+  <div class="stack" style="gap: 16px; max-width: 900px">
     <div class="empty" th:if="${sharedGroups.isEmpty()}">No shared groups yet.</div>
 
     <th:block th:each="g : ${sharedGroups}">
-      <div th:replace="~{admin/group-card :: card(${g})}"></div>
-      <form class="card stack" style="gap: 6px; margin-top: -12px" method="post" th:action="@{/admin/options/{id}/products(id=${g.id})}">
-        <div class="t-label" th:text="${'Products that use ' + g.name}">Products that use Flavor</div>
-        <label class="check-row" th:each="p : ${products}">
-          <input type="checkbox" name="productIds" th:value="${p.id}" th:checked="${p.sharedGroups.contains(g)}">
-          <span th:text="${p.name}">Classic Loaf</span>
-        </label>
-        <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save products</button>
-      </form>
+      <details th:replace="~{admin/group-card :: card(${g}, true)}"></details>
     </th:block>
 
     <form class="group-card" method="post" th:action="@{/admin/options}" style="flex-direction: row; flex-wrap: wrap; align-items: end">

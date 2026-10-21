@@ -156,3 +156,16 @@
 .compare { align-items: center; flex-wrap: wrap; }
 .order-card .order-no { color: var(--color-muted); font-weight: 500; }
 .cert-photo-admin { width: 160px; border-radius: 10px; border: 1px solid var(--color-linen); }
+/* Collapsible option groups (details) and section cards (admin.js adds .is-collapsible to their titles). */
+details.group-card { display: block; padding: 0; }
+.collapsible-head { display: flex; align-items: baseline; gap: 12px; padding: 18px 20px; cursor: pointer; list-style: none; min-height: var(--tap); }
+.collapsible-head::-webkit-details-marker { display: none; }
+.collapsible-head::after, .card-title.is-collapsible::after { content: ""; margin-left: auto; align-self: center; width: 9px; height: 9px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform .15s; opacity: .6; flex: none; }
+details[open] > .collapsible-head::after { transform: rotate(-135deg); }
+details[open] > .collapsible-head { border-bottom: 1px solid var(--color-linen); }
+.collapsible-body { padding: 18px 20px 20px; }
+.card-title.is-collapsible { display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+.card-title.is-collapsible::after { transform: rotate(-135deg); }
+.card.is-collapsed > .card-title.is-collapsible::after { transform: rotate(45deg); }
+.card.is-collapsed > :not(.card-title) { display: none !important; }
+.card.is-collapsed > .card-title { margin-bottom: 0; }

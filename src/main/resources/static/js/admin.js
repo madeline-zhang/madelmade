@@ -22,6 +22,44 @@
     sync();
   });
 
+  // Collapsible sections. Option groups are <details>, closed unless left open before or linked to
+  // (a save comes back to #group-N). Cards with a title fold on a click of the title and start open.
+  var store = {
+    get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
+  };
+  var pageKey = 'fold:' + location.pathname + ':';
+  document.querySelectorAll('details[data-collapsible]').forEach(function (d) {
+    var key = pageKey + d.id;
+    if (location.hash === '#' + d.id || store.get(key) === 'open') d.open = true;
+    d.addEventListener('toggle', function () { store.set(key, d.open ? 'open' : 'closed'); });
+  });
+  if (location.hash) {
+    var target = document.getElementById(location.hash.slice(1));
+    if (target && target.tagName === 'DETAILS') target.scrollIntoView();
+  }
+  document.querySelectorAll('.admin-main .card > h2.card-title').forEach(function (title) {
+    var card = title.parentNode;
+    var key = pageKey + title.textContent.trim();
+    title.classList.add('is-collapsible');
+    title.setAttribute('role', 'button');
+    title.setAttribute('tabindex', '0');
+    var set = function (collapsed) {
+      card.classList.toggle('is-collapsed', collapsed);
+      title.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    };
+    set(store.get(key) === 'closed' && location.hash !== '#' + card.id);
+    var flip = function () {
+      var collapsed = !card.classList.contains('is-collapsed');
+      set(collapsed);
+      store.set(key, collapsed ? 'closed' : 'open');
+    };
+    title.addEventListener('click', flip);
+    title.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+    });
+  });
+
   // Switches that save as soon as they're flipped.
   document.querySelectorAll('[data-autosubmit]').forEach(function (el) {
     el.addEventListener('change', function () { if (el.form.requestSubmit) el.form.requestSubmit(); else el.form.submit(); });

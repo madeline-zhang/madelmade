@@ -1,8 +1,15 @@
 <!--
   One option group with its choices, on a product page or the Shared options page.
   The whole card is one form, so any Save button saves the group, every choice and a new choice at once.
+  It folds shut to just its name; admin.js remembers which groups were left open.
+  On the Shared options page (showProducts) the card also holds which products use the group.
 -->
-<div th:fragment="card(g)" class="group-card" th:id="${'group-' + g.id}">
+<details th:fragment="card(g, showProducts)" class="group-card collapsible" th:id="${'group-' + g.id}" data-collapsible>
+  <summary class="collapsible-head">
+    <span class="t-label" th:text="${g.name}">Flavor</span>
+    <span class="t-small muted" th:text="${g.activeChoices.size() + (g.activeChoices.size() == 1 ? ' choice' : ' choices') + (g.swatches ? ' · photo swatches' : '')}">4 choices</span>
+  </summary>
+  <div class="collapsible-body stack" style="gap: 14px">
   <form method="post" th:action="@{/admin/groups/{id}/save(id=${g.id})}" class="stack" style="gap: 14px">
     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: end">
       <div class="field" style="flex: 1 1 180px"><label th:for="${'g-n-' + g.id}">Group name</label><input type="text" th:id="${'g-n-' + g.id}" name="name" th:value="${g.name}"></div>
@@ -54,4 +61,13 @@
     <p class="t-small muted" style="margin: 0">Saving keeps every change in this group, and adds the new choice if you typed one.</p>
   </form>
   <form method="post" th:action="@{/admin/groups/{id}/delete(id=${g.id})}" th:data-confirm="${g.shared ? 'Remove this group from every product that uses it?' : 'Remove this whole option group?'}"><button type="submit" class="link-btn" th:text="${'Remove the ' + g.name + ' group'}">Remove group</button></form>
-</div>
+  <form th:if="${showProducts}" class="stack" style="gap: 6px; border-top: 1px solid var(--color-linen); padding-top: 14px" method="post" th:action="@{/admin/options/{id}/products(id=${g.id})}">
+    <div class="t-label" th:text="${'Products that use ' + g.name}">Products that use Flavor</div>
+    <label class="check-row" th:each="p : ${products}">
+      <input type="checkbox" name="productIds" th:value="${p.id}" th:checked="${p.sharedGroups.contains(g)}">
+      <span th:text="${p.name}">Classic Loaf</span>
+    </label>
+    <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save products</button>
+  </form>
+  </div>
+</details>

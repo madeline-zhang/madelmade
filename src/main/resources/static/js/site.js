@@ -37,6 +37,11 @@
     var el = e.target;
     if (!el || !el.closest) return;
     e.preventDefault();
+    // A missing field inside a folded section opens it so the message can be seen.
+    var folded = el.closest('details');
+    if (folded) folded.open = true;
+    var card = el.closest('.is-collapsed');
+    if (card) card.classList.remove('is-collapsed');
     var field = el.closest('.field') || el.closest('fieldset') || el.parentNode;
     var box = $('.field-error[data-live]', field);
     if (!box) {

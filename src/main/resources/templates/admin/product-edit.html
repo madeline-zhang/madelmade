@@ -58,7 +58,7 @@
         <h2 id="opts" class="t-title">Options</h2>
         <p class="t-small muted" style="margin: -8px 0 0">Groups like Size, Flavor or Milk. Photo swatches suit score and design styles; buttons suit everything else.</p>
 
-        <th:block th:each="g : ${product.optionGroups}"><div th:replace="~{admin/group-card :: card(${g})}"></div></th:block>
+        <th:block th:each="g : ${product.optionGroups}"><details th:replace="~{admin/group-card :: card(${g}, false)}"></details></th:block>
 
         <form class="group-card" method="post" th:action="@{/admin/products/{id}/groups(id=${product.id})}" style="flex-direction: row; flex-wrap: wrap; align-items: end">
           <div class="field" style="flex: 1 1 200px"><label for="ng">New option group</label><input type="text" id="ng" name="name" placeholder="e.g. Flavor, Milk, Score style"></div>
