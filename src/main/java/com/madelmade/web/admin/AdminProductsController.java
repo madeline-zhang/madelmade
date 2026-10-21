@@ -17,6 +17,7 @@ import java.util.Locale;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -148,20 +149,63 @@ public class AdminProductsController {
         return "redirect:/admin/products/" + id + "#group-" + g.getId();
     }
 
-    @PostMapping("/groups/{gid}")
+    /**
+     * Saves a whole option group in one go: the group's settings, every choice, and a new choice if one
+     * was typed. Choice fields arrive as "c{id}.name", "c{id}.priceChange" and so on.
+     */
+    @PostMapping("/groups/{gid}/save")
     @Transactional
-    public String updateGroup(@PathVariable Long gid, @RequestParam String name, @RequestParam String displayStyle,
-                              @RequestParam(defaultValue = "0") int displayOrder,
-                              @RequestParam(defaultValue = "false") boolean required,
-                              @RequestParam(defaultValue = "false") boolean multiple, RedirectAttributes flash) {
+    public String saveGroup(@PathVariable Long gid, @RequestParam MultiValueMap<String, String> form, RedirectAttributes flash) {
         OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
+        String name = form.getFirst("name");
         if (name != null && !name.isBlank()) g.setName(name.trim());
-        g.setDisplayStyle(OptionGroup.STYLE_SWATCHES.equals(displayStyle) ? OptionGroup.STYLE_SWATCHES : OptionGroup.STYLE_BUTTONS);
-        g.setDisplayOrder(displayOrder);
-        g.setRequired(required);
-        g.setMultiple(multiple);
+        g.setDisplayStyle(OptionGroup.STYLE_SWATCHES.equals(form.getFirst("displayStyle")) ? OptionGroup.STYLE_SWATCHES : OptionGroup.STYLE_BUTTONS);
+        g.setDisplayOrder(integer(form.getFirst("displayOrder"), g.getDisplayOrder()));
+        g.setRequired(form.containsKey("required"));
+        g.setMultiple(form.containsKey("multiple"));
+
+        OptionChoice newDefault = null;
+        for (OptionChoice c : g.getChoices()) {
+            String p = "c" + c.getId() + ".";
+            if (!form.containsKey(p + "name")) continue;
+            String cname = form.getFirst(p + "name");
+            if (cname != null && !cname.isBlank()) c.setName(cname.trim());
+            c.setPriceChange(money(form.getFirst(p + "priceChange")));
+            c.setDescription(blank(form.getFirst(p + "description")));
+            c.setIngredients(blank(form.getFirst(p + "ingredients")));
+            c.setAllergens(blank(form.getFirst(p + "allergens")));
+            Integer textLimit = integer(form.getFirst(p + "textLimit"), null);
+            c.setTextLimit(textLimit != null && textLimit > 0 ? textLimit : null);
+            c.setDisplayOrder(integer(form.getFirst(p + "displayOrder"), c.getDisplayOrder()));
+            c.setActive(form.containsKey(p + "active"));
+            c.setHalvesPrice(form.containsKey(p + "halvesPrice"));
+            c.setPriceTbd(form.containsKey(p + "priceTbd"));
+            c.setNeedsDesignApproval(form.containsKey(p + "needsDesignApproval"));
+            boolean wantsDefault = form.containsKey(p + "defaultChoice");
+            // In a pick-one group, a newly ticked default wins over the old one.
+            if (wantsDefault && !c.isDefaultChoice() && newDefault == null) newDefault = c;
+            c.setDefaultChoice(wantsDefault);
+        }
+        if (!g.isMultiple()) {
+            List<OptionChoice> defaults = g.getChoices().stream().filter(OptionChoice::isDefaultChoice).toList();
+            OptionChoice keep = newDefault != null ? newDefault : defaults.isEmpty() ? null : defaults.get(0);
+            g.getChoices().forEach(c -> c.setDefaultChoice(c == keep));
+        }
+
+        String newName = form.getFirst("newChoiceName");
+        String added = null;
+        if (newName != null && !newName.isBlank()) {
+            OptionChoice c = new OptionChoice();
+            c.setGroup(g);
+            c.setName(newName.trim());
+            c.setPriceChange(money(form.getFirst("newChoicePrice")));
+            c.setDisplayOrder(g.getChoices().size());
+            c.setDefaultChoice(g.getChoices().isEmpty());
+            g.getChoices().add(c);
+            added = c.getName();
+        }
         groups.save(g);
-        flash.addFlashAttribute("ok", "Saved " + g.getName() + ".");
+        flash.addFlashAttribute("ok", "Saved " + g.getName() + (added != null ? " and added " + added : "") + ".");
         return redirectTo(g);
     }
 
@@ -238,62 +282,6 @@ public class AdminProductsController {
     }
 
     // ---- Choices ----
-
-    @PostMapping("/groups/{gid}/choices")
-    @Transactional
-    public String addChoice(@PathVariable Long gid, @RequestParam String name,
-                            @RequestParam(required = false) String priceChange, RedirectAttributes flash) {
-        OptionGroup g = groups.findById(gid).orElseThrow(NotFoundException::new);
-        if (name == null || name.isBlank()) {
-            flash.addFlashAttribute("errors", List.of("Name the choice first."));
-            return redirectTo(g);
-        }
-        OptionChoice c = new OptionChoice();
-        c.setGroup(g);
-        c.setName(name.trim());
-        c.setPriceChange(money(priceChange));
-        c.setDisplayOrder(g.getChoices().size());
-        c.setDefaultChoice(g.getChoices().isEmpty());
-        g.getChoices().add(c);
-        groups.save(g);
-        flash.addFlashAttribute("ok", "Added " + c.getName() + ".");
-        return redirectTo(g);
-    }
-
-    @PostMapping("/choices/{cid}")
-    @Transactional
-    public String updateChoice(@PathVariable Long cid, @RequestParam String name,
-                               @RequestParam(required = false) String priceChange,
-                               @RequestParam(required = false) String description,
-                               @RequestParam(required = false) Integer textLimit,
-                               @RequestParam(required = false) String ingredients,
-                               @RequestParam(required = false) String allergens,
-                               @RequestParam(defaultValue = "0") int displayOrder,
-                               @RequestParam(defaultValue = "false") boolean halvesPrice,
-                               @RequestParam(defaultValue = "false") boolean priceTbd,
-                               @RequestParam(defaultValue = "false") boolean needsDesignApproval,
-                               @RequestParam(defaultValue = "false") boolean defaultChoice,
-                               @RequestParam(defaultValue = "false") boolean active, RedirectAttributes flash) {
-        OptionChoice c = choices.findById(cid).orElseThrow(NotFoundException::new);
-        if (name != null && !name.isBlank()) c.setName(name.trim());
-        c.setPriceChange(money(priceChange));
-        c.setDescription(blank(description));
-        c.setTextLimit(textLimit != null && textLimit > 0 ? textLimit : null);
-        c.setIngredients(blank(ingredients));
-        c.setAllergens(blank(allergens));
-        c.setDisplayOrder(displayOrder);
-        c.setHalvesPrice(halvesPrice);
-        c.setPriceTbd(priceTbd);
-        c.setNeedsDesignApproval(needsDesignApproval);
-        c.setActive(active);
-        if (defaultChoice && !c.getGroup().isMultiple()) {
-            c.getGroup().getChoices().forEach(o -> o.setDefaultChoice(false));
-        }
-        c.setDefaultChoice(defaultChoice);
-        choices.save(c);
-        flash.addFlashAttribute("ok", "Saved " + c.getName() + ".");
-        return redirectTo(c.getGroup());
-    }
 
     @PostMapping("/choices/{cid}/delete")
     @Transactional
@@ -377,6 +365,15 @@ public class AdminProductsController {
         String n = Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
         n = n.toLowerCase(Locale.ROOT).replace("'", "").replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
         return n.isEmpty() ? "item" : n;
+    }
+
+    private static Integer integer(String s, Integer fallback) {
+        if (s == null || s.isBlank()) return fallback;
+        try {
+            return Integer.valueOf(s.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
     }
 
     private static BigDecimal money(String s) {

@@ -5,7 +5,7 @@
 <main id="main" class="admin-main">
   <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">Edit once, used everywhere</div><h1>Shared options</h1></div></div>
   <div th:replace="~{admin/product-tabs :: tabs('options')}"></div>
-  <p class="muted" style="max-width: 760px; margin-top: 0">Option groups like Flavor that several products use. Changes here show on every product that uses the group. Any Save button saves everything you changed in that group. "Order" sets where the group sits among each product's own options (Size is 0).</p>
+  <p class="muted" style="max-width: 760px; margin-top: 0">Option groups like Flavor that several products use. Changes here show on every product that uses the group. "Order" sets where the group sits among each product's own options (Size is 0).</p>
 
   <div class="stack" style="gap: 24px; max-width: 900px">
     <div class="empty" th:if="${sharedGroups.isEmpty()}">No shared groups yet.</div>

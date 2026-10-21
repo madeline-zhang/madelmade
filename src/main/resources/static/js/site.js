@@ -302,6 +302,12 @@
     });
   });
 
+  $$('button[data-confirm]').forEach(function (b) {
+    b.addEventListener('click', function (e) {
+      if (!window.confirm(b.getAttribute('data-confirm'))) e.preventDefault();
+    });
+  });
+
   $$('[data-print]').forEach(function (b) { b.addEventListener('click', function () { window.print(); }); });
 
   // After saving, land back where you were instead of at the top of the page.
