@@ -4,7 +4,9 @@ import com.madelmade.config.CurrentUser;
 import com.madelmade.domain.Feedback;
 import com.madelmade.repo.FeedbackRepository;
 import com.madelmade.web.NotFoundException;
+import com.madelmade.service.SettingsService;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -20,13 +22,18 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/feedback")
 public class AdminFeedbackController {
     private final FeedbackRepository feedback;
+    private final SettingsService settings;
 
-    public AdminFeedbackController(FeedbackRepository feedback) {
+    public AdminFeedbackController(FeedbackRepository feedback, SettingsService settings) {
         this.feedback = feedback;
+        this.settings = settings;
     }
 
     @GetMapping
     public String list(@RequestParam(defaultValue = Feedback.FEEDBACK) String tab, Model model) {
+        // Opening Feedback clears the menu badge; the badge is already in the model, so hide it on this page too.
+        settings.putAll(Map.of("admin.feedbackSeenAt", String.valueOf(System.currentTimeMillis())));
+        model.addAttribute("openFeedbackCount", 0L);
         String kind = Feedback.BUG.equals(tab) ? Feedback.BUG : Feedback.FEEDBACK;
         model.addAttribute("tab", kind);
         model.addAttribute("items", feedback.findByKindOrderByResolvedAscCreatedAtDesc(kind));

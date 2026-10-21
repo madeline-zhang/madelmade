@@ -119,6 +119,7 @@
         </div>
         <p style="margin: 16px 0 0"><a th:href="@{/cart}" class="t-small">Edit cart</a></p>
         <div style="margin-top: 16px"><p th:replace="~{components/notices :: homeKitchen}"></p></div>
+        <p class="t-small muted" style="margin: 8px 0 0" th:text="${settings.get('notice.decline')}">Madeline has the right to decline any order.</p>
       </aside>
     </div>
   </div>

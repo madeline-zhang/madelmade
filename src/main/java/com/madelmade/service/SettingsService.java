@@ -64,6 +64,9 @@ public class SettingsService {
                 + "Best way to reheat?\nToast it and butter it up!");
         DEFAULTS.put("notice.pickupOnly", "Drinks made with milk, like lattes, have to stay cold, so Tennessee's home food law only allows them to be sold in person. That makes lattes pickup only. You can pick one up when you collect your bread, or switch this order to pickup.");
         DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens.");
+        DEFAULTS.put("notice.decline", "Madeline has the right to decline any order, for any reason. If she can't take yours, she'll let you know, and you won't be charged anything.");
+        // When Madeline last opened Feedback; the menu badge only counts what came in after that.
+        DEFAULTS.put("admin.feedbackSeenAt", "0");
         DEFAULTS.put("about.homeTitle", "Made in my home kitchen");
         DEFAULTS.put("about.homeBody", "MadelMade is a home bakery. Everything is made in my kitchen in Tennessee under the state's Food Freedom Act. This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens. Each product page lists its ingredients and allergens. Drinks made with milk are pickup only.");
         DEFAULTS.put("gallery.title", "Loaves that made someone");

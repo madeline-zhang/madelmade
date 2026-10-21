@@ -39,6 +39,10 @@
           <p th:text="${'About ' + settings.noticeDays() + ' days for most loaves.' + (settings.priorityEnabled() ? ' Need it sooner? Priority gets it ready in ' + settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's') + ' for an extra ' + @money.fmt(settings.priorityFee()) + ', when there''s room.' : '')}">Three days for most loaves.</p></details>
         <details><summary>Where do I pick up?</summary>
           <p th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once your order is approved.'}">Pickup is in the Brentwood and Nolensville area.</p></details>
+        <details><summary>How many loaves can you bake?</summary>
+          <p th:text="${'Madeline bakes up to ' + settings.maxLoaves() + ' loaves at a time across all orders. When lots of orders come in for the same days, she may ask to move your order to a later date before she approves it. If the new date doesn''t work for you, you can cancel at no cost.'}">Up to 3 loaves at a time.</p></details>
+        <details><summary>Can you turn down an order?</summary>
+          <p th:text="${settings.get('notice.decline')}">Madeline has the right to decline any order.</p></details>
         <details th:each="f : ${settings.faqs()}"><summary th:text="${f.question}">Do you deliver?</summary>
           <p th:text="${f.answer}">Yes, nearby.</p></details>
       </div>
