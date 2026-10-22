@@ -46,16 +46,18 @@
     <div class="admin-head">
       <div class="stack" style="gap: 4px"><div class="t-eyebrow">Picked up or delivered, before tax</div><h2 class="dash-h2">Sales</h2></div>
     </div>
-    <div class="dash-filters">
-      <div class="tabs" role="group" aria-label="Period">
-        <a th:each="c : ${periods}" class="pill" th:classappend="${c.value == period} ? 'is-on'" th:aria-current="${c.value == period} ? 'true'"
-           th:href="@{/admin(period=${c.value},way=${way},month=${calMonth})}" data-keep-scroll th:text="${c.label}">This year</a>
-      </div>
-      <div class="tabs" role="group" aria-label="Pickup or delivery">
-        <a th:each="c : ${ways}" class="pill" th:classappend="${c.value == way} ? 'is-on'" th:aria-current="${c.value == way} ? 'true'"
-           th:href="@{/admin(period=${period},way=${c.value},month=${calMonth})}" data-keep-scroll th:text="${c.label}">Pickup</a>
-      </div>
-    </div>
+    <form class="dash-filters" method="get" th:action="@{/admin}" data-keep-scroll>
+      <input type="hidden" name="month" th:value="${calMonth}">
+      <div class="field"><label for="fPeriod">Time frame</label>
+        <select id="fPeriod" name="period" data-autosubmit>
+          <option th:each="c : ${periods}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == period}">This year</option>
+        </select></div>
+      <div class="field"><label for="fWay">Pickup or delivery</label>
+        <select id="fWay" name="way" data-autosubmit>
+          <option th:each="c : ${ways}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == way}">Pickup and delivery</option>
+        </select></div>
+      <noscript><button type="submit" class="btn btn-secondary btn-small">Show</button></noscript>
+    </form>
 
     <div class="dash-stats">
       <div><span class="label">Sales</span><strong th:text="${@money.fmt(breakdown.gross)}">$420</strong></div>

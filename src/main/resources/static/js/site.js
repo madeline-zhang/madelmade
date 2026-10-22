@@ -414,7 +414,7 @@
   var SCROLL_KEY = 'mm-scroll';
   document.addEventListener('submit', function (e) {
     var form = e.target;
-    if (!form || (form.method || '').toLowerCase() !== 'post') return;
+    if (!form || ((form.method || '').toLowerCase() !== 'post' && !form.hasAttribute('data-keep-scroll'))) return;
     var action = e.submitter && e.submitter.getAttribute('formaction') || form.getAttribute('action') || location.pathname;
     try {
       sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
