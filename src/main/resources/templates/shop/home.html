@@ -3,11 +3,22 @@
 <head><title>MadelMade · Custom sourdough in Brentwood, TN</title></head>
 <body>
 <main id="main">
-  <section class="hero" aria-label="Welcome">
-    <picture>
+  <section class="hero" aria-label="Welcome" data-hero
+           th:data-seconds="${settings.number('hero.seconds')}"
+           th:style="${'--hero-fade: ' + settings.get('hero.fade') + 's'}">
+    <picture th:if="${heroSlides.isEmpty()}">
       <source media="(max-width: 760px)" th:srcset="@{/img/hero-phone.jpg}">
       <img class="hero-img" th:src="@{/img/hero.jpg}" alt="Miriam's sourdough loaf with a diagonal leaf score" fetchpriority="high">
     </picture>
+    <div th:each="s, it : ${heroSlides}" class="hero-slide" th:classappend="${it.first} ? 'is-on'" data-hero-slide>
+      <video th:if="${s.video}" class="hero-img" muted loop playsinline preload="metadata" th:autoplay="${it.first}"
+             th:aria-label="${s.alt}"><source th:src="${s.videoUrl}"></video>
+      <picture th:unless="${s.video}">
+        <source media="(max-width: 760px)" th:srcset="${s.phone}">
+        <img class="hero-img" th:src="${s.computer}" th:alt="${s.alt}" th:fetchpriority="${it.first ? 'high' : 'low'}"
+             th:loading="${it.first ? null : 'lazy'}">
+      </picture>
+    </div>
     <div class="wrap hero-content">
       <div class="hero-eyebrow">Home-baked in Brentwood, TN</div>
       <h1>Made to make <span class="nowrap">you <em>smile</em></span></h1>

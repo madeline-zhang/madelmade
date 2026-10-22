@@ -92,6 +92,21 @@ public class PhotoService {
         }
     }
 
+    /** A bundled photo whose original and edited versions differ, e.g. a crop of a larger original. */
+    @Transactional
+    public Photo fromClasspath(String originalPath, String editedPath, EditSettings s) {
+        try (InputStream o = new ClassPathResource(originalPath).getInputStream();
+             InputStream e = new ClassPathResource(editedPath).getInputStream()) {
+            Photo p = new Photo();
+            p.setOriginal(o.readAllBytes());
+            p.setOriginalType("image/jpeg");
+            apply(p, e.readAllBytes(), s);
+            return repo.save(p);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Missing starter photo " + editedPath, ex);
+        }
+    }
+
     private static BufferedImage read(byte[] bytes) {
         try {
             return ImageIO.read(new ByteArrayInputStream(bytes));

@@ -6,9 +6,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.madelmade.domain.HeroSlide;
+import com.madelmade.domain.HeroVideo;
 import com.madelmade.domain.OptionChoice;
 import com.madelmade.domain.Product;
 import com.madelmade.repo.ProductRepository;
+import com.madelmade.service.HeroService;
 import com.madelmade.service.PricingService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -50,12 +53,34 @@ class SiteTest {
     @Autowired MockMvc mvc;
     @Autowired ProductRepository products;
     @Autowired PricingService pricing;
+    @Autowired HeroService hero;
 
     @Test
     void homeShowsTheMenu() throws Exception {
         mvc.perform(get("/")).andExpect(status().isOk())
                 .andExpect(content().string(Matchers.containsString("Stencil Loaf")))
                 .andExpect(content().string(Matchers.containsString("Cookie Butter Latte")));
+    }
+
+    @Test
+    void homeHeroStartsWithBothLoaves() throws Exception {
+        mvc.perform(get("/")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("data-hero-slide")))
+                .andExpect(content().string(Matchers.containsString("diagonal leaf score")))
+                .andExpect(content().string(Matchers.containsString("stenciled with MadelMade")));
+    }
+
+    @Test
+    @Transactional
+    void heroVideoServesPartsForSafari() throws Exception {
+        HeroSlide slide = new HeroSlide();
+        byte[] mp4 = new byte[2000];
+        System.arraycopy("\0\0\0\u0018ftypmp42".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1), 0, mp4, 0, 12);
+        HeroVideo v = hero.saveVideo(slide, mp4, "application/octet-stream");
+        assertThat(v.getContentType()).isEqualTo("video/mp4");
+        mvc.perform(get("/hero/video/" + v.getId()).header("Range", "bytes=0-99"))
+                .andExpect(status().isPartialContent())
+                .andExpect(content().contentType("video/mp4"));
     }
 
     @Test

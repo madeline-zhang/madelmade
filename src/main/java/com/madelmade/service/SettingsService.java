@@ -53,6 +53,9 @@ public class SettingsService {
         DEFAULTS.put("notify.customerReply", "true");
         DEFAULTS.put("notify.morningSummary", "false");
         DEFAULTS.put("photos.warmth", "20");
+        DEFAULTS.put("hero.seconds", "10");
+        DEFAULTS.put("hero.fade", "2");
+        DEFAULTS.put("hero.seeded", "false");
         DEFAULTS.put("photos.brightness", "0");
         DEFAULTS.put("photos.contrast", "0");
         DEFAULTS.put("photos.saturation", "0");

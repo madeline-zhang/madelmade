@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'hero')}">
+<head><title>Home page · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">The big picture at the top</div><h1>Home page</h1></div>
+    <a class="btn btn-secondary btn-small" th:href="@{/}" target="_blank" rel="noopener">View home page&nbsp;&nbsp;↗</a>
+  </div>
+
+  <section class="card stack">
+    <h2 class="card-title">Timing</h2>
+    <form method="post" th:action="@{/admin/hero/timing}" class="stack" style="gap: 12px" data-autosave>
+      <div class="field-row">
+        <div class="field"><label for="heroSeconds">Seconds on each</label>
+          <input type="number" id="heroSeconds" name="seconds" min="3" max="60" step="1" inputmode="numeric" th:value="${settings.get('hero.seconds')}"></div>
+        <div class="field"><label for="heroFade">Fade between, in seconds</label>
+          <input type="number" id="heroFade" name="fade" min="0" max="5" step="0.5" inputmode="decimal" th:value="${settings.get('hero.fade')}"></div>
+      </div>
+      <div class="help">Only one photo or video? It just stays put. Visitors who have "reduce motion" turned on always see the first one.</div>
+      <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start" data-autosave-hide>Save</button>
+    </form>
+  </section>
+
+  <section class="stack" style="gap: 16px">
+    <div class="admin-head">
+      <div class="stack" style="gap: 4px"><h2 class="card-title" style="margin: 0">Photos and videos</h2>
+        <p class="t-small muted" style="margin: 0">Shown in this order. Each photo has a wide crop for computers and a tall crop for phones.</p></div>
+      <a class="btn" th:href="@{/admin/photos/edit(target='hero-new')}">Add a photo</a>
+    </div>
+
+    <div class="empty" th:if="${slides.isEmpty()}">Nothing here, so the home page shows the Miriam loaf.</div>
+
+    <div class="hero-admin-grid">
+      <div class="card stack" style="padding: 14px; gap: 12px" th:each="s, it : ${slides}" th:id="${'slide-' + s.id}">
+        <th:block th:if="${s.video}">
+          <video class="hero-admin-thumb" muted loop playsinline controls preload="metadata"><source th:src="${hero.videoUrl(s.videoId)}"></video>
+          <form method="post" th:action="@{/admin/hero/video}" enctype="multipart/form-data" class="stack" style="gap: 8px">
+            <input type="hidden" name="slide" th:value="${s.id}">
+            <div class="field"><label th:for="${'vid-' + s.id}">Replace the video</label>
+              <input type="file" th:id="${'vid-' + s.id}" name="file" accept="video/mp4,video/quicktime,video/webm" required></div>
+            <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Upload</button>
+          </form>
+        </th:block>
+        <th:block th:unless="${s.video}">
+          <div class="hero-admin-crops">
+            <a th:href="@{/admin/photos/edit(target=${'hero-' + s.id})}" title="Edit the computer crop">
+              <img th:if="${s.photoId != null}" th:src="${photoUrls.src(s.photoId)}" alt="" class="hero-admin-thumb">
+              <span class="t-small muted">Computer</span></a>
+            <a th:href="@{/admin/photos/edit(target=${'heroPhone-' + s.id})}" title="Edit the phone crop" class="phone">
+              <img th:src="${photoUrls.src(s.phonePhotoId != null ? s.phonePhotoId : s.photoId)}" alt="" class="hero-admin-thumb">
+              <span class="t-small muted" th:text="${s.phonePhotoId != null ? 'Phone' : 'Phone (not set yet)'}">Phone</span></a>
+          </div>
+        </th:block>
+        <form method="post" th:action="@{/admin/hero/{id}(id=${s.id})}" class="stack" style="gap: 8px" data-autosave>
+          <div class="field"><label th:for="${'alt-' + s.id}">Short description</label>
+            <input type="text" th:id="${'alt-' + s.id}" name="alt" maxlength="200" th:value="${s.alt}">
+            <div class="help">Read aloud to people using screen readers.</div></div>
+          <div style="display: flex; gap: 8px; align-items: end; flex-wrap: wrap">
+            <span th:replace="~{admin/arrows :: arrows('', 'this slide', ${it.first}, ${it.last})}"></span>
+            <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
+            <th:block th:unless="${s.video}">
+              <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'hero-' + s.id})}">Computer crop</a>
+              <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'heroPhone-' + s.id})}">Phone crop</a>
+            </th:block>
+          </div>
+        </form>
+        <form method="post" th:action="@{/admin/hero/{id}/delete(id=${s.id})}" data-confirm="Take this off the home page?">
+          <button type="submit" class="link-btn">Remove from the home page</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="card stack" id="add-video">
+    <h2 class="card-title">Add a looping video</h2>
+    <p class="t-small muted" style="margin: 0">A short, silent clip that loops, like a slow-motion score opening up. It plays muted and fills the space the same way photos do, so keep the loaf near the middle.</p>
+    <form method="post" th:action="@{/admin/hero/video}" enctype="multipart/form-data" class="stack" style="gap: 12px">
+      <div class="field"><label for="newVideo">Video file</label>
+        <input type="file" id="newVideo" name="file" accept="video/mp4,video/quicktime,video/webm" required>
+        <div class="help">Up to 25 MB. MP4 plays everywhere. On iPhone, set Settings › Camera › Formats to "Most Compatible" before filming, or export the clip as MP4.</div></div>
+      <div class="field"><label for="newVideoAlt">Short description</label>
+        <input type="text" id="newVideoAlt" name="alt" maxlength="200" placeholder="e.g. Slow-motion flour dusting over a stencil"></div>
+      <button type="submit" class="btn" style="align-self: flex-start">Upload video</button>
+    </form>
+  </section>
+</main>
+</body>
+</html>

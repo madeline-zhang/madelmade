@@ -5,6 +5,7 @@ import com.madelmade.domain.Product;
 import com.madelmade.repo.CategoryRepository;
 import com.madelmade.repo.GalleryPhotoRepository;
 import com.madelmade.repo.ProductRepository;
+import com.madelmade.service.HeroService;
 import com.madelmade.service.SettingsService;
 import java.util.List;
 import org.springframework.stereotype.Controller;
@@ -18,10 +19,12 @@ public class ShopController {
     private final CategoryRepository categories;
     private final GalleryPhotoRepository gallery;
     private final SettingsService settings;
+    private final HeroService hero;
 
     public ShopController(ProductRepository products, CategoryRepository categories, GalleryPhotoRepository gallery,
-                          SettingsService settings) {
+                          SettingsService settings, HeroService hero) {
         this.settings = settings;
+        this.hero = hero;
         this.products = products;
         this.categories = categories;
         this.gallery = gallery;
@@ -35,6 +38,7 @@ public class ShopController {
                 .toList();
         model.addAttribute("products", menu);
         model.addAttribute("categories", used);
+        model.addAttribute("heroSlides", hero.slides());
         return "shop/home";
     }
 

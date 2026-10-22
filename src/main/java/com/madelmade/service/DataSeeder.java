@@ -28,9 +28,11 @@ public class DataSeeder implements ApplicationRunner {
     private final GalleryPhotoRepository gallery;
     private final PhotoService photos;
     private final OptionGroupRepository groups;
+    private final HeroService hero;
 
     public DataSeeder(CategoryRepository categories, ProductRepository products, GalleryPhotoRepository gallery,
-                      PhotoService photos, OptionGroupRepository groups) {
+                      PhotoService photos, OptionGroupRepository groups, HeroService hero) {
+        this.hero = hero;
         this.categories = categories;
         this.groups = groups;
         this.products = products;
@@ -41,6 +43,7 @@ public class DataSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        hero.seed();
         if (categories.count() > 0) return;
         log.info("Empty database: loading the starting menu");
 
