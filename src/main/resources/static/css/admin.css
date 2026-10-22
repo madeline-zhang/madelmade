@@ -186,3 +186,10 @@ details[open] > .collapsible-head { border-bottom: 1px solid var(--color-linen);
 .export-menu > summary { list-style: none; cursor: pointer; }
 .export-menu > summary::-webkit-details-marker { display: none; }
 .export-menu > form { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: min(360px, calc(100vw - 32px)); box-shadow: var(--shadow-card); }
+
+/* Home page hero slides */
+.hero-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 16px; }
+.hero-admin-crops { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 10px; align-items: start; }
+.hero-admin-crops a { display: flex; flex-direction: column; gap: 4px; text-decoration: none; }
+.hero-admin-thumb { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; background: var(--color-linen, #DDD5C4); }
+.hero-admin-crops .phone .hero-admin-thumb { aspect-ratio: 390 / 580; }
