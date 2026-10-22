@@ -71,6 +71,11 @@
         <label for="caption">Caption</label>
         <input type="text" id="caption" maxlength="200" data-caption placeholder="e.g. Miriam's double leaf">
       </div>
+      <div class="field" th:if="${target.key == 'hero-new'}">
+        <label for="caption">Short description</label>
+        <input type="text" id="caption" maxlength="200" data-caption placeholder="e.g. Sourdough loaf with a wheat stencil">
+        <div class="help">Read aloud to people using screen readers.</div>
+      </div>
 
       <div class="alert alert-error hidden" role="alert" data-error></div>
       <button type="button" class="btn" data-save>Save photo</button>
@@ -78,9 +83,9 @@
     </div>
   </div>
 
-  <form method="post" th:action="@{/admin/photos/remove}" th:if="${photo != null}" data-confirm="Remove this photo?">
+  <form method="post" th:action="@{/admin/photos/remove}" th:if="${photo != null and !target.key.startsWith('hero-') and !target.copyOriginal}" data-confirm="Remove this photo?">
     <input type="hidden" name="target" th:value="${target.key}">
-    <button type="submit" class="link-btn" th:text="${target.key.startsWith('gallery') ? 'Remove from gallery' : 'Remove photo'}">Remove photo</button>
+    <button type="submit" class="link-btn" th:text="${target.key.startsWith('gallery') ? 'Remove from gallery' : target.key.startsWith('heroPhone') ? 'Use the computer crop on phones instead' : 'Remove photo'}">Remove photo</button>
   </form>
   <script th:src="@{/js/photo-editor.js}" defer></script>
 </main>

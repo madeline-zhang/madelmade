@@ -111,6 +111,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .hero { position: relative; height: 100svh; min-height: 600px; max-height: 1000px; overflow: hidden; color: var(--color-white); }
 .hero picture, .hero img.hero-img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero img.hero-img { object-fit: cover; }
+/* Slides take turns; the time on each and the fade come from Admin › Home page. */
+.hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity var(--hero-fade, 2s) ease-in-out; }
+.hero-slide.is-on { opacity: 1; }
+.hero video.hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(30,22,14,0.6) 0%, rgba(30,22,14,0.36) 38%, rgba(30,22,14,0) 68%); }
 .hero-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 26px; padding-top: var(--header-height); }
 .hero-content > * { max-width: 640px; }
@@ -404,3 +408,26 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
 .profile-orders .t-title { margin-bottom: 2px; }
 .profile-order { gap: 8px; padding: 18px 20px; }
 .profile-order + .profile-order { margin-top: 0; }
+
+/* ---- How it's made: steps scroll down the middle while the intro stays at the side ---- */
+/* Three columns keep the steps in the middle of the screen, with the intro in the left one. */
+.process-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px) minmax(0, 1fr); gap: 56px; align-items: start; }
+.process-intro { position: sticky; top: calc(var(--header-height) + 48px); display: flex; flex-direction: column; gap: 20px; }
+.process-intro .btn { align-self: flex-start; margin-top: 8px; }
+.process-steps { list-style: none; margin: 0 auto; padding: 0 0 40px; width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 128px; }
+.process-step { display: flex; flex-direction: column; gap: 24px; transition: opacity .8s ease, transform .8s ease; }
+.process-media { aspect-ratio: 4 / 5; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-placeholder); }
+.process-media img, .process-media video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.process-text { display: flex; flex-direction: column; gap: 10px; }
+.process-num { font-size: var(--text-eyebrow); letter-spacing: 0.3em; color: var(--color-terracotta); }
+.process-text h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.9rem, 2.6vw, 2.4rem); line-height: 1.1; margin: 0; }
+.process-text p { margin: 0; font-size: 1.0625rem; line-height: 1.65; color: var(--color-ink-soft); }
+/* Each step eases in as it reaches the screen (only when the script is running). */
+.process-steps.is-revealing .process-step:not(.is-seen) { opacity: 0; transform: translateY(28px); }
+@media (prefers-reduced-motion: reduce) { .process-step { transition: none; } }
+@media (max-width: 1180px) { .process-layout { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); } }
+@media (max-width: 900px) {
+  .process-layout { grid-template-columns: 1fr; gap: 48px; }
+  .process-intro { position: static; }
+  .process-steps { gap: 80px; }
+}

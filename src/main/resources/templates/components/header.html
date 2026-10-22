@@ -9,6 +9,7 @@
     <nav class="main-nav" aria-label="Main">
       <a th:href="@{/#menu}">Menu</a>
       <a th:href="@{/gallery}">Gallery</a>
+      <a th:if="${showProcess}" th:href="@{/how-its-made}">How it's made</a>
       <a th:href="@{/about}">About</a>
     </nav>
     <div class="header-actions">
@@ -25,6 +26,7 @@
   <nav class="mobile-nav" id="mobile-nav" aria-label="Main" data-mobile-nav>
     <a th:href="@{/#menu}">Menu</a>
     <a th:href="@{/gallery}">Gallery</a>
+    <a th:if="${showProcess}" th:href="@{/how-its-made}">How it's made</a>
     <a th:href="@{/about}">About</a>
     <a th:if="${!signedIn}" th:href="@{/signin}">Sign in</a>
     <a th:if="${signedIn}" th:href="@{/profile}">Your profile</a>

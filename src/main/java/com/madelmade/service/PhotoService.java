@@ -32,7 +32,7 @@ public class PhotoService {
         this.urls = urls;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = UserFacingException.class)
     public Photo create(byte[] original, String originalType, byte[] edited, EditSettings s) {
         Photo p = new Photo();
         if (original == null || original.length == 0) throw new UserFacingException("Please choose a photo.");
@@ -45,7 +45,7 @@ public class PhotoService {
         return saved;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = UserFacingException.class)
     public Photo update(Photo p, byte[] edited, EditSettings s) {
         apply(p, edited, s);
         p.setUpdatedAt(Instant.now());
@@ -89,6 +89,21 @@ public class PhotoService {
             return repo.save(p);
         } catch (IOException e) {
             throw new IllegalStateException("Missing starter photo " + path, e);
+        }
+    }
+
+    /** A bundled photo whose original and edited versions differ, e.g. a crop of a larger original. */
+    @Transactional
+    public Photo fromClasspath(String originalPath, String editedPath, EditSettings s) {
+        try (InputStream o = new ClassPathResource(originalPath).getInputStream();
+             InputStream e = new ClassPathResource(editedPath).getInputStream()) {
+            Photo p = new Photo();
+            p.setOriginal(o.readAllBytes());
+            p.setOriginalType("image/jpeg");
+            apply(p, e.readAllBytes(), s);
+            return repo.save(p);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Missing starter photo " + editedPath, ex);
         }
     }
 

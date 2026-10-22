@@ -6,9 +6,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.madelmade.domain.HeroSlide;
+import com.madelmade.domain.Video;
 import com.madelmade.domain.OptionChoice;
+import com.madelmade.domain.ProcessStep;
 import com.madelmade.domain.Product;
+import com.madelmade.repo.ProcessStepRepository;
 import com.madelmade.repo.ProductRepository;
+import com.madelmade.service.HeroService;
 import com.madelmade.service.PricingService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -50,12 +55,51 @@ class SiteTest {
     @Autowired MockMvc mvc;
     @Autowired ProductRepository products;
     @Autowired PricingService pricing;
+    @Autowired HeroService hero;
+    @Autowired ProcessStepRepository steps;
 
     @Test
     void homeShowsTheMenu() throws Exception {
         mvc.perform(get("/")).andExpect(status().isOk())
                 .andExpect(content().string(Matchers.containsString("Stencil Loaf")))
                 .andExpect(content().string(Matchers.containsString("Cookie Butter Latte")));
+    }
+
+    @Test
+    void homeHeroStartsWithBothLoaves() throws Exception {
+        mvc.perform(get("/")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("data-hero-slide")))
+                .andExpect(content().string(Matchers.containsString("diagonal leaf score")))
+                .andExpect(content().string(Matchers.containsString("stenciled with MadelMade")));
+    }
+
+    @Test
+    @Transactional
+    void heroVideoServesPartsForSafari() throws Exception {
+        HeroSlide slide = new HeroSlide();
+        byte[] mp4 = new byte[2000];
+        System.arraycopy("\0\0\0\u0018ftypmp42".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1), 0, mp4, 0, 12);
+        Video v = hero.saveVideo(slide, mp4, "application/octet-stream");
+        assertThat(v.getContentType()).isEqualTo("video/mp4");
+        mvc.perform(get("/videos/" + v.getId()).header("Range", "bytes=0-99"))
+                .andExpect(status().isPartialContent())
+                .andExpect(content().contentType("video/mp4"));
+    }
+
+    @Test
+    @Transactional
+    void howItsMadeStaysHiddenUntilItHasAStep() throws Exception {
+        steps.deleteAll();
+        mvc.perform(get("/how-its-made")).andExpect(status().isNotFound());
+        mvc.perform(get("/gallery")).andExpect(content().string(Matchers.not(Matchers.containsString("/how-its-made"))));
+        ProcessStep s = new ProcessStep();
+        s.setTitle("Feed the starter");
+        s.setBody("Fresh flour and water.\n\nIt doubles by morning.");
+        steps.save(s);
+        mvc.perform(get("/how-its-made")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Feed the starter")))
+                .andExpect(content().string(Matchers.containsString("<p>It doubles by morning.</p>")));
+        mvc.perform(get("/gallery")).andExpect(content().string(Matchers.containsString("/how-its-made")));
     }
 
     @Test
@@ -68,6 +112,24 @@ class SiteTest {
     void dashboardNeedsSignIn() throws Exception {
         mvc.perform(get("/admin/orders")).andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/signin?next=%2Fadmin%2Forders"));
+    }
+
+    @Test
+    void adminLandsOnTheDashboardWithTheCalendar() throws Exception {
+        var admin = org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+                .user("madeline@example.com").roles("ADMIN");
+        mvc.perform(get("/admin").with(admin)).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Sales by month")))
+                .andExpect(content().string(Matchers.containsString("Bake days")));
+        mvc.perform(get("/admin").param("period", "month").param("way", "delivery").with(admin)).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Orders to review")))
+                .andExpect(content().string(Matchers.containsString("Loaves to hand off")));
+        mvc.perform(get("/admin").param("period", "nonsense").param("way", "nonsense").with(admin)).andExpect(status().isOk());
+        mvc.perform(get("/admin/calendar").param("month", "2026-11").with(admin))
+                .andExpect(redirectedUrl("/admin?month=2026-11#calendar"));
+        mvc.perform(get("/admin/process").with(admin)).andExpect(status().isOk());
+        mvc.perform(get("/admin/hero").with(admin)).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.not(Matchers.containsString("Phone crop</a>"))));
     }
 
     @Test

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'dashboard')}">
+<head><title>Dashboard · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow" th:text="${todayText}">Thursday, October 22</div><h1>Dashboard</h1></div>
+    <a class="btn btn-secondary btn-small" th:href="@{/admin/orders}">Go to orders</a>
+  </div>
+
+  <div th:if="${yearSales.message != null}" class="alert" th:classappend="${'alert-' + yearSales.level}">
+    <span th:text="${yearSales.message}">Sales are over $3,000 this year.</span>
+    <a th:href="@{/admin/settings#sales-tax}" th:if="${yearSales.level == 'error'}">Sales tax settings</a>
+  </div>
+
+  <div class="dash-tiles">
+    <a class="dash-tile" th:classappend="${waiting > 0} ? 'is-alert'" th:href="@{/admin/orders(tab='review')}">
+      <span class="label">Orders to review</span>
+      <span class="value" th:text="${waiting}">2</span>
+      <span class="sub">Waiting for your approval</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/orders(tab='approved')}">
+      <span class="label">Loaves to bake</span>
+      <span class="value" th:text="${loavesToBake}">2</span>
+      <span class="sub">Approved, not baked yet</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/orders(tab='baked')}">
+      <span class="label">Loaves to hand off</span>
+      <span class="value" th:text="${loavesToHandOff}">1</span>
+      <span class="sub">Baked, waiting for pickup or delivery</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/orders(tab='completed')}">
+      <span class="label" th:text="${'Sales in ' + yearSales.year}">Sales in 2026</span>
+      <span class="value" th:text="${@money.fmt(yearSales.gross)}">$420</span>
+      <span class="meter"><span class="fill" th:style="${'width: ' + yearPct + '%'}"></span><span class="mark" style="left: 62.5%"></span></span>
+      <span class="sub">Before tax. Sales tax registration starts above $4,800.</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/customers}">
+      <span class="label">Customers</span>
+      <span class="value" th:text="${customerCount}">14</span>
+      <span class="sub" th:text="${'With accounts · ' + newCustomers + ' new this month'}">3 new this month</span>
+    </a>
+  </div>
+
+  <section class="stack" id="sales" style="gap: 16px">
+    <div class="admin-head">
+      <div class="stack" style="gap: 4px"><div class="t-eyebrow">Picked up or delivered, before tax</div><h2 class="dash-h2">Sales</h2></div>
+    </div>
+    <form class="dash-filters" method="get" th:action="@{/admin}" data-keep-scroll>
+      <input type="hidden" name="month" th:value="${calMonth}">
+      <div class="field"><label for="fPeriod">Time frame</label>
+        <select id="fPeriod" name="period" data-autosubmit>
+          <option th:each="c : ${periods}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == period}">This year</option>
+        </select></div>
+      <div class="field"><label for="fWay">Pickup or delivery</label>
+        <select id="fWay" name="way" data-autosubmit>
+          <option th:each="c : ${ways}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == way}">Pickup and delivery</option>
+        </select></div>
+      <noscript><button type="submit" class="btn btn-secondary btn-small">Show</button></noscript>
+    </form>
+
+    <div class="dash-stats">
+      <div><span class="label">Sales</span><strong th:text="${@money.fmt(breakdown.gross)}">$420</strong></div>
+      <div><span class="label">Orders</span><strong th:text="${breakdown.orders}">12</strong></div>
+      <div><span class="label">Average order</span><strong th:text="${@money.fmt(breakdown.average)}">$35</strong></div>
+      <div><span class="label">Pickup</span><strong th:text="${breakdown.pickup}">9</strong></div>
+      <div><span class="label">Delivery</span><strong th:text="${breakdown.delivery}">3</strong>
+        <span class="t-small muted" th:if="${breakdown.deliveryFees.signum() > 0}" th:text="${@money.fmt(breakdown.deliveryFees) + ' in fees'}">$15 in fees</span></div>
+      <div><span class="label">Priority</span><strong th:text="${breakdown.priority}">2</strong></div>
+      <div><span class="label">Promo code</span><strong th:text="${breakdown.promo}">1</strong></div>
+    </div>
+
+    <div class="dash-row">
+      <section class="card stack dash-chart-card">
+        <div class="dash-card-head"><h3 class="card-title">By month</h3><span class="t-small muted" th:text="${'Last 12 months' + (way == 'all' ? '' : ', ' + #strings.toLowerCase(way) + ' only')}">Last 12 months</span></div>
+        <div class="bar-chart" aria-hidden="true">
+          <div class="bar-col" th:each="b, it : ${bars}" th:classappend="${it.last} ? 'is-now'" tabindex="0">
+            <span class="bar-tip" th:text="${b.title + ': ' + @money.fmt(b.amount) + ' · ' + b.orders + (b.orders == 1 ? ' order' : ' orders')}">October 2026: $120 · 4 orders</span>
+            <span class="bar-val" th:if="${b.pct == 100 and b.amount.signum() > 0}" th:text="${@money.fmt(b.amount)}">$300</span>
+            <span class="bar" th:style="${'height: ' + b.height + '%'}"></span>
+            <span class="bar-label" th:text="${b.label}">Oct</span>
+          </div>
+        </div>
+        <table class="visually-hidden">
+          <caption>Sales by month</caption>
+          <tr><th scope="col">Month</th><th scope="col">Sales</th><th scope="col">Orders</th></tr>
+          <tr th:each="b : ${bars}"><td th:text="${b.title}">October 2026</td><td th:text="${@money.fmt(b.amount)}">$120</td><td th:text="${b.orders}">4</td></tr>
+        </table>
+      </section>
+
+      <section class="card stack">
+        <div class="dash-card-head"><h3 class="card-title">Most ordered</h3><span class="t-small muted" th:text="${periodLabel}">This year</span></div>
+        <div class="empty" th:if="${sellers.isEmpty()}">Nothing picked up or delivered in this time.</div>
+        <div class="seller" th:each="s : ${sellers}">
+          <div class="row"><span th:text="${s.name}">Stencil Loaf</span><strong th:text="${s.count}">8</strong></div>
+          <span class="seller-bar"><span th:style="${'width: ' + s.pct + '%'}"></span></span>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="stack" id="calendar" style="gap: 16px">
+    <div class="admin-head">
+      <div class="stack" style="gap: 4px"><div class="t-eyebrow">Bake days</div><h2 class="dash-h2" th:text="${monthTitle}">October 2026</h2></div>
+      <div class="admin-tools">
+        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${prev},period=${period},way=${way})}" data-keep-scroll aria-label="Previous month">←</a>
+        <a class="btn btn-secondary btn-small" th:href="@{/admin(period=${period},way=${way})}" data-keep-scroll>Today</a>
+        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${next},period=${period},way=${way})}" data-keep-scroll aria-label="Next month">→</a>
+      </div>
+    </div>
+
+    <div class="calendar">
+      <div class="dow" th:each="d : ${ {'Sun','Mon','Tue','Wed','Thu','Fri','Sat'} }" th:text="${d}">Sun</div>
+      <div class="day" th:each="d : ${days}" th:classappend="${(d.inMonth ? '' : ' is-other') + (d.today ? ' is-today' : '') + (d.off ? ' is-off' : '')}">
+        <div class="num"><span th:text="${d.date.dayOfMonth}">12</span>
+          <span class="load" th:if="${d.loaves > 0}" th:text="${d.loaves + (d.loaves == 1 ? ' loaf' : ' loaves')}">2 loaves</span>
+          <span class="muted" th:if="${d.off and d.loaves == 0}">Off</span></div>
+        <a th:each="o : ${d.orders}" class="ev" th:classappend="${'badge-' + o.status.badge}" th:href="@{/admin/orders/{id}(id=${o.id},tab='all')}"
+           th:text="${o.contactName + ' · ' + o.itemsSummary}" th:title="${o.status.label}">Sarah · Stencil</a>
+      </div>
+    </div>
+    <p class="t-small muted" style="margin: 0">Striped days are your days off. Change them in <a th:href="@{/admin/settings}">Settings</a>.</p>
+  </section>
+
+  <section class="stack" style="gap: 12px">
+    <h2 class="card-title">Coming up in the next two weeks</h2>
+    <div class="empty" th:if="${upcoming.isEmpty()}">Nothing booked for the next two weeks.</div>
+    <div class="dash-upcoming">
+      <a th:each="o : ${upcoming}" class="order-card" th:href="@{/admin/orders/{id}(id=${o.id},tab='all')}">
+        <div class="row"><span class="who" th:text="${o.contactName}">Sarah Kim</span>
+          <span th:replace="~{components/status-badge :: badge(${o.status}, false)}"></span></div>
+        <div class="what" th:text="${o.itemsSummary}">Stencil Loaf</div>
+        <div class="row"><span class="meta" th:text="${o.fulfillment.label + ' · ' + @fmt.longDay(o.requestedDate)}">Pickup · Saturday</span>
+          <span class="amount" th:text="${@money.fmt(o.total)}">$16</span></div>
+      </a>
+    </div>
+  </section>
+</main>
+</body>
+</html>

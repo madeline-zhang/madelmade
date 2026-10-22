@@ -31,7 +31,7 @@
       <h2 id="faq" class="t-section section-title">Frequently asked questions</h2>
       <p class="muted">Anything else? Email <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a> or message <a href="https://www.instagram.com/madelmadewithlove/" target="_blank" rel="noopener">@madelmadewithlove</a> on Instagram.</p>
       <div class="faq">
-        <details open><summary>How much notice do you need?</summary>
+        <details><summary>How much notice do you need?</summary>
           <p th:text="${'About ' + settings.noticeDays() + ' days for most loaves.' + (settings.priorityEnabled() ? ' Need it sooner? Priority gets it ready in ' + settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's') + ' for an extra ' + @money.fmt(settings.priorityFee()) + ', when there''s room.' : '')}">Three days for most loaves.</p></details>
         <details><summary>Where do I pick up?</summary>
           <p th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once your order is approved.'}">Pickup is in the Brentwood and Nolensville area.</p></details>

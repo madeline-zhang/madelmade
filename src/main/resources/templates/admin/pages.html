@@ -3,6 +3,7 @@
 <head><title>Pages · MadelMade admin</title></head>
 <body>
 <main id="main" class="admin-main">
+  <div th:replace="~{admin/site-tabs :: tabs('pages')}"></div>
   <div class="admin-head"><div class="stack" style="gap: 4px"><div class="t-eyebrow">Words and photos on the site</div><h1>Pages</h1></div></div>
 
   <form method="post" th:action="@{/admin/pages}" class="stack" style="gap: 24px" data-autosave>
