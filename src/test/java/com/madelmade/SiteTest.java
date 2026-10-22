@@ -121,6 +121,10 @@ class SiteTest {
         mvc.perform(get("/admin").with(admin)).andExpect(status().isOk())
                 .andExpect(content().string(Matchers.containsString("Sales by month")))
                 .andExpect(content().string(Matchers.containsString("Bake days")));
+        mvc.perform(get("/admin").param("period", "month").param("way", "delivery").with(admin)).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Orders to review")))
+                .andExpect(content().string(Matchers.containsString("Loaves to hand off")));
+        mvc.perform(get("/admin").param("period", "nonsense").param("way", "nonsense").with(admin)).andExpect(status().isOk());
         mvc.perform(get("/admin/calendar").param("month", "2026-11").with(admin))
                 .andExpect(redirectedUrl("/admin?month=2026-11#calendar"));
         mvc.perform(get("/admin/process").with(admin)).andExpect(status().isOk());

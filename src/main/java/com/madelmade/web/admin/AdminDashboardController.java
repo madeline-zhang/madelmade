@@ -8,7 +8,6 @@ import com.madelmade.domain.OrderStatus;
 import com.madelmade.repo.CustomerRepository;
 import com.madelmade.repo.OrderRepository;
 import com.madelmade.service.Formats;
-import com.madelmade.service.OrderService;
 import com.madelmade.service.SettingsService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -54,54 +53,76 @@ public class AdminDashboardController {
 
     public record Seller(String name, int count, int pct) {}
 
+    /** A filter choice: the value it sends and the words on its button. */
+    public record Choice(String value, String label) {}
+
+    /** What the chosen period and fulfillment add up to. */
+    public record Breakdown(int orders, BigDecimal gross, BigDecimal average, int pickup, int delivery, int priority,
+                            int promo, BigDecimal deliveryFees) {}
+
+    static final List<Choice> PERIODS = List.of(new Choice("month", "This month"), new Choice("year", "This year"),
+            new Choice("12m", "Last 12 months"), new Choice("all", "All time"));
+    static final List<Choice> WAYS = List.of(new Choice("all", "Pickup and delivery"), new Choice("pickup", "Pickup"),
+            new Choice("delivery", "Delivery"));
+
     private final OrderRepository orders;
     private final CustomerRepository customers;
-    private final OrderService orderService;
     private final SettingsService settings;
     private final Formats formats;
     private final SalesStats sales;
     private final AppProperties props;
 
-    public AdminDashboardController(OrderRepository orders, CustomerRepository customers, OrderService orderService,
+    public AdminDashboardController(OrderRepository orders, CustomerRepository customers,
                                     SettingsService settings, Formats formats, SalesStats sales, AppProperties props) {
         this.props = props;
         this.orders = orders;
         this.customers = customers;
-        this.orderService = orderService;
         this.settings = settings;
         this.formats = formats;
         this.sales = sales;
     }
 
     @GetMapping({"", "/"})
-    public String dashboard(@RequestParam(required = false) String month, Model model) {
+    public String dashboard(@RequestParam(required = false) String month,
+                            @RequestParam(defaultValue = "year") String period,
+                            @RequestParam(defaultValue = "all") String way, Model model) {
         LocalDate today = formats.today();
-        List<SalesStats.Sale> done = sales.completed();
+        List<SalesStats.Sale> all = sales.completed();
         YearMonth thisMonth = YearMonth.from(today);
+        String p = PERIODS.stream().anyMatch(c -> c.value().equals(period)) ? period : "year";
+        String w = WAYS.stream().anyMatch(c -> c.value().equals(way)) ? way : "all";
 
         model.addAttribute("waiting", orders.countByStatusIn(EnumSet.of(OrderStatus.NEEDS_REVIEW)));
-        model.addAttribute("toBake", orders.countByStatusIn(EnumSet.of(OrderStatus.APPROVED)));
-        model.addAttribute("readyForPickup", orders.countByStatusIn(EnumSet.of(OrderStatus.BAKED)));
-        model.addAttribute("loavesBooked", orderService.loavesBooked());
+        model.addAttribute("loavesToBake", loaves(OrderStatus.APPROVED));
+        model.addAttribute("loavesToHandOff", loaves(OrderStatus.BAKED));
 
-        YearSales year = sales.yearSales(done);
-        List<SalesStats.Sale> thisYear = done.stream().filter(s -> s.on().getYear() == today.getYear()).toList();
-        BigDecimal monthGross = sum(done.stream().filter(s -> YearMonth.from(s.on()).equals(thisMonth)).toList());
+        // The tax line is about every sale this year, so it ignores the filters below it.
+        YearSales year = sales.yearSales(all);
         model.addAttribute("yearSales", year);
+
+        List<SalesStats.Sale> done = all.stream().filter(s -> w.equals("all")
+                || s.order().getFulfillment().name().equalsIgnoreCase(w)).toList();
+        List<SalesStats.Sale> inPeriod = done.stream().filter(s -> switch (p) {
+            case "month" -> YearMonth.from(s.on()).equals(thisMonth);
+            case "12m" -> !s.on().isBefore(thisMonth.minusMonths(11).atDay(1));
+            case "all" -> true;
+            default -> s.on().getYear() == today.getYear();
+        }).toList();
+        model.addAttribute("period", p);
+        model.addAttribute("way", w);
+        model.addAttribute("periods", PERIODS);
+        model.addAttribute("ways", WAYS);
+        model.addAttribute("periodLabel", PERIODS.stream().filter(c -> c.value().equals(p)).findFirst().orElseThrow().label());
+        model.addAttribute("breakdown", breakdown(inPeriod));
         model.addAttribute("yearPct", Math.min(100, year.gross().multiply(BigDecimal.valueOf(100))
                 .divide(YearSales.TAX, 0, RoundingMode.DOWN).intValue()));
         model.addAttribute("todayText", formats.longDay(today));
-        model.addAttribute("monthGross", monthGross);
-        model.addAttribute("monthName", thisMonth.getMonth().getDisplayName(java.time.format.TextStyle.FULL, Locale.US));
-        model.addAttribute("yearOrders", thisYear.size());
-        model.addAttribute("averageOrder", thisYear.isEmpty() ? BigDecimal.ZERO
-                : year.gross().divide(BigDecimal.valueOf(thisYear.size()), 2, RoundingMode.HALF_UP));
         model.addAttribute("bars", bars(done, thisMonth));
-        model.addAttribute("sellers", sellers(thisYear));
+        model.addAttribute("sellers", sellers(inPeriod));
 
-        List<Customer> all = customers.findAll();
-        model.addAttribute("customerCount", all.size());
-        model.addAttribute("newCustomers", all.stream().filter(c -> c.getCreatedAt() != null
+        List<Customer> people = customers.findAll();
+        model.addAttribute("customerCount", people.size());
+        model.addAttribute("newCustomers", people.stream().filter(c -> c.getCreatedAt() != null
                 && YearMonth.from(c.getCreatedAt().atZone(props.zoneId())).equals(thisMonth)).count());
 
         calendar(month, today, model);
@@ -113,6 +134,30 @@ public class AdminDashboardController {
     public String calendarPage(@RequestParam(required = false) String month) {
         String m = month != null && month.matches("\\d{4}-\\d{2}") ? "?month=" + month : "";
         return "redirect:/admin" + m + "#calendar";
+    }
+
+    private int loaves(OrderStatus status) {
+        return orders.findByStatusInOrderByCreatedAtDesc(EnumSet.of(status)).stream().mapToInt(CustomerOrder::getLoafCount).sum();
+    }
+
+    private static Breakdown breakdown(List<SalesStats.Sale> list) {
+        BigDecimal gross = sum(list);
+        int n = list.size();
+        int pickup = 0, delivery = 0, priority = 0, promo = 0;
+        BigDecimal fees = BigDecimal.ZERO;
+        for (var s : list) {
+            CustomerOrder o = s.order();
+            if (o.getFulfillment() == com.madelmade.domain.Fulfillment.DELIVERY) {
+                delivery++;
+                if (o.getDeliveryFee() != null) fees = fees.add(o.getDeliveryFee());
+            } else {
+                pickup++;
+            }
+            if (o.isPriority()) priority++;
+            if (o.getPromoCode() != null && !o.getPromoCode().isBlank()) promo++;
+        }
+        BigDecimal avg = n == 0 ? BigDecimal.ZERO : gross.divide(BigDecimal.valueOf(n), 2, RoundingMode.HALF_UP);
+        return new Breakdown(n, gross, avg, pickup, delivery, priority, promo, fees);
     }
 
     private static BigDecimal sum(List<SalesStats.Sale> list) {
@@ -137,10 +182,10 @@ public class AdminDashboardController {
         return bars;
     }
 
-    /** What sold most this year, by number ordered. */
-    private static List<Seller> sellers(List<SalesStats.Sale> thisYear) {
+    /** What sold most, by number ordered. */
+    private static List<Seller> sellers(List<SalesStats.Sale> list) {
         Map<String, Integer> counts = new LinkedHashMap<>();
-        for (var s : thisYear) {
+        for (var s : list) {
             for (OrderItem i : s.order().getItems()) counts.merge(i.getProductName(), i.getQuantity(), Integer::sum);
         }
         int max = counts.values().stream().max(Integer::compare).orElse(0);
@@ -172,6 +217,7 @@ public class AdminDashboardController {
             days.add(new Day(d, YearMonth.from(d).equals(ym), d.equals(today), off.contains(d), onDay, loaves));
         }
         model.addAttribute("monthTitle", MONTH.format(ym));
+        model.addAttribute("calMonth", ym.toString());
         model.addAttribute("prev", ym.minusMonths(1).toString());
         model.addAttribute("next", ym.plusMonths(1).toString());
         model.addAttribute("days", days);
