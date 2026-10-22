@@ -130,6 +130,28 @@
     }
   }
 
+  // How it's made: steps ease in as they scroll into view, and videos play only while on screen.
+  var steps = $('.process-steps');
+  if (steps && 'IntersectionObserver' in window) {
+    var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!calm) {
+      steps.classList.add('is-revealing');
+      var reveal = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('is-seen'); reveal.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -10% 0px' });
+      steps.querySelectorAll('.process-step').forEach(function (s) { reveal.observe(s); });
+    }
+    var inView = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { var p = e.target.play(); if (p && p.catch) p.catch(function () {}); } else e.target.pause();
+      });
+    }, { threshold: 0.25 });
+    // With reduced motion, videos wait for a tap on play instead.
+    steps.querySelectorAll('video[data-play-in-view]').forEach(function (v) { if (calm) v.controls = true; else inView.observe(v); });
+  }
+
   // Phone menu.
   var toggle = $('[data-menu-toggle]');
   var mobileNav = $('[data-mobile-nav]');

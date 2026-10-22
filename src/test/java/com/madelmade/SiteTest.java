@@ -7,9 +7,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.madelmade.domain.HeroSlide;
-import com.madelmade.domain.HeroVideo;
+import com.madelmade.domain.Video;
 import com.madelmade.domain.OptionChoice;
+import com.madelmade.domain.ProcessStep;
 import com.madelmade.domain.Product;
+import com.madelmade.repo.ProcessStepRepository;
 import com.madelmade.repo.ProductRepository;
 import com.madelmade.service.HeroService;
 import com.madelmade.service.PricingService;
@@ -54,6 +56,7 @@ class SiteTest {
     @Autowired ProductRepository products;
     @Autowired PricingService pricing;
     @Autowired HeroService hero;
+    @Autowired ProcessStepRepository steps;
 
     @Test
     void homeShowsTheMenu() throws Exception {
@@ -76,11 +79,27 @@ class SiteTest {
         HeroSlide slide = new HeroSlide();
         byte[] mp4 = new byte[2000];
         System.arraycopy("\0\0\0\u0018ftypmp42".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1), 0, mp4, 0, 12);
-        HeroVideo v = hero.saveVideo(slide, mp4, "application/octet-stream");
+        Video v = hero.saveVideo(slide, mp4, "application/octet-stream");
         assertThat(v.getContentType()).isEqualTo("video/mp4");
-        mvc.perform(get("/hero/video/" + v.getId()).header("Range", "bytes=0-99"))
+        mvc.perform(get("/videos/" + v.getId()).header("Range", "bytes=0-99"))
                 .andExpect(status().isPartialContent())
                 .andExpect(content().contentType("video/mp4"));
+    }
+
+    @Test
+    @Transactional
+    void howItsMadeStaysHiddenUntilItHasAStep() throws Exception {
+        steps.deleteAll();
+        mvc.perform(get("/how-its-made")).andExpect(status().isNotFound());
+        mvc.perform(get("/gallery")).andExpect(content().string(Matchers.not(Matchers.containsString("/how-its-made"))));
+        ProcessStep s = new ProcessStep();
+        s.setTitle("Feed the starter");
+        s.setBody("Fresh flour and water.\n\nIt doubles by morning.");
+        steps.save(s);
+        mvc.perform(get("/how-its-made")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Feed the starter")))
+                .andExpect(content().string(Matchers.containsString("<p>It doubles by morning.</p>")));
+        mvc.perform(get("/gallery")).andExpect(content().string(Matchers.containsString("/how-its-made")));
     }
 
     @Test

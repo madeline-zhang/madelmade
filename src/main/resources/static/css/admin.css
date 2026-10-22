@@ -193,3 +193,11 @@ details[open] > .collapsible-head { border-bottom: 1px solid var(--color-linen);
 .hero-admin-crops a { display: flex; flex-direction: column; gap: 4px; text-decoration: none; }
 .hero-admin-thumb { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; background: var(--color-linen, #DDD5C4); }
 .hero-admin-crops .phone .hero-admin-thumb { aspect-ratio: 390 / 580; }
+
+/* How it's made steps */
+.process-admin-list { display: flex; flex-direction: column; gap: 16px; }
+.process-admin-step { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; align-items: start; }
+.process-admin-media img, .process-admin-media video, .process-admin-media .photo-placeholder { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 10px; }
+.process-admin-media .photo-placeholder { display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; }
+.field-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+@media (max-width: 700px) { .process-admin-step { grid-template-columns: 1fr; } .process-admin-media { max-width: 220px; } }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'process')}">
+<head><title>How it's made · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Your process, step by step</div><h1>How it's made</h1></div>
+    <a class="btn btn-secondary btn-small" th:if="${!steps.isEmpty()}" th:href="@{/how-its-made}" target="_blank" rel="noopener">View the page&nbsp;&nbsp;↗</a>
+  </div>
+
+  <div class="alert alert-info" th:if="${steps.isEmpty()}">The page stays hidden, with no link in the menu, until you add the first step.</div>
+
+  <section class="card stack">
+    <h2 class="card-title">Intro at the side</h2>
+    <form method="post" th:action="@{/admin/process/intro}" class="stack" style="gap: 12px" data-autosave>
+      <div class="field-row">
+        <div class="field"><label for="pTitle">Headline</label><input type="text" id="pTitle" name="process.title" maxlength="80" th:value="${settings.get('process.title')}"></div>
+        <div class="field"><label for="pAccent">Headline, in italics</label><input type="text" id="pAccent" name="process.titleAccent" maxlength="60" th:value="${settings.get('process.titleAccent')}"></div>
+      </div>
+      <div class="field"><label for="pIntro">Intro</label><textarea id="pIntro" name="process.intro" rows="4" th:text="${settings.get('process.intro')}"></textarea>
+        <div class="help">Stays on the left while the steps scroll past (on phones it sits above them). Keep it to a few lines.</div></div>
+      <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start" data-autosave-hide>Save</button>
+    </form>
+  </section>
+
+  <section class="stack" style="gap: 16px">
+    <h2 class="card-title" style="margin: 0">Steps</h2>
+    <div class="empty" th:if="${steps.isEmpty()}">No steps yet.</div>
+    <div class="process-admin-list">
+      <div class="card process-admin-step" th:each="s, it : ${steps}" th:id="${'step-' + s.id}">
+        <div class="process-admin-media">
+          <video th:if="${s.video}" muted loop playsinline controls preload="metadata"><source th:src="${videos.url(s.videoId)}"></video>
+          <a th:if="${!s.video and s.photoId != null}" th:href="@{/admin/photos/edit(target=${'step-' + s.id})}" title="Edit photo"><img th:src="${photoUrls.src(s.photoId)}" alt=""></a>
+          <div th:if="${!s.video and s.photoId == null}" class="photo-placeholder">No photo or video yet</div>
+        </div>
+        <div class="stack" style="gap: 12px; min-width: 0">
+          <form method="post" th:action="@{/admin/process/{id}(id=${s.id})}" class="stack" style="gap: 10px" data-autosave>
+            <div class="field"><label th:for="${'t-' + s.id}" th:text="${'Step ' + it.count}">Step 1</label>
+              <input type="text" th:id="${'t-' + s.id}" name="title" maxlength="120" required th:value="${s.title}"></div>
+            <div class="field"><label th:for="${'b-' + s.id}">A few lines</label>
+              <textarea th:id="${'b-' + s.id}" name="body" rows="4" th:text="${s.body}"></textarea></div>
+            <div style="display: flex; gap: 8px; align-items: end; flex-wrap: wrap">
+              <span th:replace="~{admin/arrows :: arrows('', 'this step', ${it.first}, ${it.last})}"></span>
+              <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
+              <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'step-' + s.id})}"
+                 th:text="${s.photoId != null ? 'Edit photo' : (s.video ? 'Use a photo instead' : 'Add a photo')}">Add a photo</a>
+            </div>
+          </form>
+          <form method="post" th:action="@{/admin/process/{id}/video(id=${s.id})}" enctype="multipart/form-data" class="field-inline">
+            <label th:for="${'v-' + s.id}" class="t-small" th:text="${s.video ? 'Replace the video' : 'Or use a looping video'}">Or use a looping video</label>
+            <input type="file" th:id="${'v-' + s.id}" name="file" accept="video/mp4,video/quicktime,video/webm" required>
+            <button type="submit" class="btn btn-secondary btn-small">Upload</button>
+          </form>
+          <div style="display: flex; gap: 16px; flex-wrap: wrap">
+            <form method="post" th:action="@{/admin/process/{id}/remove-media(id=${s.id})}" th:if="${s.video or s.photoId != null}" data-confirm="Remove this step's photo or video?">
+              <button type="submit" class="link-btn" th:text="${s.video ? 'Remove video' : 'Remove photo'}">Remove photo</button></form>
+            <form method="post" th:action="@{/admin/process/{id}/delete(id=${s.id})}" data-confirm="Delete this step?">
+              <button type="submit" class="link-btn">Delete step</button></form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card stack" id="add-step">
+    <h2 class="card-title">Add a step</h2>
+    <form method="post" th:action="@{/admin/process/new}" class="stack" style="gap: 12px">
+      <div class="field"><label for="newTitle">Title</label><input type="text" id="newTitle" name="title" maxlength="120" required placeholder="e.g. Feed the starter"></div>
+      <div class="field"><label for="newBody">A few lines</label><textarea id="newBody" name="body" rows="3" placeholder="e.g. The night before, my starter Manna gets fresh flour and water and doubles by morning."></textarea>
+        <div class="help">Short and simple works best: what's happening and why it matters. You'll add the photo or video next. Videos are better than GIFs: smoother and much smaller. MP4 up to 25 MB.</div></div>
+      <button type="submit" class="btn" style="align-self: flex-start">Add step</button>
+    </form>
+  </section>
+</main>
+</body>
+</html>

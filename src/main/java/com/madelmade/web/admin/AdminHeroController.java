@@ -2,7 +2,7 @@ package com.madelmade.web.admin;
 
 import com.madelmade.domain.HeroSlide;
 import com.madelmade.repo.HeroSlideRepository;
-import com.madelmade.repo.HeroVideoRepository;
+import com.madelmade.repo.VideoRepository;
 import com.madelmade.service.HeroService;
 import com.madelmade.service.SettingsService;
 import com.madelmade.service.UserFacingException;
@@ -25,11 +25,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/hero")
 public class AdminHeroController {
     private final HeroSlideRepository slides;
-    private final HeroVideoRepository videos;
+    private final VideoRepository videos;
     private final HeroService hero;
     private final SettingsService settings;
 
-    public AdminHeroController(HeroSlideRepository slides, HeroVideoRepository videos, HeroService hero, SettingsService settings) {
+    public AdminHeroController(HeroSlideRepository slides, VideoRepository videos, HeroService hero, SettingsService settings) {
         this.slides = slides;
         this.videos = videos;
         this.hero = hero;

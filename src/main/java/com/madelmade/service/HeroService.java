@@ -1,10 +1,8 @@
 package com.madelmade.service;
 
 import com.madelmade.domain.HeroSlide;
-import com.madelmade.domain.HeroVideo;
+import com.madelmade.domain.Video;
 import com.madelmade.repo.HeroSlideRepository;
-import com.madelmade.repo.HeroVideoRepository;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -16,23 +14,21 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class HeroService {
-    static final int MAX_VIDEO = 25 * 1024 * 1024;
-
     /** What the home page needs for one slide. phone is the phone crop, or the computer photo when there is none. */
     public record Slide(String computer, String phone, String videoUrl, String alt) {
         public boolean isVideo() { return videoUrl != null; }
     }
 
     private final HeroSlideRepository slides;
-    private final HeroVideoRepository videos;
+    private final VideoService videoService;
     private final PhotoUrls photoUrls;
     private final PhotoService photos;
     private final SettingsService settings;
 
-    public HeroService(HeroSlideRepository slides, HeroVideoRepository videos, PhotoUrls photoUrls, PhotoService photos,
+    public HeroService(HeroSlideRepository slides, VideoService videoService, PhotoUrls photoUrls, PhotoService photos,
                        SettingsService settings) {
         this.slides = slides;
-        this.videos = videos;
+        this.videoService = videoService;
         this.photoUrls = photoUrls;
         this.photos = photos;
         this.settings = settings;
@@ -51,31 +47,15 @@ public class HeroService {
     }
 
     public String videoUrl(Long id) {
-        return "/hero/video/" + id + "?v=" + videos.findUpdatedAt(id).map(Instant::toEpochMilli).orElse(0L);
+        return videoService.url(id);
     }
 
     /** Saves an uploaded video, replacing the one already on the slide if there is one. */
     @Transactional
-    public HeroVideo saveVideo(HeroSlide slide, byte[] data, String contentType) {
-        if (data == null || data.length == 0) throw new UserFacingException("Please choose a video.");
-        if (data.length > MAX_VIDEO) throw new UserFacingException("That video is too large (25 MB max). A short clip exported as MP4 is usually well under that.");
-        String type = videoType(data, contentType);
-        if (type == null) throw new UserFacingException("That file doesn't look like an MP4, MOV or WebM video.");
-        HeroVideo v = slide.getVideoId() == null ? new HeroVideo() : videos.findById(slide.getVideoId()).orElseGet(HeroVideo::new);
-        v.setData(data);
-        v.setContentType(type);
-        v.setUpdatedAt(Instant.now());
-        v = videos.save(v);
+    public Video saveVideo(HeroSlide slide, byte[] data, String contentType) {
+        Video v = videoService.save(slide.getVideoId(), data, contentType);
         slide.setVideoId(v.getId());
         return v;
-    }
-
-    static String videoType(byte[] b, String declared) {
-        if (b.length > 12 && b[4] == 'f' && b[5] == 't' && b[6] == 'y' && b[7] == 'p') {
-            return b[8] == 'q' && b[9] == 't' ? "video/quicktime" : "video/mp4";
-        }
-        if (b.length > 4 && (b[0] & 0xFF) == 0x1A && (b[1] & 0xFF) == 0x45 && (b[2] & 0xFF) == 0xDF && (b[3] & 0xFF) == 0xA3) return "video/webm";
-        return declared != null && declared.startsWith("video/") && declared.length() <= 60 ? declared : null;
     }
 
     /** Starts the hero with Miriam and the stenciled "Made" loaf, once. Removing them later doesn't bring them back. */

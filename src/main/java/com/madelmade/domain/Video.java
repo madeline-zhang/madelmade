@@ -3,10 +3,10 @@ package com.madelmade.domain;
 import jakarta.persistence.*;
 import java.time.Instant;
 
-/** A hero video, kept apart from the slides so listing slides never loads the video itself. */
+/** A looping video (home page hero, How it's made steps), kept apart so listing slides or steps never loads it. */
 @Entity
-@Table(name = "hero_video")
-public class HeroVideo {
+@Table(name = "video")
+public class Video {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
