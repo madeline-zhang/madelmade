@@ -3,6 +3,7 @@
 <head><title>How it's made · MadelMade admin</title></head>
 <body>
 <main id="main" class="admin-main">
+  <div th:replace="~{admin/site-tabs :: tabs('process')}"></div>
   <div class="admin-head">
     <div class="stack" style="gap: 4px"><div class="t-eyebrow">Your process, step by step</div><h1>How it's made</h1></div>
     <a class="btn btn-secondary btn-small" th:if="${!steps.isEmpty()}" th:href="@{/how-its-made}" target="_blank" rel="noopener">View the page&nbsp;&nbsp;↗</a>
@@ -31,32 +32,31 @@
         <div class="process-admin-media">
           <video th:if="${s.video}" muted loop playsinline controls preload="metadata"><source th:src="${videos.url(s.videoId)}"></video>
           <a th:if="${!s.video and s.photoId != null}" th:href="@{/admin/photos/edit(target=${'step-' + s.id})}" title="Edit photo"><img th:src="${photoUrls.src(s.photoId)}" alt=""></a>
-          <div th:if="${!s.video and s.photoId == null}" class="photo-placeholder">No photo or video yet</div>
+          <a th:if="${!s.video and s.photoId == null}" th:href="@{/admin/photos/edit(target=${'step-' + s.id})}" class="photo-placeholder">+ Add a photo</a>
+          <div class="process-admin-media-btns">
+            <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'step-' + s.id})}"
+               th:text="${s.photoId != null ? 'Edit photo' : (s.video ? 'Use a photo' : 'Add photo')}">Add photo</a>
+            <form method="post" th:action="@{/admin/process/{id}/video(id=${s.id})}" enctype="multipart/form-data">
+              <label class="btn btn-secondary btn-small file-btn"><span th:text="${s.video ? 'Replace video' : 'Add video'}">Add video</span>
+                <input type="file" class="visually-hidden" name="file" accept="video/mp4,video/quicktime,video/webm" required data-autosubmit></label>
+            </form>
+            <form method="post" th:action="@{/admin/process/{id}/remove-media(id=${s.id})}" th:if="${s.video or s.photoId != null}" data-confirm="Remove this step's photo or video?">
+              <button type="submit" class="link-btn" th:text="${s.video ? 'Remove video' : 'Remove photo'}">Remove photo</button></form>
+          </div>
         </div>
         <div class="stack" style="gap: 12px; min-width: 0">
-          <form method="post" th:action="@{/admin/process/{id}(id=${s.id})}" class="stack" style="gap: 10px" data-autosave>
+          <form method="post" th:action="@{/admin/process/{id}(id=${s.id})}" class="stack" style="gap: 10px" data-autosave th:id="${'stepform-' + s.id}">
             <div class="field"><label th:for="${'t-' + s.id}" th:text="${'Step ' + it.count}">Step 1</label>
               <input type="text" th:id="${'t-' + s.id}" name="title" maxlength="120" required th:value="${s.title}"></div>
             <div class="field"><label th:for="${'b-' + s.id}">A few lines</label>
-              <textarea th:id="${'b-' + s.id}" name="body" rows="4" th:text="${s.body}"></textarea></div>
-            <div style="display: flex; gap: 8px; align-items: end; flex-wrap: wrap">
+              <textarea th:id="${'b-' + s.id}" name="body" rows="5" th:text="${s.body}"></textarea></div>
+            <div class="process-admin-foot">
               <span th:replace="~{admin/arrows :: arrows('', 'this step', ${it.first}, ${it.last})}"></span>
               <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
-              <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'step-' + s.id})}"
-                 th:text="${s.photoId != null ? 'Edit photo' : (s.video ? 'Use a photo instead' : 'Add a photo')}">Add a photo</a>
+              <button type="submit" class="link-btn" th:form="${'del-' + s.id}" style="margin-left: auto">Delete step</button>
             </div>
           </form>
-          <form method="post" th:action="@{/admin/process/{id}/video(id=${s.id})}" enctype="multipart/form-data" class="field-inline">
-            <label th:for="${'v-' + s.id}" class="t-small" th:text="${s.video ? 'Replace the video' : 'Or use a looping video'}">Or use a looping video</label>
-            <input type="file" th:id="${'v-' + s.id}" name="file" accept="video/mp4,video/quicktime,video/webm" required>
-            <button type="submit" class="btn btn-secondary btn-small">Upload</button>
-          </form>
-          <div style="display: flex; gap: 16px; flex-wrap: wrap">
-            <form method="post" th:action="@{/admin/process/{id}/remove-media(id=${s.id})}" th:if="${s.video or s.photoId != null}" data-confirm="Remove this step's photo or video?">
-              <button type="submit" class="link-btn" th:text="${s.video ? 'Remove video' : 'Remove photo'}">Remove photo</button></form>
-            <form method="post" th:action="@{/admin/process/{id}/delete(id=${s.id})}" data-confirm="Delete this step?">
-              <button type="submit" class="link-btn">Delete step</button></form>
-          </div>
+          <form method="post" th:action="@{/admin/process/{id}/delete(id=${s.id})}" th:id="${'del-' + s.id}" data-confirm="Delete this step?"></form>
         </div>
       </div>
     </div>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'dashboard')}">
+<head><title>Dashboard · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow" th:text="${todayText}">Thursday, October 22</div><h1>Dashboard</h1></div>
+    <a class="btn btn-secondary btn-small" th:href="@{/admin/orders}">Go to orders</a>
+  </div>
+
+  <div th:if="${yearSales.message != null}" class="alert" th:classappend="${'alert-' + yearSales.level}">
+    <span th:text="${yearSales.message}">Sales are over $3,000 this year.</span>
+    <a th:href="@{/admin/settings#sales-tax}" th:if="${yearSales.level == 'error'}">Sales tax settings</a>
+  </div>
+
+  <div class="dash-tiles">
+    <a class="dash-tile" th:classappend="${waiting > 0} ? 'is-alert'" th:href="@{/admin/orders(tab='review')}">
+      <span class="label">Waiting for you</span>
+      <span class="value" th:text="${waiting}">2</span>
+      <span class="sub" th:text="${waiting == 1 ? 'new order to review' : 'new orders to review'}">new orders to review</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/orders(tab='approved')}">
+      <span class="label">Loaves booked</span>
+      <span class="value"><span th:text="${loavesBooked}">2</span><small th:text="${' of ' + settings.maxLoaves()}"> of 3</small></span>
+      <span class="sub" th:text="${toBake + ' to bake · ' + readyForPickup + ' ready to hand over'}">1 to bake · 1 ready to hand over</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/orders(tab='completed')}">
+      <span class="label" th:text="${'Sales in ' + monthName}">Sales in October</span>
+      <span class="value" th:text="${@money.fmt(monthGross)}">$120</span>
+      <span class="sub">Picked up or delivered, before tax</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/orders(tab='completed')}">
+      <span class="label" th:text="${'Sales in ' + yearSales.year}">Sales in 2026</span>
+      <span class="value" th:text="${@money.fmt(yearSales.gross)}">$420</span>
+      <span class="meter" th:title="${'Tennessee sales tax registration starts above $4,800'}">
+        <span class="fill" th:style="${'width: ' + yearPct + '%'}"></span>
+        <span class="mark" style="left: 62.5%"></span></span>
+      <span class="sub" th:text="${yearOrders + (yearOrders == 1 ? ' order' : ' orders') + (yearOrders > 0 ? ' · ' + @money.fmt(averageOrder) + ' average' : '') + ' · tax line at $4,800'}">12 orders · $35 average</span>
+    </a>
+    <a class="dash-tile" th:href="@{/admin/customers}">
+      <span class="label">Customers</span>
+      <span class="value" th:text="${customerCount}">14</span>
+      <span class="sub" th:text="${'With accounts · ' + newCustomers + ' new this month'}">3 new this month</span>
+    </a>
+  </div>
+
+  <div class="dash-row">
+    <section class="card stack dash-chart-card">
+      <div class="dash-card-head"><h2 class="card-title">Sales by month</h2><span class="t-small muted">Last 12 months, before tax</span></div>
+      <div class="bar-chart" aria-hidden="true">
+        <div class="bar-col" th:each="b, it : ${bars}" th:classappend="${it.last} ? 'is-now'" tabindex="0">
+          <span class="bar-tip" th:text="${b.title + ': ' + @money.fmt(b.amount) + ' · ' + b.orders + (b.orders == 1 ? ' order' : ' orders')}">October 2026: $120 · 4 orders</span>
+          <span class="bar-val" th:if="${b.pct == 100 and b.amount.signum() > 0}" th:text="${@money.fmt(b.amount)}">$300</span>
+          <span class="bar" th:style="${'height: ' + b.height + '%'}"></span>
+          <span class="bar-label" th:text="${b.label}">Oct</span>
+        </div>
+      </div>
+      <table class="visually-hidden">
+        <caption>Sales by month</caption>
+        <tr><th scope="col">Month</th><th scope="col">Sales</th><th scope="col">Orders</th></tr>
+        <tr th:each="b : ${bars}"><td th:text="${b.title}">October 2026</td><td th:text="${@money.fmt(b.amount)}">$120</td><td th:text="${b.orders}">4</td></tr>
+      </table>
+    </section>
+
+    <section class="card stack">
+      <div class="dash-card-head"><h2 class="card-title">Most ordered</h2><span class="t-small muted" th:text="${'In ' + yearSales.year}">In 2026</span></div>
+      <div class="empty" th:if="${sellers.isEmpty()}">Shows up once orders are picked up or delivered.</div>
+      <div class="seller" th:each="s : ${sellers}">
+        <div class="row"><span th:text="${s.name}">Stencil Loaf</span><strong th:text="${s.count}">8</strong></div>
+        <span class="seller-bar"><span th:style="${'width: ' + s.pct + '%'}"></span></span>
+      </div>
+    </section>
+  </div>
+
+  <section class="stack" id="calendar" style="gap: 16px">
+    <div class="admin-head">
+      <div class="stack" style="gap: 4px"><div class="t-eyebrow">Bake days</div><h2 class="dash-h2" th:text="${monthTitle}">October 2026</h2></div>
+      <div class="admin-tools">
+        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${prev})} + '#calendar'" aria-label="Previous month">←</a>
+        <a class="btn btn-secondary btn-small" th:href="@{/admin} + '#calendar'">Today</a>
+        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${next})} + '#calendar'" aria-label="Next month">→</a>
+      </div>
+    </div>
+
+    <div class="calendar">
+      <div class="dow" th:each="d : ${ {'Sun','Mon','Tue','Wed','Thu','Fri','Sat'} }" th:text="${d}">Sun</div>
+      <div class="day" th:each="d : ${days}" th:classappend="${(d.inMonth ? '' : ' is-other') + (d.today ? ' is-today' : '') + (d.off ? ' is-off' : '')}">
+        <div class="num"><span th:text="${d.date.dayOfMonth}">12</span>
+          <span class="load" th:if="${d.loaves > 0}" th:text="${d.loaves + (d.loaves == 1 ? ' loaf' : ' loaves')}">2 loaves</span>
+          <span class="muted" th:if="${d.off and d.loaves == 0}">Off</span></div>
+        <a th:each="o : ${d.orders}" class="ev" th:classappend="${'badge-' + o.status.badge}" th:href="@{/admin/orders/{id}(id=${o.id},tab='all')}"
+           th:text="${o.contactName + ' · ' + o.itemsSummary}" th:title="${o.status.label}">Sarah · Stencil</a>
+      </div>
+    </div>
+    <p class="t-small muted" style="margin: 0">Striped days are your days off. Change them in <a th:href="@{/admin/settings}">Settings</a>.</p>
+  </section>
+
+  <section class="stack" style="gap: 12px">
+    <h2 class="card-title">Coming up in the next two weeks</h2>
+    <div class="empty" th:if="${upcoming.isEmpty()}">Nothing booked for the next two weeks.</div>
+    <div class="dash-upcoming">
+      <a th:each="o : ${upcoming}" class="order-card" th:href="@{/admin/orders/{id}(id=${o.id},tab='all')}">
+        <div class="row"><span class="who" th:text="${o.contactName}">Sarah Kim</span>
+          <span th:replace="~{components/status-badge :: badge(${o.status}, false)}"></span></div>
+        <div class="what" th:text="${o.itemsSummary}">Stencil Loaf</div>
+        <div class="row"><span class="meta" th:text="${o.fulfillment.label + ' · ' + @fmt.longDay(o.requestedDate)}">Pickup · Saturday</span>
+          <span class="amount" th:text="${@money.fmt(o.total)}">$16</span></div>
+      </a>
+    </div>
+  </section>
+</main>
+</body>
+</html>

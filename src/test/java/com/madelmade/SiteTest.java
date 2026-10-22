@@ -115,6 +115,20 @@ class SiteTest {
     }
 
     @Test
+    void adminLandsOnTheDashboardWithTheCalendar() throws Exception {
+        var admin = org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+                .user("madeline@example.com").roles("ADMIN");
+        mvc.perform(get("/admin").with(admin)).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Sales by month")))
+                .andExpect(content().string(Matchers.containsString("Bake days")));
+        mvc.perform(get("/admin/calendar").param("month", "2026-11").with(admin))
+                .andExpect(redirectedUrl("/admin?month=2026-11#calendar"));
+        mvc.perform(get("/admin/process").with(admin)).andExpect(status().isOk());
+        mvc.perform(get("/admin/hero").with(admin)).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.not(Matchers.containsString("Phone crop</a>"))));
+    }
+
+    @Test
     void unknownOrderIsNotFound() throws Exception {
         mvc.perform(get("/o/not-a-real-token")).andExpect(status().isNotFound());
     }

@@ -9,7 +9,6 @@ import com.madelmade.repo.OrderRepository;
 import com.madelmade.service.Formats;
 import com.madelmade.service.Money;
 import com.madelmade.service.OrderService;
-import com.madelmade.service.SettingsService;
 import com.madelmade.service.UserFacingException;
 import com.madelmade.web.NotFoundException;
 import java.math.BigDecimal;
@@ -63,21 +62,16 @@ public class AdminOrdersController {
     private final Formats formats;
     private final Money money;
     private final AppProperties props;
-    private final SettingsService settings;
+    private final SalesStats sales;
 
     public AdminOrdersController(OrderRepository orders, OrderService orderService, Formats formats, Money money,
-                                 AppProperties props, SettingsService settings) {
+                                 AppProperties props, SalesStats sales) {
+        this.sales = sales;
         this.orders = orders;
         this.orderService = orderService;
         this.formats = formats;
         this.money = money;
         this.props = props;
-        this.settings = settings;
-    }
-
-    @GetMapping({"", "/"})
-    public String home() {
-        return "redirect:/admin/orders";
     }
 
     @GetMapping("/orders")
@@ -121,7 +115,6 @@ public class AdminOrdersController {
         model.addAttribute("selected", selected);
         model.addAttribute("todayText", TODAY.format(formats.today()));
         model.addAttribute("inProgress", orderService.loavesBooked());
-        model.addAttribute("yearSales", yearSales());
         if (selected != null) contactLinks(selected, model);
         return "admin/orders";
     }
@@ -251,7 +244,7 @@ public class AdminOrdersController {
         List<CustomerOrder> all = new ArrayList<>(orders.findAllByOrderByCreatedAtDesc());
         java.util.Collections.reverse(all);
         for (CustomerOrder o : all) {
-            LocalDate done = completedOn(o);
+            LocalDate done = sales.completedOn(o);
             if ((from != null || to != null) && (done == null || from != null && done.isBefore(from) || to != null && done.isAfter(to))) continue;
             BigDecimal[] row = {o.getSubtotal(), o.getDiscount(), o.getPriorityFee(), o.getDeliveryFee() == null ? BigDecimal.ZERO : o.getDeliveryFee(),
                     o.getAdjustment(), o.getTaxablePrepared(), o.getTaxableFood(), o.getNonTaxable(), o.getStateTax(), o.getLocalTax(), o.getTax()};
@@ -287,26 +280,6 @@ public class AdminOrdersController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + ".csv\"")
                 .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
                 .body(sb.toString());
-    }
-
-    /** Gross sales before tax for orders completed this calendar year; cancelled and declined orders never count. */
-    private YearSales yearSales() {
-        int year = formats.today().getYear();
-        BigDecimal gross = BigDecimal.ZERO;
-        for (CustomerOrder o : orders.findByStatusInOrderByCreatedAtDesc(EnumSet.of(OrderStatus.COMPLETED))) {
-            LocalDate done = completedOn(o);
-            if (done != null && done.getYear() == year) gross = gross.add(o.getPreTaxTotal());
-        }
-        return YearSales.of(year, gross, settings.taxRates().enabled());
-    }
-
-    /** The day an order was picked up or delivered, from its history. */
-    private LocalDate completedOn(CustomerOrder o) {
-        LocalDate d = null;
-        for (var e : o.getEvents()) {
-            if (e.getNewStatus() == OrderStatus.COMPLETED) d = e.getCreatedAt().atZone(props.zoneId()).toLocalDate();
-        }
-        return o.getStatus() == OrderStatus.COMPLETED ? d : null;
     }
 
     private static String rate(CustomerOrder o, BigDecimal r) {
