@@ -76,9 +76,9 @@
     <div class="admin-head">
       <div class="stack" style="gap: 4px"><div class="t-eyebrow">Bake days</div><h2 class="dash-h2" th:text="${monthTitle}">October 2026</h2></div>
       <div class="admin-tools">
-        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${prev})} + '#calendar'" aria-label="Previous month">←</a>
-        <a class="btn btn-secondary btn-small" th:href="@{/admin} + '#calendar'">Today</a>
-        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${next})} + '#calendar'" aria-label="Next month">→</a>
+        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${prev})}" data-keep-scroll aria-label="Previous month">←</a>
+        <a class="btn btn-secondary btn-small" th:href="@{/admin}" data-keep-scroll>Today</a>
+        <a class="btn btn-secondary btn-small" th:href="@{/admin(month=${next})}" data-keep-scroll aria-label="Next month">→</a>
       </div>
     </div>
 

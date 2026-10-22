@@ -15,8 +15,9 @@ spring:
     enabled: true
   servlet:
     multipart:
-      max-file-size: 25MB
-      max-request-size: 30MB
+      # Well above the 25 MB the site accepts, so a too-big file reaches the page and gets a clear message.
+      max-file-size: 100MB
+      max-request-size: 110MB
   thymeleaf:
     cache: ${THYMELEAF_CACHE:true}
 
@@ -31,6 +32,9 @@ server:
         same-site: lax
   compression:
     enabled: true
+  tomcat:
+    # Read the rest of an oversized upload so the browser gets the error page instead of a dropped connection.
+    max-swallow-size: -1
 
 management:
   endpoints:

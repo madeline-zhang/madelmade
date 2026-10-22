@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Something went wrong · MadelMade</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/img/madelmade-logo-simple.svg}">
+  <link rel="stylesheet" th:href="@{/css/tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+<main id="main" class="page">
+  <div class="wrap stack page-narrow" style="gap: 16px; padding: 96px 0; text-align: center; align-items: center">
+    <div class="t-eyebrow" th:text="${status}">500</div>
+    <h1 class="t-section" th:text="${status == 404 ? 'That page isn''t here' : (status == 403 ? 'That page is private' : (status == 413 ? 'That file is too big' : 'Something went wrong'))}">Something went wrong</h1>
+    <p class="muted" th:text="${status == 404 ? 'It may have moved, or the link has a typo.' : (status == 403 ? 'Try signing in, or go back and try again.' : (status == 413 ? 'Uploads can be up to 25 MB. Go back and choose a smaller file.' : 'Please go back and try again. If it keeps happening, email madelmadewithlove@gmail.com.'))}">Please go back and try again.</p>
+    <a class="btn" th:href="@{/}">Back to MadelMade</a>
+  </div>
+</main>
+</body>
+</html>

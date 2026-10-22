@@ -47,9 +47,9 @@ public class AdminHeroController {
     public String timing(@RequestParam String seconds, @RequestParam String fade, RedirectAttributes flash) {
         Double s = number(seconds), f = number(fade);
         if (s == null || s < 3 || s > 60) {
-            flash.addFlashAttribute("error", "Time on each should be between 3 and 60 seconds.");
+            flash.addFlashAttribute("errors", java.util.List.of("Time on each should be between 3 and 60 seconds."));
         } else if (f == null || f < 0 || f > 5) {
-            flash.addFlashAttribute("error", "The fade should be between 0 and 5 seconds.");
+            flash.addFlashAttribute("errors", java.util.List.of("The fade should be between 0 and 5 seconds."));
         } else {
             settings.putAll(Map.of("hero.seconds", String.valueOf(Math.round(s)), "hero.fade", plain(f)));
             flash.addFlashAttribute("ok", "Saved.");
@@ -78,7 +78,7 @@ public class AdminHeroController {
         try {
             hero.saveVideo(s, file.getBytes(), file.getContentType());
         } catch (UserFacingException e) {
-            flash.addFlashAttribute("error", String.join(" ", e.getMessages()));
+            flash.addFlashAttribute("errors", e.getMessages());
             return "redirect:/admin/hero";
         }
         if (slide == null) {

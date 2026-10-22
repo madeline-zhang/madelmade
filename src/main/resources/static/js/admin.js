@@ -139,6 +139,25 @@
     window.addEventListener('pagehide', function () { if (timer) save(false, true); });
   });
 
+  // Files over the 25 MB upload limit are caught here, before a long upload that would only be refused.
+  var MAX_UPLOAD = 25 * 1024 * 1024;
+  document.addEventListener('change', function (e) {
+    var input = e.target;
+    if (!input || input.type !== 'file' || !input.files || !input.files[0]) return;
+    var form = input.form;
+    var note = form && form.querySelector('.upload-too-big');
+    if (note) note.remove();
+    if (input.files[0].size <= MAX_UPLOAD) return;
+    e.stopImmediatePropagation();
+    var mb = Math.round(input.files[0].size / 1024 / 1024);
+    input.value = '';
+    note = document.createElement('p');
+    note.className = 'upload-too-big alert alert-error';
+    note.setAttribute('role', 'alert');
+    note.textContent = 'That file is ' + mb + ' MB, over the 25 MB limit. Trim it shorter or save it at a lower resolution, then try again.';
+    if (form) form.appendChild(note);
+  }, true);
+
   // Switches that save as soon as they're flipped.
   document.querySelectorAll('[data-autosubmit]').forEach(function (el) {
     el.addEventListener('change', function () { if (el.form.requestSubmit) el.form.requestSubmit(); else el.form.submit(); });

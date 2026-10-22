@@ -32,7 +32,7 @@ public class PhotoService {
         this.urls = urls;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = UserFacingException.class)
     public Photo create(byte[] original, String originalType, byte[] edited, EditSettings s) {
         Photo p = new Photo();
         if (original == null || original.length == 0) throw new UserFacingException("Please choose a photo.");
@@ -45,7 +45,7 @@ public class PhotoService {
         return saved;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = UserFacingException.class)
     public Photo update(Photo p, byte[] edited, EditSettings s) {
         apply(p, edited, s);
         p.setUpdatedAt(Instant.now());

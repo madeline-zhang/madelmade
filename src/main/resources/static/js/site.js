@@ -422,6 +422,16 @@
       }));
     } catch (err) { /* storage blocked: fall back to the browser's default */ }
   });
+  // Links like the calendar's month arrows reload the same page, so they stay put too.
+  $$('a[data-keep-scroll]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      try {
+        sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
+          from: location.pathname, to: new URL(a.href).pathname, y: window.scrollY, at: Date.now()
+        }));
+      } catch (err) { /* storage blocked */ }
+    });
+  });
   try {
     var saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || 'null');
     sessionStorage.removeItem(SCROLL_KEY);

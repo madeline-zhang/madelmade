@@ -51,7 +51,7 @@ public class HeroService {
     }
 
     /** Saves an uploaded video, replacing the one already on the slide if there is one. */
-    @Transactional
+    @Transactional(noRollbackFor = UserFacingException.class)
     public Video saveVideo(HeroSlide slide, byte[] data, String contentType) {
         Video v = videoService.save(slide.getVideoId(), data, contentType);
         slide.setVideoId(v.getId());

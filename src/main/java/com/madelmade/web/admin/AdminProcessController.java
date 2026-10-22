@@ -60,7 +60,7 @@ public class AdminProcessController {
     @Transactional
     public String add(@RequestParam String title, @RequestParam(required = false) String body, RedirectAttributes flash) {
         if (title == null || title.isBlank()) {
-            flash.addFlashAttribute("error", "Give the step a title.");
+            flash.addFlashAttribute("errors", java.util.List.of("Give the step a title."));
             return "redirect:/admin/process#add-step";
         }
         ProcessStep s = new ProcessStep();
@@ -81,7 +81,7 @@ public class AdminProcessController {
         if (title != null && !title.isBlank()) s.setTitle(trim(title, 120));
         if (body != null) s.setBody(body.isBlank() ? null : body.trim());
         if (move != null) Ordering.move(steps.findAllByOrderByDisplayOrderAscIdAsc(), s, move, ProcessStep::setDisplayOrder);
-        else if (title != null && title.isBlank()) flash.addFlashAttribute("error", "A step needs a title, so the old one was kept.");
+        else if (title != null && title.isBlank()) flash.addFlashAttribute("errors", java.util.List.of("A step needs a title, so the old one was kept."));
         else flash.addFlashAttribute("ok", "Saved.");
         steps.save(s);
         return "redirect:/admin/process#step-" + s.getId();
@@ -99,7 +99,7 @@ public class AdminProcessController {
             steps.save(s);
             flash.addFlashAttribute("ok", "Video saved.");
         } catch (UserFacingException e) {
-            flash.addFlashAttribute("error", String.join(" ", e.getMessages()));
+            flash.addFlashAttribute("errors", e.getMessages());
         }
         return "redirect:/admin/process#step-" + s.getId();
     }

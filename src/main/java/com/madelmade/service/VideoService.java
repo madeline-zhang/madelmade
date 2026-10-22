@@ -21,11 +21,11 @@ public class VideoService {
         return "/videos/" + id + "?v=" + videos.findUpdatedAt(id).map(Instant::toEpochMilli).orElse(0L);
     }
 
-    /** Saves an upload, replacing the video with existingId when there is one. */
-    @Transactional
+    /** Saves an upload, replacing the video with existingId when there is one. A refused file leaves the page's other changes alone. */
+    @Transactional(noRollbackFor = UserFacingException.class)
     public Video save(Long existingId, byte[] data, String contentType) {
         if (data == null || data.length == 0) throw new UserFacingException("Please choose a video.");
-        if (data.length > MAX_VIDEO) throw new UserFacingException("That video is too large (25 MB max). A short clip exported as MP4 is usually well under that.");
+        if (data.length > MAX_VIDEO) throw new UserFacingException("That video is over the 25 MB limit, so it wasn't uploaded. Trim it shorter or save it at a lower resolution, then try again.");
         String type = type(data, contentType);
         if (type == null) throw new UserFacingException("That file doesn't look like an MP4, MOV or WebM video.");
         Video v = existingId == null ? new Video() : videos.findById(existingId).orElseGet(Video::new);
