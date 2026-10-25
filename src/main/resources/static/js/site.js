@@ -103,6 +103,33 @@
     onScroll();
   }
 
+  // Home hero: slides take turns. Videos play only while showing. With reduced motion, the first slide stays.
+  var hero = $('[data-hero]');
+  if (hero) {
+    var slides = Array.prototype.slice.call(hero.querySelectorAll('[data-hero-slide]'));
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var play = function (slide, on) {
+      var v = slide.querySelector('video');
+      if (!v) return;
+      if (on && !still) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else v.pause();
+    };
+    if (slides.length) play(slides[0], true);
+    var seconds = parseFloat(hero.dataset.seconds) || 10;
+    if (slides.length > 1 && !still) {
+      var current = 0;
+      setInterval(function () {
+        if (document.hidden) return;
+        var prev = slides[current];
+        current = (current + 1) % slides.length;
+        play(slides[current], true);
+        slides[current].classList.add('is-on');
+        prev.classList.remove('is-on');
+        // Let the previous video finish fading before pausing it.
+        setTimeout(function () { if (!prev.classList.contains('is-on')) play(prev, false); }, 4000);
+      }, Math.max(2, seconds) * 1000);
+    }
+  }
+
   // Phone menu.
   var toggle = $('[data-menu-toggle]');
   var mobileNav = $('[data-mobile-nav]');
