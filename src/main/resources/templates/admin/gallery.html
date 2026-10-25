@@ -3,6 +3,7 @@
 <head><title>Gallery · MadelMade admin</title></head>
 <body>
 <main id="main" class="admin-main">
+  <div th:replace="~{admin/site-tabs :: tabs('gallery')}"></div>
   <div class="admin-head">
     <div class="stack" style="gap: 4px"><div class="t-eyebrow">Past bakes</div><h1>Gallery</h1></div>
     <a class="btn btn-secondary btn-small" th:href="@{/admin/pages}">Edit the gallery's headings</a>

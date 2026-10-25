@@ -3,6 +3,7 @@
 <head><title>Home page · MadelMade admin</title></head>
 <body>
 <main id="main" class="admin-main">
+  <div th:replace="~{admin/site-tabs :: tabs('hero')}"></div>
   <div class="admin-head">
     <div class="stack" style="gap: 4px"><div class="t-eyebrow">The big picture at the top</div><h1>Home page</h1></div>
     <a class="btn btn-secondary btn-small" th:href="@{/}" target="_blank" rel="noopener">View home page&nbsp;&nbsp;↗</a>
@@ -25,7 +26,7 @@
   <section class="stack" style="gap: 16px">
     <div class="admin-head">
       <div class="stack" style="gap: 4px"><h2 class="card-title" style="margin: 0">Photos and videos</h2>
-        <p class="t-small muted" style="margin: 0">Shown in this order. Each photo has a wide crop for computers and a tall crop for phones.</p></div>
+        <p class="t-small muted" style="margin: 0">Shown in this order. Each photo has a wide crop for computers and a tall crop for phones. Click either picture to edit it.</p></div>
       <a class="btn" th:href="@{/admin/photos/edit(target='hero-new')}">Add a photo</a>
     </div>
 
@@ -35,11 +36,10 @@
       <div class="card stack" style="padding: 14px; gap: 12px" th:each="s, it : ${slides}" th:id="${'slide-' + s.id}">
         <th:block th:if="${s.video}">
           <video class="hero-admin-thumb" muted loop playsinline controls preload="metadata"><source th:src="${hero.videoUrl(s.videoId)}"></video>
-          <form method="post" th:action="@{/admin/hero/video}" enctype="multipart/form-data" class="stack" style="gap: 8px">
+          <form method="post" th:action="@{/admin/hero/video}" enctype="multipart/form-data">
             <input type="hidden" name="slide" th:value="${s.id}">
-            <div class="field"><label th:for="${'vid-' + s.id}">Replace the video</label>
-              <input type="file" th:id="${'vid-' + s.id}" name="file" accept="video/mp4,video/quicktime,video/webm" required></div>
-            <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Upload</button>
+            <label class="btn btn-secondary btn-small file-btn">Replace video
+              <input type="file" class="visually-hidden" name="file" accept="video/mp4,video/quicktime,video/webm" required data-autosubmit></label>
           </form>
         </th:block>
         <th:block th:unless="${s.video}">
@@ -59,10 +59,6 @@
           <div style="display: flex; gap: 8px; align-items: end; flex-wrap: wrap">
             <span th:replace="~{admin/arrows :: arrows('', 'this slide', ${it.first}, ${it.last})}"></span>
             <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
-            <th:block th:unless="${s.video}">
-              <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'hero-' + s.id})}">Computer crop</a>
-              <a class="btn btn-secondary btn-small" th:href="@{/admin/photos/edit(target=${'heroPhone-' + s.id})}">Phone crop</a>
-            </th:block>
           </div>
         </form>
         <form method="post" th:action="@{/admin/hero/{id}/delete(id=${s.id})}" data-confirm="Take this off the home page?">

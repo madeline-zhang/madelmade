@@ -56,6 +56,9 @@ public class SettingsService {
         DEFAULTS.put("hero.seconds", "10");
         DEFAULTS.put("hero.fade", "2");
         DEFAULTS.put("hero.seeded", "false");
+        DEFAULTS.put("process.title", "How it's");
+        DEFAULTS.put("process.titleAccent", "made");
+        DEFAULTS.put("process.intro", "Every loaf takes about three days, from feeding the starter to the last score. Here's what happens in my kitchen before yours arrives.");
         DEFAULTS.put("photos.brightness", "0");
         DEFAULTS.put("photos.contrast", "0");
         DEFAULTS.put("photos.saturation", "0");

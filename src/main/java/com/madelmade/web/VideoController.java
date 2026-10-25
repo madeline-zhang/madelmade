@@ -1,7 +1,7 @@
 package com.madelmade.web;
 
-import com.madelmade.domain.HeroVideo;
-import com.madelmade.repo.HeroVideoRepository;
+import com.madelmade.domain.Video;
+import com.madelmade.repo.VideoRepository;
 import java.time.Duration;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -14,17 +14,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class HeroVideoController {
-    private final HeroVideoRepository videos;
+public class VideoController {
+    private final VideoRepository videos;
 
-    public HeroVideoController(HeroVideoRepository videos) {
+    public VideoController(VideoRepository videos) {
         this.videos = videos;
     }
 
     /** Returned as a resource so browsers can ask for parts of it, which Safari needs to play video. */
-    @GetMapping("/hero/video/{id}")
+    @GetMapping("/videos/{id}")
     public ResponseEntity<Resource> video(@PathVariable Long id, @RequestParam(name = "v", required = false) String version) {
-        HeroVideo v = videos.findById(id).orElseThrow(NotFoundException::new);
+        Video v = videos.findById(id).orElseThrow(NotFoundException::new);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(v.getContentType()))
                 .cacheControl(version != null ? CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable()

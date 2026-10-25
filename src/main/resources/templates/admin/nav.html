@@ -1,15 +1,16 @@
 <th:block th:fragment="links(section)">
+  <a th:href="@{/admin}" th:classappend="${section == 'dashboard'} ? 'is-on'">Dashboard</a>
   <a th:href="@{/admin/orders}" th:classappend="${section == 'orders'} ? 'is-on'">Orders<span class="pill-count" th:if="${needsReviewCount > 0}" th:text="${needsReviewCount}">3</span></a>
-  <a th:href="@{/admin/calendar}" th:classappend="${section == 'calendar'} ? 'is-on'">Calendar</a>
+  <div class="nav-group" aria-hidden="true">Shop</div>
   <a th:href="@{/admin/products}" th:classappend="${section == 'products'} ? 'is-on'">Products</a>
-  <a th:href="@{/admin/hero}" th:classappend="${section == 'hero'} ? 'is-on'">Home page</a>
-  <a th:href="@{/admin/gallery}" th:classappend="${section == 'gallery'} ? 'is-on'">Gallery</a>
   <a th:href="@{/admin/promos}" th:classappend="${section == 'promos'} ? 'is-on'">Promo codes</a>
-  <a th:href="@{/admin/pages}" th:classappend="${section == 'pages'} ? 'is-on'">Pages</a>
+  <a th:href="@{/admin/hero}" th:classappend="${section == 'hero' or section == 'process' or section == 'gallery' or section == 'pages'} ? 'is-on'">Website</a>
+  <div class="nav-group" aria-hidden="true">People</div>
   <a th:href="@{/admin/customers}" th:classappend="${section == 'customers'} ? 'is-on'">Customers</a>
-  <a th:href="@{/admin/settings}" th:classappend="${section == 'settings'} ? 'is-on'">Settings</a>
   <a th:href="@{/admin/feedback}" th:classappend="${section == 'feedback'} ? 'is-on'">Feedback<span class="pill-count" th:if="${openFeedbackCount > 0}" th:text="${openFeedbackCount}">2</span></a>
   <a th:href="@{/admin/emails}" th:classappend="${section == 'emails'} ? 'is-on'">Emails</a>
+  <div class="nav-group" aria-hidden="true"></div>
+  <a th:href="@{/admin/settings}" th:classappend="${section == 'settings'} ? 'is-on'">Settings</a>
 </th:block>
 
 <nav th:fragment="side(section)" class="admin-side" aria-label="Dashboard">

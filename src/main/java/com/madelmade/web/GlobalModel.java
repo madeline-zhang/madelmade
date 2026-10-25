@@ -1,6 +1,7 @@
 package com.madelmade.web;
 
 import com.madelmade.config.CurrentUser;
+import com.madelmade.repo.ProcessStepRepository;
 import com.madelmade.service.Cart;
 import com.madelmade.service.OrderService;
 import com.madelmade.service.PhotoUrls;
@@ -20,9 +21,11 @@ public class GlobalModel {
     private final ObjectProvider<ClientRegistrationRepository> google;
     private final PhotoUrls photoUrls;
     private final ObjectProvider<OrderService> orders;
+    private final ProcessStepRepository steps;
 
     public GlobalModel(Cart cart, SettingsService settings, ObjectProvider<ClientRegistrationRepository> google, PhotoUrls photoUrls,
-                       ObjectProvider<OrderService> orders) {
+                       ObjectProvider<OrderService> orders, ProcessStepRepository steps) {
+        this.steps = steps;
         this.orders = orders;
         this.cart = cart;
         this.settings = settings;
@@ -35,6 +38,8 @@ public class GlobalModel {
         model.addAttribute("cart", cart);
         model.addAttribute("settings", settings);
         model.addAttribute("photoUrls", photoUrls);
+        // The How it's made link shows once the page has a step.
+        model.addAttribute("showProcess", steps.count() > 0);
         model.addAttribute("signedIn", CurrentUser.email().isPresent());
         model.addAttribute("userEmail", CurrentUser.email().orElse(null));
         model.addAttribute("isAdmin", CurrentUser.isAdmin());

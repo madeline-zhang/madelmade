@@ -130,6 +130,28 @@
     }
   }
 
+  // How it's made: steps ease in as they scroll into view, and videos play only while on screen.
+  var steps = $('.process-steps');
+  if (steps && 'IntersectionObserver' in window) {
+    var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!calm) {
+      steps.classList.add('is-revealing');
+      var reveal = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('is-seen'); reveal.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -10% 0px' });
+      steps.querySelectorAll('.process-step').forEach(function (s) { reveal.observe(s); });
+    }
+    var inView = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { var p = e.target.play(); if (p && p.catch) p.catch(function () {}); } else e.target.pause();
+      });
+    }, { threshold: 0.25 });
+    // With reduced motion, videos wait for a tap on play instead.
+    steps.querySelectorAll('video[data-play-in-view]').forEach(function (v) { if (calm) v.controls = true; else inView.observe(v); });
+  }
+
   // Phone menu.
   var toggle = $('[data-menu-toggle]');
   var mobileNav = $('[data-mobile-nav]');
@@ -392,13 +414,23 @@
   var SCROLL_KEY = 'mm-scroll';
   document.addEventListener('submit', function (e) {
     var form = e.target;
-    if (!form || (form.method || '').toLowerCase() !== 'post') return;
+    if (!form || ((form.method || '').toLowerCase() !== 'post' && !form.hasAttribute('data-keep-scroll'))) return;
     var action = e.submitter && e.submitter.getAttribute('formaction') || form.getAttribute('action') || location.pathname;
     try {
       sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
         from: location.pathname, to: new URL(action, location.href).pathname, y: window.scrollY, at: Date.now()
       }));
     } catch (err) { /* storage blocked: fall back to the browser's default */ }
+  });
+  // Links like the calendar's month arrows reload the same page, so they stay put too.
+  $$('a[data-keep-scroll]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      try {
+        sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
+          from: location.pathname, to: new URL(a.href).pathname, y: window.scrollY, at: Date.now()
+        }));
+      } catch (err) { /* storage blocked */ }
+    });
   });
   try {
     var saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || 'null');

@@ -2,12 +2,15 @@ package com.madelmade.web.admin;
 
 import com.madelmade.domain.GalleryPhoto;
 import com.madelmade.domain.HeroSlide;
+import com.madelmade.domain.ProcessStep;
 import com.madelmade.domain.OptionChoice;
 import com.madelmade.domain.OptionGroup;
 import com.madelmade.domain.Photo;
 import com.madelmade.domain.Product;
 import com.madelmade.repo.GalleryPhotoRepository;
 import com.madelmade.repo.HeroSlideRepository;
+import com.madelmade.repo.ProcessStepRepository;
+import com.madelmade.repo.VideoRepository;
 import com.madelmade.repo.OptionChoiceRepository;
 import com.madelmade.repo.PhotoRepository;
 import com.madelmade.repo.ProductRepository;
@@ -36,7 +39,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * Photo editor: rotate, tilt, crop, warmth and brightness. Edits are made in the browser and the
  * original is always kept, so a photo can be re-edited later without losing quality.
  * Targets: product-ID, choice-ID, gallery-ID, gallery-new, other-new (Other bakes), about-photo, cert-photo,
- * hero-ID, hero-new or heroPhone-ID (home page photos).
+ * hero-ID, hero-new or heroPhone-ID (home page photos), step-ID (How it's made).
  */
 @Controller
 @RequestMapping("/admin/photos")
@@ -48,11 +51,15 @@ public class AdminPhotosController {
     private final GalleryPhotoRepository gallery;
     private final SettingsService settings;
     private final HeroSlideRepository heroSlides;
+    private final ProcessStepRepository processSteps;
+    private final VideoRepository videos;
 
     public AdminPhotosController(PhotoRepository photos, PhotoService photoService, ProductRepository products,
                                  OptionChoiceRepository choices, GalleryPhotoRepository gallery, SettingsService settings,
-                                 HeroSlideRepository heroSlides) {
+                                 HeroSlideRepository heroSlides, ProcessStepRepository processSteps, VideoRepository videos) {
         this.heroSlides = heroSlides;
+        this.processSteps = processSteps;
+        this.videos = videos;
         this.photos = photos;
         this.photoService = photoService;
         this.products = products;
@@ -107,6 +114,10 @@ public class AdminPhotosController {
                 HeroSlide h = heroSlides.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
                 return new Target(key, "Home page photo, computer crop", h.getPhotoId(), "/admin/hero#slide-" + h.getId(), "hero");
             }
+            case "step" -> {
+                ProcessStep st = processSteps.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
+                return new Target(key, "How it's made: " + st.getTitle(), st.getPhotoId(), "/admin/process#step-" + st.getId(), "portrait");
+            }
             case "heroPhone" -> {
                 HeroSlide h = heroSlides.findById(parse(parts[1])).orElseThrow(NotFoundException::new);
                 // Until it has its own phone crop, start from the computer photo's original.
@@ -142,11 +153,11 @@ public class AdminPhotosController {
             case "certificate" -> "4:3, landscape like the certificate card";
             case "hero" -> "16:9, wide for computer screens. The headline sits over the left side.";
             case "heroPhone" -> "Tall, for phones. The headline sits over the bottom half.";
-            default -> "4:5, to match the gallery";
+            default -> target.startsWith("step") ? "4:5, tall like the How it's made page" : "4:5, to match the gallery";
         });
         model.addAttribute("defaultRotate", p != null ? p.getRotate() : 0);
         model.addAttribute("defaultTilt", p != null ? p.getTilt() : 0.0);
-        model.addAttribute("section", target.startsWith("hero") ? "hero"
+        model.addAttribute("section", target.startsWith("hero") ? "hero" : target.startsWith("step") ? "process"
                 : target.startsWith("gallery") || target.startsWith("other") ? "gallery"
                 : target.startsWith("about") ? "pages" : target.startsWith("cert") ? "settings" : "products");
         return "admin/photo-editor";
@@ -206,6 +217,7 @@ public class AdminPhotosController {
             case "about" -> settings.putAll(Map.of("about.photoId", ""));
             case "cert" -> settings.putAll(Map.of("cert.photoId", ""));
             case "heroPhone" -> heroSlides.findById(parse(parts[1])).ifPresent(h -> { h.setPhonePhotoId(null); heroSlides.save(h); });
+            case "step" -> processSteps.findById(parse(parts[1])).ifPresent(st -> { st.setPhotoId(null); processSteps.save(st); });
             default -> { }
         }
         flash.addFlashAttribute("ok", "Photo removed.");
@@ -249,6 +261,14 @@ public class AdminPhotosController {
                 heroSlides.save(h);
             }
             case "heroPhone" -> heroSlides.findById(parse(parts[1])).ifPresent(h -> { h.setPhonePhotoId(photoId); heroSlides.save(h); });
+            case "step" -> processSteps.findById(parse(parts[1])).ifPresent(st -> {
+                // A photo replaces a video; the old video is cleaned up with the step's media.
+                Long oldVideo = st.getVideoId();
+                st.setPhotoId(photoId);
+                st.setVideoId(null);
+                processSteps.save(st);
+                if (oldVideo != null) videos.deleteById(oldVideo);
+            });
             default -> throw new NotFoundException();
         }
     }

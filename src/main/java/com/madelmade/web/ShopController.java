@@ -4,9 +4,11 @@ import com.madelmade.domain.Category;
 import com.madelmade.domain.Product;
 import com.madelmade.repo.CategoryRepository;
 import com.madelmade.repo.GalleryPhotoRepository;
+import com.madelmade.repo.ProcessStepRepository;
 import com.madelmade.repo.ProductRepository;
 import com.madelmade.service.HeroService;
 import com.madelmade.service.SettingsService;
+import com.madelmade.service.VideoService;
 import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,9 +22,13 @@ public class ShopController {
     private final GalleryPhotoRepository gallery;
     private final SettingsService settings;
     private final HeroService hero;
+    private final ProcessStepRepository steps;
+    private final VideoService videos;
 
     public ShopController(ProductRepository products, CategoryRepository categories, GalleryPhotoRepository gallery,
-                          SettingsService settings, HeroService hero) {
+                          SettingsService settings, HeroService hero, ProcessStepRepository steps, VideoService videos) {
+        this.steps = steps;
+        this.videos = videos;
         this.settings = settings;
         this.hero = hero;
         this.products = products;
@@ -60,6 +66,16 @@ public class ShopController {
         model.addAttribute("photos", gallery.findBySectionOrderByDisplayOrderAscIdAsc(com.madelmade.domain.GalleryPhoto.LOAVES));
         model.addAttribute("otherPhotos", gallery.findBySectionOrderByDisplayOrderAscIdAsc(com.madelmade.domain.GalleryPhoto.OTHER));
         return "shop/gallery";
+    }
+
+    @GetMapping("/how-its-made")
+    public String process(Model model) {
+        var list = steps.findAllByOrderByDisplayOrderAscIdAsc();
+        // Hidden until the first step is added.
+        if (list.isEmpty()) throw new NotFoundException();
+        model.addAttribute("steps", list);
+        model.addAttribute("videos", videos);
+        return "shop/how-its-made";
     }
 
     @GetMapping("/about")

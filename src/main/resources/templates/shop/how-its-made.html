@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main}, false)}">
+<head><title>How it's made · MadelMade</title></head>
+<body>
+<main id="main" class="page process-page">
+  <div class="wrap process-layout">
+    <!-- Stays in view at the side while the steps scroll past. -->
+    <aside class="process-intro">
+      <div class="t-eyebrow">From starter to your table</div>
+      <h1 class="t-page-title"><span th:text="${settings.get('process.title')}">How it's</span> <em th:text="${settings.get('process.titleAccent')}">made</em></h1>
+      <p class="t-subtitle" th:each="para : ${settings.paragraphs('process.intro')}" th:text="${para}">Every loaf takes about three days.</p>
+      <a class="btn" th:href="@{/#menu}">Order a loaf&nbsp;&nbsp;→</a>
+    </aside>
+
+    <ol class="process-steps">
+      <li class="process-step" th:each="s, it : ${steps}" th:id="${'step-' + it.count}">
+        <div class="process-media" th:if="${s.video or s.photoId != null}">
+          <video th:if="${s.video}" muted loop playsinline preload="metadata" th:aria-label="${s.title}" data-play-in-view>
+            <source th:src="${videos.url(s.videoId)}"></video>
+          <img th:unless="${s.video}" th:src="${photoUrls.src(s.photoId)}" th:alt="${s.title}" loading="lazy">
+        </div>
+        <div class="process-text">
+          <div class="process-num" th:text="${it.count < 10 ? '0' + it.count : it.count}">01</div>
+          <h2 th:text="${s.title}">Feed the starter</h2>
+          <p th:each="para : ${s.paragraphs}" th:text="${para}">The night before, the starter gets fresh flour and water.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</main>
+</body>
+</html>
