@@ -24,12 +24,12 @@
   <div class="facts">
     <div><div class="k" th:text="${o.fulfillment.label}">Pickup</div><div class="v" th:text="${@fmt.day(o.requestedDate) + (o.requestedTime != null ? ', ' + o.requestedTime : '')}">Sat, Oct 11</div></div>
     <div><div class="k">Prefers</div><div class="v" th:text="${o.contactPref.label + (o.contactPhone != null ? ' · ' + o.contactPhone : '')}">Text · (615) 555-0142</div></div>
-    <div><div class="k">Payment</div><div class="v" th:text="${'At ' + (o.delivery ? 'delivery' : 'pickup') + ' · ' + (o.paid ? 'paid' : 'unpaid')}">At pickup · unpaid</div></div>
-    <div th:if="${o.delivery}"><div class="k">Deposit</div><div class="v" th:text="${o.depositWaived ? 'Waived' : (o.depositPaid ? 'Paid' : 'Not yet')}">Not yet</div></div>
-    <div th:unless="${o.delivery}"><div class="k">Email</div><div class="v" th:text="${o.contactEmail}">sarah@example.com</div></div>
+    <div><div class="k">Payment</div><div class="v" th:text="${(o.shipping ? 'Before shipping' : 'At ' + (o.delivery ? 'delivery' : 'pickup')) + ' · ' + (o.paid ? 'paid' : 'unpaid')}">At pickup · unpaid</div></div>
+    <div th:if="${o.addressed}"><div class="k" th:text="${o.shipping ? 'Paid up front' : 'Deposit'}">Deposit</div><div class="v" th:text="${o.depositWaived ? 'Waived' : (o.depositPaid ? 'Paid' : 'Not yet')}">Not yet</div></div>
+    <div th:unless="${o.addressed}"><div class="k">Email</div><div class="v" th:text="${o.contactEmail}">sarah@example.com</div></div>
   </div>
 
-  <div th:if="${o.delivery}"><div class="t-label" style="margin-bottom: 6px">Delivery address</div><div class="note-box" th:text="${o.deliveryAddress}">123 Main St</div></div>
+  <div th:if="${o.addressed}"><div class="t-label" style="margin-bottom: 6px" th:text="${o.feeName + ' address'}">Delivery address</div><div class="note-box" th:text="${o.deliveryAddress}">123 Main St</div></div>
 
   <div>
     <div th:replace="~{components/order-summary :: order(${o}, true)}"></div>
@@ -48,7 +48,7 @@
       <div></div>
     </div>
     <div class="field-row">
-      <div class="field" th:if="${o.delivery}"><label for="deliveryFee">Delivery fee</label>
+      <div class="field" th:if="${o.addressed}"><label for="deliveryFee" th:text="${o.feeName + ' fee'}">Delivery fee</label>
         <div class="price-input">$ <input type="number" step="0.01" min="0" id="deliveryFee" name="deliveryFee" th:value="${o.deliveryFee != null ? @money.plain(o.deliveryFee) : ''}"></div></div>
       <div class="field"><label for="adjustment">Extra or discount</label>
         <div class="price-input">$ <input type="number" step="0.01" id="adjustment" name="adjustment" th:value="${@money.plain(o.adjustment)}"></div>
@@ -60,7 +60,7 @@
       <div class="field"><label for="requestedTime">Time</label><input type="text" id="requestedTime" name="requestedTime" th:value="${o.requestedTime}" placeholder="e.g. 10:00 AM"></div>
     </div>
     <label class="check-row"><input type="checkbox" name="priority" value="true" th:checked="${o.priority}"> Priority order (<span th:text="${@money.fmt(settings.priorityFee())}">$5</span> fee)</label>
-    <label class="check-row" th:if="${o.delivery}"><input type="checkbox" name="depositWaived" value="true" th:checked="${o.depositWaived}"> Skip the delivery deposit (friends and family)</label>
+    <label class="check-row" th:if="${o.addressed}"><input type="checkbox" name="depositWaived" value="true" th:checked="${o.depositWaived}"> <span th:text="${'Skip the ' + o.depositName + ' up front (friends and family)'}">Skip the delivery deposit up front (friends and family)</span></label>
     <button type="submit" class="btn btn-secondary" style="align-self: flex-start">Save price and date</button>
   </form>
 
@@ -69,6 +69,9 @@
     <h3>Your decision</h3>
     <div class="field"><label for="decision-msg" th:text="${'Message to ' + o.customer.firstName + ' (sent with your decision)'}">Message</label>
       <textarea id="decision-msg" name="message" rows="3" placeholder="e.g. Can't wait to bake this! See you Saturday."></textarea></div>
+    <div class="field" th:unless="${o.addressed}"><label for="pickup-spot">Pickup spot for this order</label>
+      <textarea id="pickup-spot" name="pickupSpot" rows="2" th:text="${o.pickupAddress}" th:placeholder="${settings.get('pickup.address').isEmpty() ? 'e.g. Kroger parking lot, Concord Rd' : settings.get('pickup.address')}"></textarea>
+      <div class="help">Sent with your approval. Leave it blank to share your home pickup address from Settings, or type a nearby spot, like a parking lot, for someone you don't know.</div></div>
     <div class="action-row">
       <button type="submit" class="btn" th:formaction="@{/admin/orders/{id}/approve(id=${o.id})}">Approve</button>
       <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
@@ -76,9 +79,17 @@
     </div>
   </form>
 
+  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/pickup-spot(id=${o.id})}" th:if="${!o.addressed and (o.status.name() == 'APPROVED' or o.status.name() == 'BAKED')}">
+    <h3>Pickup spot</h3>
+    <div class="field">
+      <textarea id="pickup-spot-edit" name="pickupSpot" aria-label="Pickup spot for this order" rows="2" th:text="${o.pickupAddress}" th:placeholder="${settings.get('pickup.address')}"></textarea>
+      <div class="help">Shown on their order page. Leave it blank to use your home pickup address.</div></div>
+    <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save pickup spot</button>
+  </form>
+
   <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/baked(id=${o.id})}" th:if="${o.status.name() == 'APPROVED'}">
-    <h3>Bake day</h3>
-    <div class="alert alert-info" th:if="${o.depositRequired and !o.depositPaid}">The delivery deposit isn't marked paid yet.</div>
+    <h3 th:text="${o.needsBaking ? 'Bake day' : 'Pickup day'}">Bake day</h3>
+    <div class="alert alert-info" th:if="${o.depositRequired and !o.depositPaid}" th:text="${'The ' + o.depositName + ' isn''t marked paid yet.'}">The delivery deposit isn't marked paid yet.</div>
     <th:block th:each="i : ${o.items}" th:if="${i.hasCertificate}">
       <div class="t-small"><strong th:text="${i.certName + '''s birth certificate'}">Hazel's certificate</strong></div>
       <div class="field-row">
@@ -89,10 +100,10 @@
       </div>
     </th:block>
     <div class="field"><label for="baked-msg">Message to the customer</label>
-      <textarea id="baked-msg" name="message" rows="2" placeholder="e.g. Your loaf is out of the oven! Does 4 PM work for pickup?"></textarea></div>
+      <textarea id="baked-msg" name="message" rows="2" th:placeholder="${o.needsBaking ? 'e.g. Your loaf is out of the oven! Does 4 PM work for pickup?' : 'e.g. Thank you! Enjoy your latte.'}"></textarea></div>
     <div class="action-row">
-      <button type="submit" class="btn">Mark baked</button>
-      <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/completed(id=${o.id})}">Mark completed</button>
+      <button type="submit" class="btn" th:if="${o.needsBaking}">Mark baked</button>
+      <button type="submit" th:class="${o.needsBaking ? 'btn btn-secondary' : 'btn'}" th:formaction="@{/admin/orders/{id}/completed(id=${o.id})}" th:text="${o.needsBaking ? 'Mark completed' : 'Mark picked up'}">Mark completed</button>
       <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
       <button type="submit" class="btn btn-danger" th:formaction="@{/admin/orders/{id}/decline(id=${o.id})}">Decline</button>
     </div>
@@ -102,15 +113,15 @@
     <h3>Handoff</h3>
     <div class="field"><label for="done-msg">Thank-you note (optional)</label>
       <textarea id="done-msg" name="message" rows="2" placeholder="e.g. Thank you! Enjoy Hazel's loaf."></textarea></div>
-    <button type="submit" class="btn" style="align-self: flex-start" th:text="${o.delivery ? 'Mark delivered' : 'Mark picked up'}">Mark completed</button>
+    <button type="submit" class="btn" style="align-self: flex-start" th:text="${o.shipping ? 'Mark shipped' : o.delivery ? 'Mark delivered' : 'Mark picked up'}">Mark completed</button>
   </form>
 
   <div class="action-row" th:if="${o.status.name() != 'DECLINED' and o.status.name() != 'CANCELLED'}">
     <form class="inline-form" method="post" th:action="@{/admin/orders/{id}/deposit(id=${o.id})}" th:if="${o.depositRequired}">
       <input type="hidden" name="paid" th:value="${!o.depositPaid}">
-      <button type="submit" class="btn btn-secondary btn-small" th:text="${o.depositPaid ? 'Undo deposit paid' : 'Mark deposit paid'}">Mark deposit paid</button>
+      <button type="submit" class="btn btn-secondary btn-small" th:text="${o.shipping ? (o.depositPaid ? 'Undo payment received' : 'Mark payment received') : (o.depositPaid ? 'Undo deposit paid' : 'Mark deposit paid')}">Mark deposit paid</button>
     </form>
-    <form class="inline-form" method="post" th:action="@{/admin/orders/{id}/paid(id=${o.id})}">
+    <form class="inline-form" method="post" th:action="@{/admin/orders/{id}/paid(id=${o.id})}" th:unless="${o.shipping and o.depositRequired}">
       <input type="hidden" name="paid" th:value="${!o.paid}">
       <button type="submit" class="btn btn-secondary btn-small" th:text="${o.paid ? 'Undo paid' : 'Mark paid'}">Mark paid</button>
     </form>

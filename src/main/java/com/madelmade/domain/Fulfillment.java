@@ -1,7 +1,7 @@
 package com.madelmade.domain;
 
 public enum Fulfillment {
-    PICKUP("Pickup"), DELIVERY("Delivery");
+    PICKUP("Pickup"), DELIVERY("Delivery"), SHIPPING("Shipping");
 
     private final String label;
 

@@ -56,13 +56,16 @@ public class Notifier {
         vars.put("note", note == null ? "" : note);
         vars.put("statusUrl", statusUrl(o));
         vars.put("showSummary", wording != EmailWording.MESSAGE);
+        vars.put("approved", wording == EmailWording.APPROVED);
         // Madeline's address is only ever shared privately, once she has approved a pickup.
-        boolean shareAddress = wording == EmailWording.APPROVED && !o.isDelivery();
-        vars.put("pickupAddress", shareAddress ? settings.get("pickup.address") : "");
+        boolean shareAddress = wording == EmailWording.APPROVED && o.getFulfillment() == com.madelmade.domain.Fulfillment.PICKUP;
+        vars.put("pickupAddress", shareAddress ? settings.pickupAddressFor(o) : "");
+        vars.put("venmo", wording == EmailWording.APPROVED ? settings.venmo() : "");
         // Tennessee's home food law asks for the producer's name and phone with the order.
         vars.put("producerName", wording == EmailWording.APPROVED ? settings.get("producer.name") : "");
         vars.put("producerPhone", wording == EmailWording.APPROVED ? settings.get("producer.phone") : "");
         vars.put("homeKitchen", settings.get("notice.homeKitchen"));
+        vars.put("refund", settings.get("notice.refund"));
         String html = render("email/order", vars);
         mail.send(o.getContactEmail(), o.getContactName(), settings.subject(wording) + " (" + o.getNumber() + ")", html);
     }

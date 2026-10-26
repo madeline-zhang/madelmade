@@ -11,7 +11,7 @@
         th:text="${i.priceTbd ? 'To be discussed' : money.fmt(i.lineTotal)}">$10</td>
   </tr>
   <tr th:if="${order.priority}"><td style="padding:6px 0;font-size:14px;">Priority</td><td align="right" style="font-size:14px;" th:text="${money.fmt(order.priorityFee)}"></td></tr>
-  <tr th:if="${order.delivery}"><td style="padding:6px 0;font-size:14px;">Delivery</td><td align="right" style="font-size:14px;" th:text="${order.deliveryFee != null ? money.fmt(order.deliveryFee) : 'Quoted by Madeline'}"></td></tr>
+  <tr th:if="${order.addressed}"><td style="padding:6px 0;font-size:14px;" th:text="${order.feeName}">Delivery</td><td align="right" style="font-size:14px;" th:text="${order.deliveryFee != null ? money.fmt(order.deliveryFee) : 'Quoted by Madeline'}"></td></tr>
   <tr th:if="${order.hasDiscount}"><td style="padding:6px 0;font-size:14px;" th:text="${'Promo ' + order.promoLabel}"></td><td align="right" style="font-size:14px;color:#2F5D3A;" th:text="${'−' + money.fmt(order.discount)}"></td></tr>
   <tr th:if="${order.adjustment != null and order.adjustment.signum() != 0}"><td style="padding:6px 0;font-size:14px;" th:text="${order.adjustmentNote != null ? order.adjustmentNote : 'Adjustment'}"></td><td align="right" style="font-size:14px;" th:text="${money.fmt(order.adjustment)}"></td></tr>
   <tr th:if="${order.taxEnabled and !order.taxIncluded}"><td style="padding:6px 0;font-size:14px;" th:text="${order.taxLabel}">Sales tax</td><td align="right" style="font-size:14px;" th:text="${money.fmt(order.tax)}"></td></tr>

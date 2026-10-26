@@ -45,9 +45,11 @@ public class SettingsService {
         DEFAULTS.put("admin.emails", "madelmadewithlove@gmail.com");
         DEFAULTS.put("pickup.area", "Brentwood / Nolensville, TN");
         DEFAULTS.put("pickup.address", "");
+        DEFAULTS.put("payment.venmo", "");
         DEFAULTS.put("producer.name", "Madeline");
         DEFAULTS.put("producer.phone", "");
         DEFAULTS.put("delivery.enabled", "true");
+        DEFAULTS.put("shipping.enabled", "true");
         DEFAULTS.put("notify.email", "madelmadewithlove@gmail.com");
         DEFAULTS.put("notify.newRequest", "true");
         DEFAULTS.put("notify.customerReply", "true");
@@ -77,6 +79,8 @@ public class SettingsService {
                 + "Best way to reheat?\nToast it and butter it up!");
         DEFAULTS.put("notice.pickupOnly", "Drinks made with milk, like lattes, have to stay cold, so Tennessee's home food law only allows them to be sold in person. That makes lattes pickup only. You can pick one up when you collect your bread, or switch this order to pickup.");
         DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens.");
+        DEFAULTS.put("notice.shipping", "I can only ship within Tennessee. Tennessee's home food law covers sales inside the state, and shipping out of state would need a commercial kitchen license. Bread ships best Monday to Wednesday so it never sits in a warehouse over the weekend.");
+        DEFAULTS.put("notice.refund", "Orders can be cancelled for free until I approve them. Once your loaf is in progress, it's made just for you, so payments can't be refunded. If you need a different day, message me and I'll do my best to move it. If I ever have to cancel, you'll get a full refund. If a shipped package arrives damaged, send me a photo and I'll make it right.");
         DEFAULTS.put("notice.decline", "Madeline has the right to decline any order, for any reason. If she can't take yours, she'll let you know, and you won't be charged anything.");
         // When Madeline last opened Feedback; the menu badge only counts what came in after that.
         DEFAULTS.put("admin.feedbackSeenAt", "0");
@@ -172,7 +176,19 @@ public class SettingsService {
     public BigDecimal certificatePrice() { return money("cert.price"); }
     public String defaultStarter() { return get("cert.starter"); }
     public boolean deliveryEnabled() { return flag("delivery.enabled"); }
+    public boolean shippingEnabled() { return flag("shipping.enabled"); }
     public String pickupArea() { return get("pickup.area"); }
+
+    /** Where an order is picked up: its own spot if Madeline set one, otherwise her home address. */
+    public String pickupAddressFor(com.madelmade.domain.CustomerOrder o) {
+        String spot = o.getPickupAddress();
+        return spot == null || spot.isBlank() ? get("pickup.address") : spot;
+    }
+
+    public String venmo() {
+        String v = get("payment.venmo").trim();
+        return v.isEmpty() || v.startsWith("@") ? v : "@" + v;
+    }
     public String notifyEmail() { return get("notify.email"); }
 
     /** Admin emails from Settings plus the bootstrap list from the server configuration. */

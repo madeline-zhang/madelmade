@@ -54,12 +54,12 @@
   <div class="summary-totals">
     <div><span>Items</span><span th:text="${@money.fmt(o.subtotal) + (o.priceTbd ? ' + custom' : '')}">$26</span></div>
     <div th:if="${o.priority}"><span>Priority (1-day)</span><span th:text="${@money.fmt(o.priorityFee)}">$5</span></div>
-    <div th:if="${o.delivery}"><span>Delivery<span th:if="${o.depositRequired}"> (paid up front as a deposit)</span></span>
+    <div th:if="${o.addressed}"><span><span th:text="${o.feeName}">Delivery</span><span th:if="${o.depositRequired and o.delivery}"> (paid up front as a deposit)</span></span>
       <span th:text="${o.deliveryFee != null ? @money.fmt(o.deliveryFee) : 'Quoted by Madeline'}">$6</span></div>
     <div class="discount" th:if="${o.hasDiscount}"><span th:text="${'Promo ' + o.promoLabel}">Promo FRIENDS50 (50% off)</span><span th:text="${'−' + @money.fmt(o.discount)}">−$13</span></div>
     <div th:if="${o.adjustment != null and o.adjustment.signum() != 0}"><span th:text="${o.adjustmentNote != null ? o.adjustmentNote : 'Adjustment'}">Custom design</span><span th:text="${@money.fmt(o.adjustment)}">$2</span></div>
     <div th:if="${o.taxEnabled and !o.taxIncluded}"><span th:text="${o.taxLabel}">Sales tax (9.75%)</span><span th:text="${@money.fmt(o.tax)}">$2.54</span></div>
-    <div class="grand"><span>Total</span><span th:text="${@money.fmt(o.total) + (o.priceTbd ? ' + custom' : '') + (o.delivery and o.deliveryFee == null ? (o.taxEnabled and !o.taxIncluded ? ' + delivery and its tax' : ' + delivery') : '')}">$26</span></div>
+    <div class="grand"><span>Total</span><span th:text="${@money.fmt(o.total) + (o.priceTbd ? ' + custom' : '') + (o.addressed and o.deliveryFee == null ? ' + ' + #strings.toLowerCase(o.feeName) + (o.taxEnabled and !o.taxIncluded ? ' and its tax' : '') : '')}">$26</span></div>
     <div class="t-small muted" th:if="${o.taxEnabled and o.taxIncluded}" th:text="${o.taxLabel + ': ' + @money.fmt(o.tax)}">Includes sales tax (9.75%): $2.32</div>
   </div>
 </div>

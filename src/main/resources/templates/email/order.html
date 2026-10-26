@@ -10,8 +10,14 @@
   <div th:if="${pickupAddress != null and !pickupAddress.isEmpty()}" style="margin:0 0 14px;">
     <strong>Pickup address:</strong> <span th:text="${pickupAddress}"></span>
   </div>
+  <div th:if="${venmo != null and !venmo.isEmpty()}" style="margin:0 0 14px;">
+    <strong>Venmo:</strong> <a th:href="${'https://venmo.com/u/' + venmo.substring(1)}" th:text="${venmo}" style="color:#A4502F;">@madelmade</a><span th:if="${!order.shipping}"> · You can pay at <span th:text="${order.delivery ? 'delivery' : 'pickup'}">pickup</span>, or early if you like.</span>
+  </div>
   <div th:if="${!producerName.isEmpty()}" style="margin:0 0 14px;">
     <strong>Made by:</strong> <span th:text="${producerName}">Madeline</span><span th:if="${!producerPhone.isEmpty()}" th:text="${' · ' + producerPhone}"></span>
+  </div>
+  <div th:if="${order.shipping and order.depositRequired and !order.depositPaid and approved}" style="margin:0 0 14px;">
+    <strong>Shipping orders are paid before they ship.</strong> Please send <span th:text="${money.fmt(order.total)}">$30</span> by Venmo or Zelle, and Madeline will bake and ship your order.
   </div>
   <th:block th:if="${showSummary}">
     <p style="margin:0;font-size:14px;color:#5C5A50;">
@@ -25,6 +31,7 @@
     <a th:href="${statusUrl}" style="display:inline-block;background:#A4502F;color:#ffffff;text-decoration:none;padding:13px 22px;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;">View your order</a>
   </p>
   <p style="margin:10px 0 0;font-size:13px;color:#5C5A50;">Reply on your order page and it goes straight to Madeline.</p>
+  <p th:if="${approved}" style="margin:14px 0 0;font-size:12px;color:#5C5A50;" th:text="${refund}">Refund policy</p>
   <p th:if="${showSummary}" style="margin:14px 0 0;font-size:12px;color:#5C5A50;" th:text="${homeKitchen}">This product was produced at a private residence that is exempt from state licensing and inspection.</p>
 </th:block>
 </html>

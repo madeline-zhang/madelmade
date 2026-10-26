@@ -64,6 +64,7 @@ public class CustomerOrder {
     private boolean signedIn;
     private String customerNote;
     private String privateNotes;
+    private String pickupAddress;
     private String statusToken;
     private boolean reminderSent;
     private Instant createdAt = Instant.now();
@@ -173,8 +174,36 @@ public class CustomerOrder {
         return fulfillment == Fulfillment.DELIVERY;
     }
 
+    public boolean isShipping() {
+        return fulfillment == Fulfillment.SHIPPING;
+    }
+
+    /** Delivered or shipped: the order goes to the customer's address, with a fee Madeline quotes. */
+    public boolean isAddressed() {
+        return isDelivery() || isShipping();
+    }
+
+    /** "Delivery" or "Shipping", for the fee line and the address heading. */
+    public String getFeeName() {
+        return isShipping() ? "Shipping" : "Delivery";
+    }
+
     public boolean isDepositRequired() {
-        return isDelivery() && !depositWaived;
+        return isAddressed() && !depositWaived;
+    }
+
+    /** A shipped order is paid in full before it goes out; a delivery only pays its fee up front. */
+    public BigDecimal getDepositAmount() {
+        return isShipping() ? total : deliveryFee;
+    }
+
+    public String getDepositName() {
+        return isShipping() ? "payment" : "delivery deposit";
+    }
+
+    /** Drinks-only orders (lattes) have nothing to bake, so they skip the Baked step. */
+    public boolean isNeedsBaking() {
+        return getLoafCount() > 0;
     }
 
     public int getLoafCount() {
@@ -266,6 +295,8 @@ public class CustomerOrder {
     public void setSignedIn(boolean signedIn) { this.signedIn = signedIn; }
     public String getCustomerNote() { return customerNote; }
     public void setCustomerNote(String customerNote) { this.customerNote = customerNote; }
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
     public String getPrivateNotes() { return privateNotes; }
     public void setPrivateNotes(String privateNotes) { this.privateNotes = privateNotes; }
     public String getStatusToken() { return statusToken; }

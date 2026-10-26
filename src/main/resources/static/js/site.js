@@ -381,9 +381,10 @@
     };
     var sync = function () {
       var checked = $('[data-fulfillment]:checked', co);
-      var delivery = checked && checked.value === 'DELIVERY';
-      if (addr) addr.hidden = !delivery;
-      if (pickupNote) pickupNote.hidden = delivery;
+      var way = checked ? checked.value : 'PICKUP';
+      if (addr) addr.hidden = way === 'PICKUP';
+      if (pickupNote) pickupNote.hidden = way !== 'PICKUP';
+      $$('[data-for-way]', co).forEach(function (el) { el.hidden = el.getAttribute('data-for-way') !== way; });
       var min = prio && prio.checked ? minPri : minStd;
       if (date) {
         date.min = min;

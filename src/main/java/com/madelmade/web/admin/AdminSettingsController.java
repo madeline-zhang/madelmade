@@ -21,7 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/settings")
 public class AdminSettingsController {
     /** On/off settings. An unticked box isn't posted, so these are read as false when missing. */
-    static final List<String> FLAGS = List.of("orders.open", "rules.priorityEnabled", "cert.enabled", "delivery.enabled",
+    static final List<String> FLAGS = List.of("orders.open", "rules.priorityEnabled", "cert.enabled", "delivery.enabled", "shipping.enabled",
             "notify.newRequest", "notify.customerReply", "notify.morningSummary", "tax.enabled", "tax.included");
 
     private final SettingsService settings;

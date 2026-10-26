@@ -58,17 +58,21 @@
         </section>
 
         <section class="card stack">
-          <h2 class="card-title">Pickup and delivery</h2>
+          <h2 class="card-title">Pickup, delivery and shipping</h2>
           <div class="field"><label for="pickupArea">Pickup area (shown to everyone)</label><input type="text" id="pickupArea" name="pickup.area" th:value="${settings.get('pickup.area')}"></div>
           <div class="field"><label for="pickupAddress">Pickup address (private)</label><textarea id="pickupAddress" name="pickup.address" rows="2" th:text="${settings.get('pickup.address')}"></textarea>
-            <div class="help">Only shared with a customer once you approve their pickup order. Never shown on the public site.</div></div>
+            <div class="help">Only shared with a customer once you approve their pickup order, and never shown on the public site. You can give a different spot, like a parking lot, when approving an order.</div></div>
           <div class="field-row">
             <div class="field"><label for="producerName">Your name for order labels</label><input type="text" id="producerName" name="producer.name" maxlength="80" th:value="${settings.get('producer.name')}"></div>
             <div class="field"><label for="producerPhone">Your phone for order labels</label><input type="tel" id="producerPhone" name="producer.phone" maxlength="30" th:value="${settings.get('producer.phone')}"></div>
           </div>
+          <div class="field"><label for="venmo">Venmo username</label><input type="text" id="venmo" name="payment.venmo" maxlength="40" th:value="${settings.get('payment.venmo')}" placeholder="@madelmade">
+            <div class="help">Sent to customers once you approve their order, with a note that paying early is welcome.</div></div>
           <div class="help">Tennessee's home food law asks for your name, address and phone. They go only to approved customers, in their confirmation email and on their order page.</div>
           <div class="toggle-row"><div><div class="t">Offer delivery</div><div class="d">You quote the delivery fee on each order before approving.</div></div>
             <label class="switch"><input type="checkbox" name="delivery.enabled" th:checked="${settings.flag('delivery.enabled')}" aria-label="Offer delivery"><span></span></label></div>
+          <div class="toggle-row"><div><div class="t">Offer shipping in Tennessee</div><div class="d">Tennessee addresses only, going out Monday to Wednesday. You quote shipping on each order, and the customer pays in full before it ships.</div></div>
+            <label class="switch"><input type="checkbox" name="shipping.enabled" th:checked="${settings.flag('shipping.enabled')}" aria-label="Offer shipping in Tennessee"><span></span></label></div>
         </section>
       </div>
 

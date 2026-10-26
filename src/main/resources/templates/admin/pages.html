@@ -50,11 +50,15 @@
           <h2 class="card-title">Notices</h2>
           <div class="field"><label for="noticePickup">Pickup-only notice</label><textarea id="noticePickup" name="notice.pickupOnly" rows="4" th:text="${settings.get('notice.pickupOnly')}"></textarea>
             <div class="help">Shown in the cart and at checkout when the order has a pickup-only item. Mark items pickup only under Products.</div></div>
+          <div class="field"><label for="noticeShipping">Shipping notice</label><textarea id="noticeShipping" name="notice.shipping" rows="3" th:text="${settings.get('notice.shipping')}"></textarea>
+            <div class="help">Shown at checkout and in the About FAQ while shipping is on.</div></div>
           <div class="field"><label for="homeTitle">About page: home kitchen heading</label><input type="text" id="homeTitle" name="about.homeTitle" maxlength="80" th:value="${settings.get('about.homeTitle')}"></div>
           <div class="field"><label for="homeBody">About page: home kitchen section</label><textarea id="homeBody" name="about.homeBody" rows="5" th:text="${settings.get('about.homeBody')}"></textarea>
             <div class="help">Keep these two sentences word for word, the law requires them: "This product was produced at a private residence that is exempt from state licensing and inspection." and "This product may contain allergens."</div></div>
           <div class="field"><label for="noticeHome">Home kitchen notice</label><textarea id="noticeHome" name="notice.homeKitchen" rows="3" th:text="${settings.get('notice.homeKitchen')}"></textarea>
             <div class="help">Shown at checkout, on order pages and in order emails. Keep the required wording.</div></div>
+          <div class="field"><label for="noticeRefund">Refund policy</label><textarea id="noticeRefund" name="notice.refund" rows="4" th:text="${settings.get('notice.refund')}"></textarea>
+            <div class="help">Shown at checkout, on order pages, in approval emails and in the About FAQ.</div></div>
           <div class="field"><label for="noticeDecline">Right to decline</label><textarea id="noticeDecline" name="notice.decline" rows="3" th:text="${settings.get('notice.decline')}"></textarea>
             <div class="help">Shown at checkout and in the About FAQ.</div></div>
         </section>

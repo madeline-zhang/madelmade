@@ -170,8 +170,14 @@ public class AdminOrdersController {
     }
 
     @PostMapping("/orders/{id}/approve")
-    public String approve(@PathVariable Long id, @RequestParam(required = false) String message, RedirectAttributes flash) {
-        return act(find(id), flash, "Approved. The customer has been emailed.", o -> orderService.approve(o, message));
+    public String approve(@PathVariable Long id, @RequestParam(required = false) String message,
+                          @RequestParam(required = false) String pickupSpot, RedirectAttributes flash) {
+        return act(find(id), flash, "Approved. The customer has been emailed.", o -> orderService.approve(o, message, pickupSpot));
+    }
+
+    @PostMapping("/orders/{id}/pickup-spot")
+    public String pickupSpot(@PathVariable Long id, @RequestParam(required = false) String pickupSpot, RedirectAttributes flash) {
+        return act(find(id), flash, "Pickup spot saved. It shows on their order page.", o -> orderService.savePickupSpot(o, pickupSpot));
     }
 
     @PostMapping("/orders/{id}/changes")
@@ -234,7 +240,7 @@ public class AdminOrdersController {
     @GetMapping("/orders/export.csv")
     public ResponseEntity<String> export(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to) {
         List<String> head = List.of("Order", "Order date", "Completed date", "Status", "Customer", "Email", "Phone", "Fulfillment",
-                "Requested date", "Items", "Items subtotal", "Promo code", "Discount", "Priority fee", "Delivery fee", "Adjustment",
+                "Requested date", "Items", "Items subtotal", "Promo code", "Discount", "Priority fee", "Delivery or shipping fee", "Adjustment",
                 "Taxable (prepared food)", "Taxable (food or grocery)", "Not taxable", "State rate prepared %", "State rate food %",
                 "Local rate %", "State tax", "Local tax", "Total tax", "Total collected", "Tax mode", "Paid");
         StringBuilder sb = new StringBuilder(String.join(",", head.stream().map(AdminOrdersController::csv).toList())).append('\n');
