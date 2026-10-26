@@ -55,7 +55,7 @@
             <span class="flag" th:if="${o.overCapacity and !o.status.closed}">Over capacity</span>
             <th:block th:if="${tab == 'review' and o.status.name() == 'CHANGES_REQUESTED'}"><span th:replace="~{components/status-badge :: badge(${o.status}, false)}"></span></th:block>
           </span>
-          <span class="amount" th:text="${@money.fmt(o.total) + (o.delivery and o.deliveryFee == null ? ' + delivery' : '')}">$26</span>
+          <span class="amount" th:text="${@money.fmt(o.total) + (o.addressed and o.deliveryFee == null ? ' + ' + #strings.toLowerCase(o.feeName) : '')}">$26</span>
         </div>
       </a>
     </div>

@@ -234,7 +234,7 @@ public class AdminOrdersController {
     @GetMapping("/orders/export.csv")
     public ResponseEntity<String> export(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to) {
         List<String> head = List.of("Order", "Order date", "Completed date", "Status", "Customer", "Email", "Phone", "Fulfillment",
-                "Requested date", "Items", "Items subtotal", "Promo code", "Discount", "Priority fee", "Delivery fee", "Adjustment",
+                "Requested date", "Items", "Items subtotal", "Promo code", "Discount", "Priority fee", "Delivery or shipping fee", "Adjustment",
                 "Taxable (prepared food)", "Taxable (food or grocery)", "Not taxable", "State rate prepared %", "State rate food %",
                 "Local rate %", "State tax", "Local tax", "Total tax", "Total collected", "Tax mode", "Paid");
         StringBuilder sb = new StringBuilder(String.join(",", head.stream().map(AdminOrdersController::csv).toList())).append('\n');

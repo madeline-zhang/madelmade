@@ -173,8 +173,31 @@ public class CustomerOrder {
         return fulfillment == Fulfillment.DELIVERY;
     }
 
+    public boolean isShipping() {
+        return fulfillment == Fulfillment.SHIPPING;
+    }
+
+    /** Delivered or shipped: the order goes to the customer's address, with a fee Madeline quotes. */
+    public boolean isAddressed() {
+        return isDelivery() || isShipping();
+    }
+
+    /** "Delivery" or "Shipping", for the fee line and the address heading. */
+    public String getFeeName() {
+        return isShipping() ? "Shipping" : "Delivery";
+    }
+
     public boolean isDepositRequired() {
-        return isDelivery() && !depositWaived;
+        return isAddressed() && !depositWaived;
+    }
+
+    /** A shipped order is paid in full before it goes out; a delivery only pays its fee up front. */
+    public BigDecimal getDepositAmount() {
+        return isShipping() ? total : deliveryFee;
+    }
+
+    public String getDepositName() {
+        return isShipping() ? "payment" : "delivery deposit";
     }
 
     public int getLoafCount() {

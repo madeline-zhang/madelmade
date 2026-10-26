@@ -139,6 +139,13 @@ class SiteTest {
     }
 
     @Test
+    void aboutAnswersWhetherWeShipOutOfTennessee() throws Exception {
+        mvc.perform(get("/about")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Do you ship?")))
+                .andExpect(content().string(Matchers.containsString("We can only ship within Tennessee.")));
+    }
+
+    @Test
     void unknownOrderIsNotFound() throws Exception {
         mvc.perform(get("/o/not-a-real-token")).andExpect(status().isNotFound());
     }

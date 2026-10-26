@@ -6,15 +6,18 @@ import com.madelmade.repo.OrderRepository;
 import com.madelmade.repo.ProductRepository;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class OrderService {
     private static final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private static final Pattern ZIP = Pattern.compile("\\b(\\d{5})(?:-\\d{4})?\\b");
+    /** Shipped loaves go out early in the week so they don't sit in a post office over the weekend. */
+    static final Set<DayOfWeek> SHIP_DAYS = EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY);
 
     private final OrderRepository orders;
     private final ProductRepository products;
@@ -124,6 +130,16 @@ public class OrderService {
             if (!settings.deliveryEnabled()) error.accept("fulfillment", "Delivery isn't available right now; please choose pickup.");
             else if (isBlank(f.getAddress())) error.accept("fulfillment", "Please enter the delivery address.");
         }
+        if (f.getFulfillment() == Fulfillment.SHIPPING) {
+            if (!settings.shippingEnabled()) error.accept("fulfillment", "Shipping isn't available right now; please choose pickup.");
+            else if (isBlank(f.getAddress())) error.accept("fulfillment", "Please enter the shipping address.");
+            else if (!isTennesseeAddress(f.getAddress())) {
+                error.accept("fulfillment", "We can only ship within Tennessee. Please include a Tennessee ZIP code (370xx to 385xx).");
+            }
+            if (f.getDate() != null && !SHIP_DAYS.contains(f.getDate().getDayOfWeek())) {
+                error.accept("date", "Shipped orders go out Monday to Wednesday, so they don't sit in a post office over the weekend. Please pick a Monday, Tuesday or Wednesday.");
+            }
+        }
         boolean priority = f.isPriority() && settings.priorityEnabled();
         if (f.getDate() == null) {
             error.accept("date", "Please choose a date.");
@@ -155,8 +171,9 @@ public class OrderService {
             }
             items.add(toItem(p.get(), line, q));
             line.setPickupOnly(p.get().isPickupOnly());
-            if (p.get().isPickupOnly() && f.getFulfillment() == Fulfillment.DELIVERY) {
-                error.accept("fulfillment", p.get().getName() + " is pickup only and can't be delivered. Please choose pickup, or order it separately.");
+            if (p.get().isPickupOnly() && f.getFulfillment() != Fulfillment.PICKUP) {
+                error.accept("fulfillment", p.get().getName() + " is pickup only and can't be " + (f.getFulfillment() == Fulfillment.SHIPPING ? "shipped" : "delivered")
+                        + ". Please choose pickup, or order it separately.");
             }
         }
         com.madelmade.domain.PromoCode promo = null;
@@ -171,7 +188,7 @@ public class OrderService {
         if (isBlank(customer.getName())) customer.setName(trim(f.getName()));
         if (!isBlank(f.getPhone())) customer.setPhone(trim(f.getPhone()));
         customer.setContactPref(f.getContactPref());
-        if (f.getFulfillment() == Fulfillment.DELIVERY && !isBlank(f.getAddress())) customer.setAddress(trim(f.getAddress()));
+        if (f.getFulfillment() != Fulfillment.PICKUP && !isBlank(f.getAddress())) customer.setAddress(trim(f.getAddress()));
         customerRepo.save(customer);
 
         CustomerOrder o = new CustomerOrder();
@@ -182,7 +199,7 @@ public class OrderService {
         o.setContactPhone(trim(f.getPhone()));
         o.setContactPref(f.getContactPref());
         o.setFulfillment(f.getFulfillment());
-        o.setDeliveryAddress(f.getFulfillment() == Fulfillment.DELIVERY ? trim(f.getAddress()) : null);
+        o.setDeliveryAddress(f.getFulfillment() != Fulfillment.PICKUP ? trim(f.getAddress()) : null);
         o.setRequestedDate(f.getDate());
         o.setRequestedTime(trim(f.getTime()));
         o.setPriority(priority);
@@ -324,7 +341,7 @@ public class OrderService {
     @Transactional
     public void updatePricing(CustomerOrder o, PricingUpdate u) {
         if (o.getStatus().isClosed()) throw new UserFacingException("This order is closed.");
-        o.setDeliveryFee(o.isDelivery() ? u.deliveryFee() : null);
+        o.setDeliveryFee(o.isAddressed() ? u.deliveryFee() : null);
         o.setAdjustment(u.adjustment() == null ? BigDecimal.ZERO : u.adjustment());
         o.setAdjustmentNote(trim(u.adjustmentNote()));
         if (u.requestedDate() != null) o.setRequestedDate(u.requestedDate());
@@ -352,8 +369,9 @@ public class OrderService {
     @Transactional
     public void approve(CustomerOrder o, String message) {
         requireStatus(o, OrderStatus.NEEDS_REVIEW, OrderStatus.CHANGES_REQUESTED);
-        if (o.isDelivery() && o.getDeliveryFee() == null) {
-            throw new UserFacingException("Set the delivery fee before approving a delivery order.");
+        if (o.isAddressed() && o.getDeliveryFee() == null) {
+            String fee = o.getFeeName().toLowerCase();
+            throw new UserFacingException("Set the " + fee + " fee before approving a " + fee + " order.");
         }
         if (o.isPriceTbd()) {
             throw new UserFacingException("Set a price for the custom items before approving.");
@@ -416,6 +434,8 @@ public class OrderService {
     @Transactional
     public void setDepositPaid(CustomerOrder o, boolean paid) {
         o.setDepositPaid(paid);
+        // A shipped order's up-front payment is the whole order.
+        if (o.isShipping()) o.setPaid(paid);
         o.setUpdatedAt(Instant.now());
         orders.save(o);
     }
@@ -476,6 +496,16 @@ public class OrderService {
             }
         }
         return out;
+    }
+
+    /** Tennessee ZIP codes run from 37010 to 38589; the last ZIP in the address is the one that counts. */
+    static boolean isTennesseeAddress(String address) {
+        java.util.regex.Matcher m = ZIP.matcher(address);
+        String zip = null;
+        while (m.find()) zip = m.group(1);
+        if (zip == null) return false;
+        int n = Integer.parseInt(zip);
+        return n >= 37000 && n <= 38599;
     }
 
     private static boolean isBlank(String s) {

@@ -104,7 +104,8 @@ public class StatusController {
             case NEEDS_REVIEW -> "Madeline will review your request soon. You'll get an email when she does.";
             case CHANGES_REQUESTED -> "Read her message below and reply here. It goes straight to her.";
             case APPROVED -> "Madeline is planning your bake for " + formats.longDay(o.getRequestedDate()) + ".";
-            case BAKED -> "Madeline will confirm the " + (o.isDelivery() ? "delivery" : "pickup") + " time with you.";
+            case BAKED -> o.isShipping() ? "Madeline will ship it and send you the tracking number."
+                    : "Madeline will confirm the " + (o.isDelivery() ? "delivery" : "pickup") + " time with you.";
             case COMPLETED -> "Thank you for ordering from MadelMade. We hope it made you smile.";
             case DECLINED -> "Madeline couldn't take this one. Her note is below.";
             case CANCELLED -> "This order was cancelled.";
@@ -128,11 +129,11 @@ public class StatusController {
         steps.add(new Step(s == OrderStatus.CHANGES_REQUESTED ? "Madeline asked a question" : "Madeline confirms",
                 o.getApprovedAt() != null ? formats.stamp(o.getApprovedAt()) : "", state(reached, 2)));
         if (o.isDepositRequired()) {
-            steps.add(new Step("Delivery deposit", o.isDepositPaid() ? "Received" : "By Venmo or Zelle after approval",
+            steps.add(new Step(o.isShipping() ? "Payment" : "Delivery deposit", o.isDepositPaid() ? "Received" : "By Venmo or Zelle after approval",
                     o.isDepositPaid() ? "done" : (reached == 2 ? "current" : "")));
         }
         steps.add(new Step("Baked", "Madeline checks in with you", state(reached, 3)));
-        steps.add(new Step(o.isDelivery() ? "Delivered" : "Picked up", formats.longDay(o.getRequestedDate()), state(reached, 4)));
+        steps.add(new Step(o.isShipping() ? "Shipped" : o.isDelivery() ? "Delivered" : "Picked up", formats.longDay(o.getRequestedDate()), state(reached, 4)));
         return steps;
     }
 

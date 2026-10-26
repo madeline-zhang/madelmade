@@ -45,18 +45,21 @@
         </section>
 
         <section class="card stack">
-          <h2 class="card-title">Pickup or delivery</h2>
-          <div class="segmented" role="radiogroup" aria-label="Pickup or delivery">
+          <h2 class="card-title" th:text="${settings.shippingEnabled() ? 'Pickup, delivery or shipping' : 'Pickup or delivery'}">Pickup or delivery</h2>
+          <div class="segmented" role="radiogroup" th:aria-label="${settings.shippingEnabled() ? 'Pickup, delivery or shipping' : 'Pickup or delivery'}">
             <label><input type="radio" th:field="*{fulfillment}" value="PICKUP" data-fulfillment><span class="pill">Pickup <span class="pill-note">free</span></span></label>
             <label th:if="${settings.deliveryEnabled()}" th:classappend="${cart.pickupOnly} ? 'pill-disabled'"><input type="radio" th:field="*{fulfillment}" value="DELIVERY" data-fulfillment th:disabled="${cart.pickupOnly}"><span class="pill">Delivery <span class="pill-note" th:text="${cart.pickupOnly ? 'not available' : 'fee quoted'}">fee quoted</span></span></label>
+            <label th:if="${settings.shippingEnabled()}" th:classappend="${cart.pickupOnly} ? 'pill-disabled'"><input type="radio" th:field="*{fulfillment}" value="SHIPPING" data-fulfillment th:disabled="${cart.pickupOnly}"><span class="pill">Shipping <span class="pill-note" th:text="${cart.pickupOnly ? 'not available' : 'Tennessee only'}">Tennessee only</span></span></label>
           </div>
           <div th:replace="~{components/notices :: pickupOnly}"></div>
           <p class="t-small muted" style="margin: 0" data-pickup-note th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once Madeline approves.'}">Pickup info</p>
           <div class="field" data-address-field>
-            <label for="address">Delivery address</label>
+            <label for="address"><span data-for-way="DELIVERY">Delivery address</span><span data-for-way="SHIPPING" hidden>Shipping address</span></label>
             <textarea id="address" th:field="*{address}" rows="2" autocomplete="street-address" placeholder="Street, city, ZIP"></textarea>
-            <div class="help">Only Madeline sees this. She'll quote the delivery fee with her approval; it's paid up front as a deposit.</div>
+            <div class="help" data-for-way="DELIVERY">Only Madeline sees this. She'll quote the delivery fee with her approval; it's paid up front as a deposit.</div>
+            <div class="help" data-for-way="SHIPPING" hidden>Only Madeline sees this. Include your Tennessee ZIP code. She'll quote shipping with her approval, and shipped orders are paid in full by Venmo or Zelle before they go out, Monday to Wednesday.</div>
           </div>
+          <p class="t-small muted" style="margin: 0" th:if="${settings.shippingEnabled()}" th:text="${settings.get('notice.shipping')}">We can only ship within Tennessee.</p>
           <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('fulfillment')}">
             <div th:each="e : ${fieldErrors.get('fulfillment')}" th:text="${e}">Problem</div>
           </div>
@@ -117,7 +120,7 @@
           <div th:if="${taxRates.enabled() and !taxRates.included() and taxEst.tax().signum() > 0}"><span th:text="${'Estimated ' + #strings.toLowerCase(taxLabel)}">Estimated sales tax (9.75%)</span><span th:text="${@money.fmt(taxEst.tax())}">$2.54</span></div>
           <div class="grand"><span>Total</span><span th:text="${@money.fmt(checkoutTotal) + (cart.priceTbd ? ' + custom' : '')}">$26</span></div>
           <div class="t-small muted" th:if="${taxRates.enabled() and taxRates.included()}" th:text="${taxLabel + ': ' + @money.fmt(taxEst.tax())}">Includes sales tax (9.75%): $2.32</div>
-          <div class="t-small muted" th:text="${'Plus priority or delivery fees if chosen' + (taxRates.enabled() and !taxRates.included() ? ', and the sales tax on them' : '') + '. You pay at pickup or delivery.'}">Plus priority or delivery fees if chosen. You pay at pickup or delivery.</div>
+          <div class="t-small muted" th:text="${'Plus priority, delivery or shipping fees if chosen' + (taxRates.enabled() and !taxRates.included() ? ', and the sales tax on them' : '') + '. Nothing is charged now.'}">Plus priority, delivery or shipping fees if chosen. Nothing is charged now.</div>
         </div>
         <p style="margin: 16px 0 0"><a th:href="@{/cart}" class="t-small">Edit cart</a></p>
         <div style="margin-top: 16px"><p th:replace="~{components/notices :: homeKitchen}"></p></div>

@@ -13,6 +13,9 @@
   <div th:if="${!producerName.isEmpty()}" style="margin:0 0 14px;">
     <strong>Made by:</strong> <span th:text="${producerName}">Madeline</span><span th:if="${!producerPhone.isEmpty()}" th:text="${' · ' + producerPhone}"></span>
   </div>
+  <div th:if="${order.shipping and order.depositRequired and !order.depositPaid and approved}" style="margin:0 0 14px;">
+    <strong>Shipping orders are paid before they ship.</strong> Please send <span th:text="${money.fmt(order.total)}">$30</span> by Venmo or Zelle, and Madeline will bake and ship your order.
+  </div>
   <th:block th:if="${showSummary}">
     <p style="margin:0;font-size:14px;color:#5C5A50;">
       <strong style="color:#263028;" th:text="${order.fulfillment.label}">Pickup</strong>

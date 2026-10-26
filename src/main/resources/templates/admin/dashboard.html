@@ -27,7 +27,7 @@
     <a class="dash-tile" th:href="@{/admin/orders(tab='baked')}">
       <span class="label">Loaves to hand off</span>
       <span class="value" th:text="${loavesToHandOff}">1</span>
-      <span class="sub">Baked, waiting for pickup or delivery</span>
+      <span class="sub">Baked, waiting to hand off or ship</span>
     </a>
     <a class="dash-tile" th:href="@{/admin/orders(tab='completed')}">
       <span class="label" th:text="${'Sales in ' + yearSales.year}">Sales in 2026</span>
@@ -52,9 +52,9 @@
         <select id="fPeriod" name="period" data-autosubmit>
           <option th:each="c : ${periods}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == period}">This year</option>
         </select></div>
-      <div class="field"><label for="fWay">Pickup or delivery</label>
+      <div class="field"><label for="fWay">How it gets to them</label>
         <select id="fWay" name="way" data-autosubmit>
-          <option th:each="c : ${ways}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == way}">Pickup and delivery</option>
+          <option th:each="c : ${ways}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == way}">All</option>
         </select></div>
       <noscript><button type="submit" class="btn btn-secondary btn-small">Show</button></noscript>
     </form>
@@ -66,6 +66,8 @@
       <div><span class="label">Pickup</span><strong th:text="${breakdown.pickup}">9</strong></div>
       <div><span class="label">Delivery</span><strong th:text="${breakdown.delivery}">3</strong>
         <span class="t-small muted" th:if="${breakdown.deliveryFees.signum() > 0}" th:text="${@money.fmt(breakdown.deliveryFees) + ' in fees'}">$15 in fees</span></div>
+      <div><span class="label">Shipping</span><strong th:text="${breakdown.shipping}">1</strong>
+        <span class="t-small muted" th:if="${breakdown.shippingFees.signum() > 0}" th:text="${@money.fmt(breakdown.shippingFees) + ' in fees'}">$12 in fees</span></div>
       <div><span class="label">Priority</span><strong th:text="${breakdown.priority}">2</strong></div>
       <div><span class="label">Promo code</span><strong th:text="${breakdown.promo}">1</strong></div>
     </div>

@@ -48,6 +48,7 @@ public class SettingsService {
         DEFAULTS.put("producer.name", "Madeline");
         DEFAULTS.put("producer.phone", "");
         DEFAULTS.put("delivery.enabled", "true");
+        DEFAULTS.put("shipping.enabled", "true");
         DEFAULTS.put("notify.email", "madelmadewithlove@gmail.com");
         DEFAULTS.put("notify.newRequest", "true");
         DEFAULTS.put("notify.customerReply", "true");
@@ -77,6 +78,7 @@ public class SettingsService {
                 + "Best way to reheat?\nToast it and butter it up!");
         DEFAULTS.put("notice.pickupOnly", "Drinks made with milk, like lattes, have to stay cold, so Tennessee's home food law only allows them to be sold in person. That makes lattes pickup only. You can pick one up when you collect your bread, or switch this order to pickup.");
         DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens.");
+        DEFAULTS.put("notice.shipping", "We can only ship within Tennessee. MadelMade bakes under Tennessee's home food law, which covers sales inside the state, so shipping to other states would need a commercial food license.");
         DEFAULTS.put("notice.decline", "Madeline has the right to decline any order, for any reason. If she can't take yours, she'll let you know, and you won't be charged anything.");
         // When Madeline last opened Feedback; the menu badge only counts what came in after that.
         DEFAULTS.put("admin.feedbackSeenAt", "0");
@@ -172,6 +174,7 @@ public class SettingsService {
     public BigDecimal certificatePrice() { return money("cert.price"); }
     public String defaultStarter() { return get("cert.starter"); }
     public boolean deliveryEnabled() { return flag("delivery.enabled"); }
+    public boolean shippingEnabled() { return flag("shipping.enabled"); }
     public String pickupArea() { return get("pickup.area"); }
     public String notifyEmail() { return get("notify.email"); }
 

@@ -57,13 +57,13 @@ public class AdminDashboardController {
     public record Choice(String value, String label) {}
 
     /** What the chosen period and fulfillment add up to. */
-    public record Breakdown(int orders, BigDecimal gross, BigDecimal average, int pickup, int delivery, int priority,
-                            int promo, BigDecimal deliveryFees) {}
+    public record Breakdown(int orders, BigDecimal gross, BigDecimal average, int pickup, int delivery, int shipping, int priority,
+                            int promo, BigDecimal deliveryFees, BigDecimal shippingFees) {}
 
     static final List<Choice> PERIODS = List.of(new Choice("month", "This month"), new Choice("year", "This year"),
             new Choice("12m", "Last 12 months"), new Choice("all", "All time"));
-    static final List<Choice> WAYS = List.of(new Choice("all", "Pickup and delivery"), new Choice("pickup", "Pickup"),
-            new Choice("delivery", "Delivery"));
+    static final List<Choice> WAYS = List.of(new Choice("all", "All"), new Choice("pickup", "Pickup"),
+            new Choice("delivery", "Delivery"), new Choice("shipping", "Shipping"));
 
     private final OrderRepository orders;
     private final CustomerRepository customers;
@@ -143,21 +143,21 @@ public class AdminDashboardController {
     private static Breakdown breakdown(List<SalesStats.Sale> list) {
         BigDecimal gross = sum(list);
         int n = list.size();
-        int pickup = 0, delivery = 0, priority = 0, promo = 0;
-        BigDecimal fees = BigDecimal.ZERO;
+        int pickup = 0, delivery = 0, shipping = 0, priority = 0, promo = 0;
+        BigDecimal fees = BigDecimal.ZERO, shipFees = BigDecimal.ZERO;
         for (var s : list) {
             CustomerOrder o = s.order();
-            if (o.getFulfillment() == com.madelmade.domain.Fulfillment.DELIVERY) {
-                delivery++;
-                if (o.getDeliveryFee() != null) fees = fees.add(o.getDeliveryFee());
-            } else {
-                pickup++;
+            BigDecimal fee = o.getDeliveryFee() == null ? BigDecimal.ZERO : o.getDeliveryFee();
+            switch (o.getFulfillment()) {
+                case DELIVERY -> { delivery++; fees = fees.add(fee); }
+                case SHIPPING -> { shipping++; shipFees = shipFees.add(fee); }
+                case PICKUP -> pickup++;
             }
             if (o.isPriority()) priority++;
             if (o.getPromoCode() != null && !o.getPromoCode().isBlank()) promo++;
         }
         BigDecimal avg = n == 0 ? BigDecimal.ZERO : gross.divide(BigDecimal.valueOf(n), 2, RoundingMode.HALF_UP);
-        return new Breakdown(n, gross, avg, pickup, delivery, priority, promo, fees);
+        return new Breakdown(n, gross, avg, pickup, delivery, shipping, priority, promo, fees, shipFees);
     }
 
     private static BigDecimal sum(List<SalesStats.Sale> list) {

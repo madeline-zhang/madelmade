@@ -55,16 +55,16 @@
         <section class="card stack" style="gap: 10px">
           <h2 class="card-title" style="margin: 0">Details</h2>
           <div><strong th:text="${order.fulfillment.label}">Pickup</strong> · <span th:text="${@fmt.longDay(order.requestedDate)}">Saturday</span><span th:if="${order.requestedTime != null}" th:text="${', ' + order.requestedTime.toLowerCase()}"></span></div>
-          <div class="t-small muted" th:if="${!order.delivery and (order.status.name() == 'NEEDS_REVIEW' or order.status.name() == 'CHANGES_REQUESTED')}" th:text="${'Pickup in the ' + settings.pickupArea() + ' area. The address comes with your confirmation.'}"></div>
-          <div class="t-small" th:if="${order.delivery}" th:text="${'Delivering to ' + order.deliveryAddress}"></div>
+          <div class="t-small muted" th:if="${!order.addressed and (order.status.name() == 'NEEDS_REVIEW' or order.status.name() == 'CHANGES_REQUESTED')}" th:text="${'Pickup in the ' + settings.pickupArea() + ' area. The address comes with your confirmation.'}"></div>
+          <div class="t-small" th:if="${order.addressed}" th:text="${(order.shipping ? 'Shipping to ' : 'Delivering to ') + order.deliveryAddress}"></div>
           <div class="t-small" th:if="${order.depositRequired and order.status.name() == 'APPROVED'}">
-            <span th:if="${order.depositPaid}">Delivery deposit received. Thank you!</span>
-            <span th:unless="${order.depositPaid}" th:text="${'Please send the ' + @money.fmt(order.deliveryFee) + ' delivery deposit by Venmo or Zelle so Madeline can start baking.'}"></span>
+            <span th:if="${order.depositPaid}" th:text="${#strings.capitalize(order.depositName) + ' received. Thank you!'}">Delivery deposit received. Thank you!</span>
+            <span th:unless="${order.depositPaid}" th:text="${'Please send the ' + @money.fmt(order.depositAmount) + ' ' + order.depositName + ' by Venmo or Zelle so Madeline can start baking.'}"></span>
           </div>
-          <div class="t-small muted">Payment: at pickup or delivery (cash, Venmo or Zelle).</div>
+          <div class="t-small muted" th:text="${order.shipping ? 'Payment: in full by Venmo or Zelle before it ships.' : 'Payment: at ' + (order.delivery ? 'delivery' : 'pickup') + ' (cash, Venmo or Zelle).'}">Payment: at pickup (cash, Venmo or Zelle).</div>
           <div class="t-small" th:if="${order.status.name() == 'APPROVED' or order.status.name() == 'BAKED' or order.status.name() == 'COMPLETED'}">
             <div th:text="${'Made by ' + settings.get('producer.name') + (settings.get('producer.phone').isEmpty() ? '' : ' · ' + settings.get('producer.phone'))}">Made by Madeline</div>
-            <div th:if="${!order.delivery and !settings.get('pickup.address').isEmpty()}" th:text="${settings.get('pickup.address')}">Pickup address</div>
+            <div th:if="${!order.addressed and !settings.get('pickup.address').isEmpty()}" th:text="${settings.get('pickup.address')}">Pickup address</div>
           </div>
           <p th:replace="~{components/notices :: homeKitchen}"></p>
           <div class="t-small muted" th:text="${'Updates go to ' + order.contactEmail + (order.contactPref.name() != 'EMAIL' ? ' and by ' + order.contactPref.label : '')}"></div>
