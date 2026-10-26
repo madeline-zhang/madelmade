@@ -59,7 +59,7 @@
             <div class="help" data-for-way="DELIVERY">Only Madeline sees this. She'll quote the delivery fee with her approval; it's paid up front as a deposit.</div>
             <div class="help" data-for-way="SHIPPING" hidden>Only Madeline sees this. Include your Tennessee ZIP code. She'll quote shipping with her approval, and shipped orders are paid in full by Venmo or Zelle before they go out, Monday to Wednesday.</div>
           </div>
-          <p class="t-small muted" style="margin: 0" th:if="${settings.shippingEnabled()}" th:text="${settings.get('notice.shipping')}">We can only ship within Tennessee.</p>
+          <p class="t-small muted" style="margin: 0" th:if="${settings.shippingEnabled()}" th:text="${settings.get('notice.shipping')}">I can only ship within Tennessee.</p>
           <div class="field-error" role="alert" data-field-error th:if="${fieldErrors != null and fieldErrors.containsKey('fulfillment')}">
             <div th:each="e : ${fieldErrors.get('fulfillment')}" th:text="${e}">Problem</div>
           </div>
