@@ -85,8 +85,25 @@ public class CustomerOrder {
 
     public void addItem(OrderItem item) {
         item.setOrder(this);
-        item.setDisplayOrder(items.size());
+        item.setDisplayOrder(items.stream().mapToInt(OrderItem::getDisplayOrder).max().orElse(-1) + 1);
         items.add(item);
+    }
+
+    /** Puts a new item where the old one was, so the order's list keeps its order. */
+    public void replaceItem(OrderItem old, OrderItem item) {
+        int at = items.indexOf(old);
+        item.setOrder(this);
+        item.setDisplayOrder(old.getDisplayOrder());
+        items.set(at, item);
+    }
+
+    public void removeItem(OrderItem item) {
+        items.remove(item);
+    }
+
+    /** A note in the order's history that doesn't change its status. */
+    public void logChange(String note) {
+        changeStatus(status, note);
     }
 
     public OrderMessage addMessage(MessageAuthor author, String body) {

@@ -4,8 +4,17 @@
 <body>
 <main id="main" class="product-page">
   <div class="wrap">
-    <a class="back-link top-back" th:href="@{/#menu}">←&nbsp;&nbsp;Back to menu</a>
-    <form class="product-layout" method="post" th:action="@{/cart/add}" data-product-form
+    <div class="edit-banner" th:if="${editing != null}">
+      <div><strong th:text="${'Editing order ' + editing.orderNumber() + ' for ' + editing.customerName()}">Editing order #1005 for Sarah Kim</strong>
+        <a class="t-small" th:href="@{${editing.back()}}">Cancel</a></div>
+      <div class="edit-switch">
+        <span class="t-small muted">Product:</span>
+        <a th:each="p : ${editing.products()}" th:href="@{${editing.switchBase()}(product=${p.id})}" th:text="${p.name}"
+           th:classappend="${p.id == editing.currentProductId()} ? 'current'">Classic Loaf</a>
+      </div>
+    </div>
+    <a class="back-link top-back" th:href="@{/#menu}" th:if="${editing == null}">←&nbsp;&nbsp;Back to menu</a>
+    <form class="product-layout" method="post" th:action="${editing != null} ? @{${editing.action()}} : @{/cart/add}" data-product-form
           th:data-base="${product.basePrice}" th:data-cert-price="${certPrice}">
       <input type="hidden" name="productId" th:value="${product.id}">
 
@@ -21,7 +30,7 @@
 
       <div class="product-info">
         <div class="product-head">
-          <a class="back-link side-back" th:href="@{/#menu}">←&nbsp;&nbsp;Back to menu</a>
+          <a class="back-link side-back" th:href="@{/#menu}" th:if="${editing == null}">←&nbsp;&nbsp;Back to menu</a>
           <h1 class="t-page-title" th:text="${product.name}">Classic Loaf</h1>
           <div class="price-row">
             <div class="t-price" data-price-text th:text="${@money.fmt(product.basePrice)}">$10</div>
@@ -36,7 +45,7 @@
             <dt>Allergens</dt><dd data-label="allergens" th:data-base="${product.allergens}" th:text="${product.allergens}">Wheat</dd>
           </dl>
           <p class="t-small muted" th:unless="${product.hasLabelInfo}">Ask Madeline about ingredients and allergens at <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a>.</p>
-          <div class="alert alert-info" th:if="${product.soldOut}">Sold out for now. Check back soon!</div>
+          <div class="alert alert-info" th:if="${product.soldOut and editing == null}">Sold out for now. Check back soon!</div>
         </div>
 
         <div th:replace="~{components/option-picker :: picker(${product}, ${selected})}"></div>
@@ -85,14 +94,15 @@
         <div class="add-bar">
           <div class="qty" title="Quantity">
             <button type="button" aria-label="One fewer" data-qty="-1">−</button>
-            <input type="number" name="quantity" value="1" min="1" th:max="${product.countsAsLoaf ? settings.maxPerOrder() : 12}" aria-label="Quantity" data-qty-input
+            <input type="number" name="quantity" th:value="${form_qty != null ? form_qty : 1}" min="1" th:max="${product.countsAsLoaf ? settings.maxPerOrder() : 12}" aria-label="Quantity" data-qty-input
                    th:data-max-msg="${product.countsAsLoaf ? 'You can order up to ' + settings.maxPerOrder() + ' loaves per order.' : 'That''s the most for one order.'}">
             <button type="button" aria-label="One more" data-qty="1">+</button>
           </div>
-          <button type="submit" class="btn" th:disabled="${product.soldOut or !settings.ordersOpen()}">
-            Add to cart&nbsp;&nbsp;·&nbsp;&nbsp;<span data-price-button th:text="${@money.fmt(product.basePrice)}">$10</span>
+          <button type="submit" class="btn" th:disabled="${editing == null and (product.soldOut or !settings.ordersOpen())}">
+            <span th:text="${editing != null ? editing.button() : 'Add to cart'}">Add to cart</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span data-price-button th:text="${@money.fmt(product.basePrice)}">$10</span>
           </button>
-          <div class="t-small muted add-note">Nothing is charged now. Madeline confirms every order.</div>
+          <div class="t-small muted add-note" th:if="${editing == null}">Nothing is charged now. Madeline confirms every order.</div>
+          <div class="t-small muted add-note" th:if="${editing != null}">Re-priced from today's menu. The customer sees the change on their order page; no email is sent.</div>
         </div>
       </div>
     </form>

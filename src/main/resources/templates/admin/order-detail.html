@@ -21,6 +21,21 @@
     </div>
   </div>
 
+  <!-- Decision -->
+  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/approve(id=${o.id})}" th:if="${o.status.name() == 'NEEDS_REVIEW' or o.status.name() == 'CHANGES_REQUESTED'}">
+    <h3>Your decision</h3>
+    <div class="field"><label for="decision-msg" th:text="${'Message to ' + o.customer.firstName + ' (sent with your decision)'}">Message</label>
+      <textarea id="decision-msg" name="message" rows="3" placeholder="e.g. Can't wait to bake this! See you Saturday."></textarea></div>
+    <div class="field" th:unless="${o.addressed}"><label for="pickup-spot">Pickup spot for this order</label>
+      <textarea id="pickup-spot" name="pickupSpot" rows="2" th:text="${o.pickupAddress}" th:placeholder="${settings.get('pickup.address').isEmpty() ? 'e.g. Kroger parking lot, Concord Rd' : settings.get('pickup.address')}"></textarea>
+      <div class="help">Sent with your approval. Leave it blank to share your home pickup address from Settings, or type a nearby spot, like a parking lot, for someone you don't know.</div></div>
+    <div class="action-row">
+      <button type="submit" class="btn" th:formaction="@{/admin/orders/{id}/approve(id=${o.id})}">Approve</button>
+      <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
+      <button type="submit" class="btn btn-danger" th:formaction="@{/admin/orders/{id}/decline(id=${o.id})}">Decline</button>
+    </div>
+  </form>
+
   <div class="facts">
     <div><div class="k" th:text="${o.fulfillment.label}">Pickup</div><div class="v" th:text="${@fmt.day(o.requestedDate) + (o.requestedTime != null ? ', ' + o.requestedTime : '')}">Sat, Oct 11</div></div>
     <div><div class="k">Prefers</div><div class="v" th:text="${o.contactPref.label + (o.contactPhone != null ? ' · ' + o.contactPhone : '')}">Text · (615) 555-0142</div></div>
@@ -64,20 +79,6 @@
     <button type="submit" class="btn btn-secondary" style="align-self: flex-start">Save price and date</button>
   </form>
 
-  <!-- Decision -->
-  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/approve(id=${o.id})}" th:if="${o.status.name() == 'NEEDS_REVIEW' or o.status.name() == 'CHANGES_REQUESTED'}">
-    <h3>Your decision</h3>
-    <div class="field"><label for="decision-msg" th:text="${'Message to ' + o.customer.firstName + ' (sent with your decision)'}">Message</label>
-      <textarea id="decision-msg" name="message" rows="3" placeholder="e.g. Can't wait to bake this! See you Saturday."></textarea></div>
-    <div class="field" th:unless="${o.addressed}"><label for="pickup-spot">Pickup spot for this order</label>
-      <textarea id="pickup-spot" name="pickupSpot" rows="2" th:text="${o.pickupAddress}" th:placeholder="${settings.get('pickup.address').isEmpty() ? 'e.g. Kroger parking lot, Concord Rd' : settings.get('pickup.address')}"></textarea>
-      <div class="help">Sent with your approval. Leave it blank to share your home pickup address from Settings, or type a nearby spot, like a parking lot, for someone you don't know.</div></div>
-    <div class="action-row">
-      <button type="submit" class="btn" th:formaction="@{/admin/orders/{id}/approve(id=${o.id})}">Approve</button>
-      <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
-      <button type="submit" class="btn btn-danger" th:formaction="@{/admin/orders/{id}/decline(id=${o.id})}">Decline</button>
-    </div>
-  </form>
 
   <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/pickup-spot(id=${o.id})}" th:if="${!o.addressed and (o.status.name() == 'APPROVED' or o.status.name() == 'BAKED')}">
     <h3>Pickup spot</h3>

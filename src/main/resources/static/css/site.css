@@ -432,3 +432,11 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
   .process-steps { gap: 80px; }
 }
 .privacy ul { margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 8px; } .privacy h2 { margin: 12px 0 0; } .privacy p { margin: 0; }
+
+/* Madeline editing an order's item from the product page */
+.edit-banner { display: flex; flex-direction: column; gap: 10px; background: var(--color-crumb); border: 1px solid var(--color-card-line); border-radius: 12px; padding: 14px 16px; margin: 0 0 20px; }
+.edit-banner > div:first-child { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; }
+.edit-switch { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-size: 0.875rem; }
+.edit-switch a { color: inherit; }
+.edit-switch a.current { font-weight: 600; text-decoration: none; color: var(--color-terracotta); }
+a.link-btn { display: inline-block; }

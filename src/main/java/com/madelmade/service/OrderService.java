@@ -249,6 +249,51 @@ public class OrderService {
         return i;
     }
 
+    // ---- Madeline editing an order's items ----
+
+    /** Adds an item, or swaps one for another, re-priced from today's menu. Item is null to add. */
+    @Transactional
+    public void saveItem(CustomerOrder o, OrderItem old, Product p, PricingService.Quote q, int qty, String letters, String font,
+                         String notes, boolean cert, String certName, String certMessage) {
+        if (!q.ok()) throw new UserFacingException(q.errors());
+        CartLine line = toCartLine(p, q, Math.max(1, Math.min(qty, 12)), letters, font, notes, cert, certName, certMessage);
+        OrderItem item = toItem(p, line, q);
+        if (old == null) {
+            o.addItem(item);
+            o.logChange("Added " + describe(item));
+        } else {
+            if (old.isHasCertificate() && item.isHasCertificate()) {
+                // Keep anything already filled in on bake day.
+                item.setCertBakedAt(old.getCertBakedAt());
+                item.setCertWeight(old.getCertWeight());
+                item.setCertLabor(old.getCertLabor());
+                item.setCertStarter(old.getCertStarter());
+            }
+            o.replaceItem(old, item);
+            o.logChange("Changed " + describe(old) + " to " + describe(item));
+        }
+        o.recalculate();
+        o.setUpdatedAt(Instant.now());
+        orders.save(o);
+    }
+
+    @Transactional
+    public void removeItem(CustomerOrder o, OrderItem item) {
+        if (o.getItems().size() <= 1) {
+            throw new UserFacingException("An order needs at least one item. Change this one instead, or decline the order.");
+        }
+        o.removeItem(item);
+        o.logChange("Removed " + describe(item));
+        o.recalculate();
+        o.setUpdatedAt(Instant.now());
+        orders.save(o);
+    }
+
+    private static String describe(OrderItem i) {
+        String s = (i.getQuantity() > 1 ? i.getQuantity() + " × " : "") + i.getProductName();
+        return isBlank(i.getOptionsSummary()) ? s : s + " (" + i.getOptionsSummary() + ")";
+    }
+
     @Transactional
     public void customerReply(CustomerOrder o, String text) {
         if (isBlank(text)) throw new UserFacingException("Please write a message first.");

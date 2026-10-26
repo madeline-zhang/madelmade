@@ -45,12 +45,20 @@
         Birth certificate <span th:text="${'+' + @money.fmt(i.certPrice)}">+$1</span><br>
         <span th:text="${i.certName}">Hazel</span><span th:if="${i.certMessage != null}" th:text="${' · ' + i.certMessage}"></span>
       </div>
+      <div class="cart-line-actions" th:if="${showPrivate}">
+        <a class="link-btn" th:href="@{/admin/orders/{id}/items/{item}(id=${o.id},item=${i.id})}">Change</a>
+        <form method="post" th:action="@{/admin/orders/{id}/items/{item}/remove(id=${o.id},item=${i.id})}" th:if="${o.items.size() > 1}"
+              th:data-confirm="${'Remove ' + i.productName + ' from this order?'}">
+          <button type="submit" class="link-btn">Remove</button>
+        </form>
+      </div>
     </div>
     <div class="summary-price">
       <span th:if="${i.priceTbd}">Price to be discussed</span>
       <span th:unless="${i.priceTbd}" th:text="${@money.fmt(i.lineTotal)}">$16</span>
     </div>
   </div>
+  <p th:if="${showPrivate}" style="margin: 10px 0 0"><a class="t-small" th:href="@{/admin/orders/{id}/items/new(id=${o.id})}">+ Add an item</a></p>
   <div class="summary-totals">
     <div><span>Items</span><span th:text="${@money.fmt(o.subtotal) + (o.priceTbd ? ' + custom' : '')}">$26</span></div>
     <div th:if="${o.priority}"><span>Priority (1-day)</span><span th:text="${@money.fmt(o.priorityFee)}">$5</span></div>
