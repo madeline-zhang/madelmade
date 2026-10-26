@@ -17,6 +17,8 @@ public class LocalMadelMade {
                 .setDataDirectory(dataDir)
                 .setCleanDataDirectory(false)
                 .setPort(54329)
+                // Some Macs take more than the default 10 seconds to start it.
+                .setPGStartupWait(java.time.Duration.ofSeconds(60))
                 .start();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
