@@ -39,6 +39,8 @@
           <p th:text="${'I bake up to ' + settings.maxLoaves() + ' loaves at a time across all orders. When lots of orders come in for the same days, I may ask to move your order to a later date before I approve it. If the new date doesn''t work for you, you can cancel at no cost.'}">Up to 3 loaves at a time.</p></details>
         <details th:if="${settings.shippingEnabled()}"><summary>Can you ship my bread?</summary>
           <p th:text="${settings.get('notice.shipping') + ' I quote the shipping cost when I approve your order.'}">I can only ship within Tennessee.</p></details>
+        <details><summary>Can I get a refund?</summary>
+          <p th:text="${settings.get('notice.refund')}">Orders can be cancelled for free until I approve them.</p></details>
         <details><summary>Can you turn down an order?</summary>
           <p th:text="${settings.get('notice.decline')}">Madeline has the right to decline any order.</p></details>
         <details th:each="f : ${settings.faqs()}"><summary th:text="${f.question}">Do you deliver?</summary>

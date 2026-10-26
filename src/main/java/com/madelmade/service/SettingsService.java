@@ -80,6 +80,7 @@ public class SettingsService {
         DEFAULTS.put("notice.pickupOnly", "Drinks made with milk, like lattes, have to stay cold, so Tennessee's home food law only allows them to be sold in person. That makes lattes pickup only. You can pick one up when you collect your bread, or switch this order to pickup.");
         DEFAULTS.put("notice.homeKitchen", "This product was produced at a private residence that is exempt from state licensing and inspection. This product may contain allergens.");
         DEFAULTS.put("notice.shipping", "I can only ship within Tennessee. Tennessee's home food law covers sales inside the state, and shipping out of state would need a commercial kitchen license. Bread ships best Monday to Wednesday so it never sits in a warehouse over the weekend.");
+        DEFAULTS.put("notice.refund", "Orders can be cancelled for free until I approve them. Once your loaf is in progress, it's made just for you, so payments can't be refunded. If you need a different day, message me and I'll do my best to move it. If I ever have to cancel, you'll get a full refund. If a shipped package arrives damaged, send me a photo and I'll make it right.");
         DEFAULTS.put("notice.decline", "Madeline has the right to decline any order, for any reason. If she can't take yours, she'll let you know, and you won't be charged anything.");
         // When Madeline last opened Feedback; the menu badge only counts what came in after that.
         DEFAULTS.put("admin.feedbackSeenAt", "0");

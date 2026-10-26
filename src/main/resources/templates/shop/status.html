@@ -67,6 +67,7 @@
             <div th:if="${!order.addressed and !settings.pickupAddressFor(order).isEmpty()}" th:text="${'Pickup at ' + settings.pickupAddressFor(order)}">Pickup address</div>
             <div th:if="${!settings.venmo().isEmpty() and order.status.name() != 'COMPLETED'}">Venmo: <a th:href="${'https://venmo.com/u/' + settings.venmo().substring(1)}" target="_blank" rel="noopener" th:text="${settings.venmo()}">@madelmade</a></div>
           </div>
+          <div class="t-small muted" th:text="${settings.get('notice.refund')}">Refund policy</div>
           <p th:replace="~{components/notices :: homeKitchen}"></p>
           <div class="t-small muted" th:text="${'Updates go to ' + order.contactEmail + (order.contactPref.name() != 'EMAIL' ? ' and by ' + order.contactPref.label : '')}"></div>
         </section>

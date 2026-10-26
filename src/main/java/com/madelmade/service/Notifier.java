@@ -65,6 +65,7 @@ public class Notifier {
         vars.put("producerName", wording == EmailWording.APPROVED ? settings.get("producer.name") : "");
         vars.put("producerPhone", wording == EmailWording.APPROVED ? settings.get("producer.phone") : "");
         vars.put("homeKitchen", settings.get("notice.homeKitchen"));
+        vars.put("refund", settings.get("notice.refund"));
         String html = render("email/order", vars);
         mail.send(o.getContactEmail(), o.getContactName(), settings.subject(wording) + " (" + o.getNumber() + ")", html);
     }

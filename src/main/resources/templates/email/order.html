@@ -31,6 +31,7 @@
     <a th:href="${statusUrl}" style="display:inline-block;background:#A4502F;color:#ffffff;text-decoration:none;padding:13px 22px;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;">View your order</a>
   </p>
   <p style="margin:10px 0 0;font-size:13px;color:#5C5A50;">Reply on your order page and it goes straight to Madeline.</p>
+  <p th:if="${approved}" style="margin:14px 0 0;font-size:12px;color:#5C5A50;" th:text="${refund}">Refund policy</p>
   <p th:if="${showSummary}" style="margin:14px 0 0;font-size:12px;color:#5C5A50;" th:text="${homeKitchen}">This product was produced at a private residence that is exempt from state licensing and inspection.</p>
 </th:block>
 </html>

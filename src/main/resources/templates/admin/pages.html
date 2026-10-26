@@ -57,6 +57,8 @@
             <div class="help">Keep these two sentences word for word, the law requires them: "This product was produced at a private residence that is exempt from state licensing and inspection." and "This product may contain allergens."</div></div>
           <div class="field"><label for="noticeHome">Home kitchen notice</label><textarea id="noticeHome" name="notice.homeKitchen" rows="3" th:text="${settings.get('notice.homeKitchen')}"></textarea>
             <div class="help">Shown at checkout, on order pages and in order emails. Keep the required wording.</div></div>
+          <div class="field"><label for="noticeRefund">Refund policy</label><textarea id="noticeRefund" name="notice.refund" rows="4" th:text="${settings.get('notice.refund')}"></textarea>
+            <div class="help">Shown at checkout, on order pages, in approval emails and in the About FAQ.</div></div>
           <div class="field"><label for="noticeDecline">Right to decline</label><textarea id="noticeDecline" name="notice.decline" rows="3" th:text="${settings.get('notice.decline')}"></textarea>
             <div class="help">Shown at checkout and in the About FAQ.</div></div>
         </section>
