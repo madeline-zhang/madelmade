@@ -82,4 +82,9 @@ public class ShopController {
     public String about() {
         return "shop/about";
     }
+
+    @GetMapping("/privacy")
+    public String privacy() {
+        return "shop/privacy";
+    }
 }

@@ -431,3 +431,4 @@ input:checked + .swatch { border: 2.5px solid var(--color-terracotta); padding: 
   .process-intro { position: static; }
   .process-steps { gap: 80px; }
 }
+.privacy ul { margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 8px; } .privacy h2 { margin: 12px 0 0; } .privacy p { margin: 0; }
