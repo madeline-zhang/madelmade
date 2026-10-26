@@ -170,8 +170,14 @@ public class AdminOrdersController {
     }
 
     @PostMapping("/orders/{id}/approve")
-    public String approve(@PathVariable Long id, @RequestParam(required = false) String message, RedirectAttributes flash) {
-        return act(find(id), flash, "Approved. The customer has been emailed.", o -> orderService.approve(o, message));
+    public String approve(@PathVariable Long id, @RequestParam(required = false) String message,
+                          @RequestParam(required = false) String pickupSpot, RedirectAttributes flash) {
+        return act(find(id), flash, "Approved. The customer has been emailed.", o -> orderService.approve(o, message, pickupSpot));
+    }
+
+    @PostMapping("/orders/{id}/pickup-spot")
+    public String pickupSpot(@PathVariable Long id, @RequestParam(required = false) String pickupSpot, RedirectAttributes flash) {
+        return act(find(id), flash, "Pickup spot saved. It shows on their order page.", o -> orderService.savePickupSpot(o, pickupSpot));
     }
 
     @PostMapping("/orders/{id}/changes")

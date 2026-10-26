@@ -59,7 +59,8 @@ public class Notifier {
         vars.put("approved", wording == EmailWording.APPROVED);
         // Madeline's address is only ever shared privately, once she has approved a pickup.
         boolean shareAddress = wording == EmailWording.APPROVED && o.getFulfillment() == com.madelmade.domain.Fulfillment.PICKUP;
-        vars.put("pickupAddress", shareAddress ? settings.get("pickup.address") : "");
+        vars.put("pickupAddress", shareAddress ? settings.pickupAddressFor(o) : "");
+        vars.put("venmo", wording == EmailWording.APPROVED ? settings.venmo() : "");
         // Tennessee's home food law asks for the producer's name and phone with the order.
         vars.put("producerName", wording == EmailWording.APPROVED ? settings.get("producer.name") : "");
         vars.put("producerPhone", wording == EmailWording.APPROVED ? settings.get("producer.phone") : "");

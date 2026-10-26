@@ -45,6 +45,7 @@ public class SettingsService {
         DEFAULTS.put("admin.emails", "madelmadewithlove@gmail.com");
         DEFAULTS.put("pickup.area", "Brentwood / Nolensville, TN");
         DEFAULTS.put("pickup.address", "");
+        DEFAULTS.put("payment.venmo", "");
         DEFAULTS.put("producer.name", "Madeline");
         DEFAULTS.put("producer.phone", "");
         DEFAULTS.put("delivery.enabled", "true");
@@ -176,6 +177,17 @@ public class SettingsService {
     public boolean deliveryEnabled() { return flag("delivery.enabled"); }
     public boolean shippingEnabled() { return flag("shipping.enabled"); }
     public String pickupArea() { return get("pickup.area"); }
+
+    /** Where an order is picked up: its own spot if Madeline set one, otherwise her home address. */
+    public String pickupAddressFor(com.madelmade.domain.CustomerOrder o) {
+        String spot = o.getPickupAddress();
+        return spot == null || spot.isBlank() ? get("pickup.address") : spot;
+    }
+
+    public String venmo() {
+        String v = get("payment.venmo").trim();
+        return v.isEmpty() || v.startsWith("@") ? v : "@" + v;
+    }
     public String notifyEmail() { return get("notify.email"); }
 
     /** Admin emails from Settings plus the bootstrap list from the server configuration. */

@@ -38,4 +38,23 @@ class ShippingTest {
         o.setFulfillment(Fulfillment.DELIVERY);
         assertThat(o.getDepositAmount()).isEqualByComparingTo("9");
     }
+
+    @Test
+    void drinkOnlyOrdersHaveNothingToBake() {
+        CustomerOrder o = new CustomerOrder();
+        OrderItem latte = new OrderItem();
+        latte.setUnitPrice(new BigDecimal("6"));
+        latte.setQuantity(2);
+        latte.setCountsAsLoaf(false);
+        latte.recalculate();
+        o.addItem(latte);
+        assertThat(o.isNeedsBaking()).isFalse();
+        OrderItem loaf = new OrderItem();
+        loaf.setUnitPrice(new BigDecimal("12"));
+        loaf.setQuantity(1);
+        loaf.setCountsAsLoaf(true);
+        loaf.recalculate();
+        o.addItem(loaf);
+        assertThat(o.isNeedsBaking()).isTrue();
+    }
 }

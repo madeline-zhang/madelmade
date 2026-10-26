@@ -64,6 +64,7 @@ public class CustomerOrder {
     private boolean signedIn;
     private String customerNote;
     private String privateNotes;
+    private String pickupAddress;
     private String statusToken;
     private boolean reminderSent;
     private Instant createdAt = Instant.now();
@@ -200,6 +201,11 @@ public class CustomerOrder {
         return isShipping() ? "payment" : "delivery deposit";
     }
 
+    /** Drinks-only orders (lattes) have nothing to bake, so they skip the Baked step. */
+    public boolean isNeedsBaking() {
+        return getLoafCount() > 0;
+    }
+
     public int getLoafCount() {
         return items.stream().filter(OrderItem::isCountsAsLoaf).mapToInt(OrderItem::getQuantity).sum();
     }
@@ -289,6 +295,8 @@ public class CustomerOrder {
     public void setSignedIn(boolean signedIn) { this.signedIn = signedIn; }
     public String getCustomerNote() { return customerNote; }
     public void setCustomerNote(String customerNote) { this.customerNote = customerNote; }
+    public String getPickupAddress() { return pickupAddress; }
+    public void setPickupAddress(String pickupAddress) { this.pickupAddress = pickupAddress; }
     public String getPrivateNotes() { return privateNotes; }
     public void setPrivateNotes(String privateNotes) { this.privateNotes = privateNotes; }
     public String getStatusToken() { return statusToken; }

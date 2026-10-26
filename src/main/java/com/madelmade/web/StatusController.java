@@ -132,7 +132,7 @@ public class StatusController {
             steps.add(new Step(o.isShipping() ? "Payment" : "Delivery deposit", o.isDepositPaid() ? "Received" : "By Venmo or Zelle after approval",
                     o.isDepositPaid() ? "done" : (reached == 2 ? "current" : "")));
         }
-        steps.add(new Step("Baked", "Madeline checks in with you", state(reached, 3)));
+        if (o.isNeedsBaking()) steps.add(new Step("Baked", "Madeline checks in with you", state(reached, 3)));
         steps.add(new Step(o.isShipping() ? "Shipped" : o.isDelivery() ? "Delivered" : "Picked up", formats.longDay(o.getRequestedDate()), state(reached, 4)));
         return steps;
     }

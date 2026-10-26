@@ -61,10 +61,11 @@
             <span th:if="${order.depositPaid}" th:text="${#strings.capitalize(order.depositName) + ' received. Thank you!'}">Delivery deposit received. Thank you!</span>
             <span th:unless="${order.depositPaid}" th:text="${'Please send the ' + @money.fmt(order.depositAmount) + ' ' + order.depositName + ' by Venmo or Zelle so Madeline can start baking.'}"></span>
           </div>
-          <div class="t-small muted" th:text="${order.shipping ? 'Payment: in full by Venmo or Zelle before it ships.' : 'Payment: at ' + (order.delivery ? 'delivery' : 'pickup') + ' (cash, Venmo or Zelle).'}">Payment: at pickup (cash, Venmo or Zelle).</div>
+          <div class="t-small muted" th:text="${order.shipping ? 'Payment: in full by Venmo or Zelle before it ships.' : 'Payment: at ' + (order.delivery ? 'delivery' : 'pickup') + ' (cash, Venmo or Zelle). Paying early is welcome too.'}">Payment: at pickup (cash, Venmo or Zelle).</div>
           <div class="t-small" th:if="${order.status.name() == 'APPROVED' or order.status.name() == 'BAKED' or order.status.name() == 'COMPLETED'}">
             <div th:text="${'Made by ' + settings.get('producer.name') + (settings.get('producer.phone').isEmpty() ? '' : ' · ' + settings.get('producer.phone'))}">Made by Madeline</div>
-            <div th:if="${!order.addressed and !settings.get('pickup.address').isEmpty()}" th:text="${settings.get('pickup.address')}">Pickup address</div>
+            <div th:if="${!order.addressed and !settings.pickupAddressFor(order).isEmpty()}" th:text="${'Pickup at ' + settings.pickupAddressFor(order)}">Pickup address</div>
+            <div th:if="${!settings.venmo().isEmpty() and order.status.name() != 'COMPLETED'}">Venmo: <a th:href="${'https://venmo.com/u/' + settings.venmo().substring(1)}" target="_blank" rel="noopener" th:text="${settings.venmo()}">@madelmade</a></div>
           </div>
           <p th:replace="~{components/notices :: homeKitchen}"></p>
           <div class="t-small muted" th:text="${'Updates go to ' + order.contactEmail + (order.contactPref.name() != 'EMAIL' ? ' and by ' + order.contactPref.label : '')}"></div>

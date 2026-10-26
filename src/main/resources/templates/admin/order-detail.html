@@ -69,6 +69,9 @@
     <h3>Your decision</h3>
     <div class="field"><label for="decision-msg" th:text="${'Message to ' + o.customer.firstName + ' (sent with your decision)'}">Message</label>
       <textarea id="decision-msg" name="message" rows="3" placeholder="e.g. Can't wait to bake this! See you Saturday."></textarea></div>
+    <div class="field" th:unless="${o.addressed}"><label for="pickup-spot">Pickup spot for this order</label>
+      <textarea id="pickup-spot" name="pickupSpot" rows="2" th:text="${o.pickupAddress}" th:placeholder="${settings.get('pickup.address').isEmpty() ? 'e.g. Kroger parking lot, Concord Rd' : settings.get('pickup.address')}"></textarea>
+      <div class="help">Sent with your approval. Leave it blank to share your home pickup address from Settings, or type a nearby spot, like a parking lot, for someone you don't know.</div></div>
     <div class="action-row">
       <button type="submit" class="btn" th:formaction="@{/admin/orders/{id}/approve(id=${o.id})}">Approve</button>
       <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
@@ -76,8 +79,16 @@
     </div>
   </form>
 
+  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/pickup-spot(id=${o.id})}" th:if="${!o.addressed and (o.status.name() == 'APPROVED' or o.status.name() == 'BAKED')}">
+    <h3>Pickup spot</h3>
+    <div class="field">
+      <textarea id="pickup-spot-edit" name="pickupSpot" aria-label="Pickup spot for this order" rows="2" th:text="${o.pickupAddress}" th:placeholder="${settings.get('pickup.address')}"></textarea>
+      <div class="help">Shown on their order page. Leave it blank to use your home pickup address.</div></div>
+    <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save pickup spot</button>
+  </form>
+
   <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/baked(id=${o.id})}" th:if="${o.status.name() == 'APPROVED'}">
-    <h3>Bake day</h3>
+    <h3 th:text="${o.needsBaking ? 'Bake day' : 'Pickup day'}">Bake day</h3>
     <div class="alert alert-info" th:if="${o.depositRequired and !o.depositPaid}" th:text="${'The ' + o.depositName + ' isn''t marked paid yet.'}">The delivery deposit isn't marked paid yet.</div>
     <th:block th:each="i : ${o.items}" th:if="${i.hasCertificate}">
       <div class="t-small"><strong th:text="${i.certName + '''s birth certificate'}">Hazel's certificate</strong></div>
@@ -89,10 +100,10 @@
       </div>
     </th:block>
     <div class="field"><label for="baked-msg">Message to the customer</label>
-      <textarea id="baked-msg" name="message" rows="2" placeholder="e.g. Your loaf is out of the oven! Does 4 PM work for pickup?"></textarea></div>
+      <textarea id="baked-msg" name="message" rows="2" th:placeholder="${o.needsBaking ? 'e.g. Your loaf is out of the oven! Does 4 PM work for pickup?' : 'e.g. Thank you! Enjoy your latte.'}"></textarea></div>
     <div class="action-row">
-      <button type="submit" class="btn">Mark baked</button>
-      <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/completed(id=${o.id})}">Mark completed</button>
+      <button type="submit" class="btn" th:if="${o.needsBaking}">Mark baked</button>
+      <button type="submit" th:class="${o.needsBaking ? 'btn btn-secondary' : 'btn'}" th:formaction="@{/admin/orders/{id}/completed(id=${o.id})}" th:text="${o.needsBaking ? 'Mark completed' : 'Mark picked up'}">Mark completed</button>
       <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
       <button type="submit" class="btn btn-danger" th:formaction="@{/admin/orders/{id}/decline(id=${o.id})}">Decline</button>
     </div>

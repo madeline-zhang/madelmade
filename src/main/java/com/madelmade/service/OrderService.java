@@ -366,9 +366,11 @@ public class OrderService {
         orders.save(o);
     }
 
+    /** Approves the order; a pickup spot replaces the home address for this order only. */
     @Transactional
-    public void approve(CustomerOrder o, String message) {
+    public void approve(CustomerOrder o, String message, String pickupSpot) {
         requireStatus(o, OrderStatus.NEEDS_REVIEW, OrderStatus.CHANGES_REQUESTED);
+        if (o.getFulfillment() == Fulfillment.PICKUP) o.setPickupAddress(trim(pickupSpot));
         if (o.isAddressed() && o.getDeliveryFee() == null) {
             String fee = o.getFeeName().toLowerCase();
             throw new UserFacingException("Set the " + fee + " fee before approving a " + fee + " order.");
@@ -407,6 +409,7 @@ public class OrderService {
     @Transactional
     public void markBaked(CustomerOrder o, Map<Long, CertDetails> certs, String message) {
         requireStatus(o, OrderStatus.APPROVED);
+        if (!o.isNeedsBaking()) throw new UserFacingException("This order has nothing to bake. Mark it picked up instead.");
         for (OrderItem i : o.getItems()) {
             CertDetails c = certs.get(i.getId());
             if (i.isHasCertificate() && c != null) {
@@ -459,6 +462,13 @@ public class OrderService {
     public void logNote(CustomerOrder o, String note) {
         if (isBlank(note)) throw new UserFacingException("Write the note first.");
         o.addMessage(MessageAuthor.LOG, note.trim());
+        orders.save(o);
+    }
+
+    @Transactional
+    public void savePickupSpot(CustomerOrder o, String spot) {
+        o.setPickupAddress(trim(spot));
+        o.setUpdatedAt(Instant.now());
         orders.save(o);
     }
 
