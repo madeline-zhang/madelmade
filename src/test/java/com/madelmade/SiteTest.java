@@ -133,6 +133,12 @@ class SiteTest {
     }
 
     @Test
+    void privacyPageIsPublic() throws Exception {
+        mvc.perform(get("/privacy")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("never sees card or bank details")));
+    }
+
+    @Test
     void unknownOrderIsNotFound() throws Exception {
         mvc.perform(get("/o/not-a-real-token")).andExpect(status().isNotFound());
     }
