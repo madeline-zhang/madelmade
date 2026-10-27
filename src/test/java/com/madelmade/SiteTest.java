@@ -57,6 +57,8 @@ class SiteTest {
     @Autowired PricingService pricing;
     @Autowired HeroService hero;
     @Autowired ProcessStepRepository steps;
+    @Autowired com.madelmade.service.StorageService storage;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @Test
     void homeShowsTheMenu() throws Exception {
@@ -144,6 +146,18 @@ class SiteTest {
                 .andExpect(content().string(Matchers.containsString("Can you ship my bread?")))
                 .andExpect(content().string(Matchers.containsString("I can only ship within Tennessee.")))
                 .andExpect(content().string(Matchers.containsString("Can I get a refund?")));
+    }
+
+    @Test
+    void storageCleanupRemovesOnlyPhotosNothingUses() {
+        Long used = products.findBySlug("classic-loaf").orElseThrow().getPhotoId();
+        Long orphan = jdbc.queryForObject("insert into photo (original, original_type, edited) values (?, 'image/jpeg', ?) returning id",
+                Long.class, new byte[200_000], new byte[1000]);
+        assertThat(storage.usage().unusedPhotos()).isGreaterThanOrEqualTo(1);
+        storage.clean();
+        assertThat(jdbc.queryForObject("select count(*) from photo where id = ?", Integer.class, orphan)).isZero();
+        if (used != null) assertThat(jdbc.queryForObject("select count(*) from photo where id = ?", Integer.class, used)).isOne();
+        assertThat(storage.usage().unusedPhotos()).isZero();
     }
 
     @Test
