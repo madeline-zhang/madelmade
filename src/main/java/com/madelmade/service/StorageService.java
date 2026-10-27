@@ -14,10 +14,13 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class StorageService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(StorageService.class);
+
     public record Usage(long databaseBytes, int photos, long photoBytes, int unusedPhotos, long unusedPhotoBytes,
                         int videos, long videoBytes, int unusedVideos, long unusedVideoBytes) {}
 
-    public record Cleanup(int photos, int videos, long bytesBefore, long bytesAfter) {}
+    /** shrinkError is why the space couldn't be handed back to the disk, or null when it was. */
+    public record Cleanup(int photos, int videos, long bytesBefore, long bytesAfter, String shrinkError) {}
 
     private final JdbcTemplate jdbc;
 
@@ -47,10 +50,24 @@ public class StorageService {
         int photos = jdbc.update("delete from photo p where " + unused("photo", "p"));
         int videos = jdbc.update("delete from video v where " + unused("video", "v"));
         // Plain deletes only mark the space free inside Postgres; VACUUM FULL hands it back to the volume.
-        jdbc.execute("vacuum full photo");
-        jdbc.execute("vacuum full video");
+        // It writes a fresh copy of each table first, so on a nearly full disk it can fail. Then a plain
+        // VACUUM still lets Postgres reuse the space for new photos, and gives back what it can.
+        String error = null;
+        for (String table : List.of("video", "photo")) {
+            try {
+                jdbc.execute("vacuum full " + table);
+            } catch (RuntimeException e) {
+                error = rootMessage(e);
+                log.warn("VACUUM FULL {} failed: {}", table, error);
+                try {
+                    jdbc.execute("vacuum " + table);
+                } catch (RuntimeException ignored) {
+                    // nothing more to do
+                }
+            }
+        }
         long after = jdbc.queryForObject("select pg_database_size(current_database())", Long.class);
-        return new Cleanup(photos, videos, before, after);
+        return new Cleanup(photos, videos, before, after, error);
     }
 
     /** A where clause matching rows of the table that no foreign key and no setting refers to. */
@@ -68,6 +85,12 @@ public class StorageService {
         // Settings like about.photoId and cert.photoId hold ids as text.
         checks.add("not exists (select 1 from setting s where lower(s.key) like '%" + table + "id' and s.value = " + alias + ".id::text)");
         return checks.stream().collect(Collectors.joining(" and "));
+    }
+
+    private static String rootMessage(Throwable e) {
+        Throwable t = e;
+        while (t.getCause() != null) t = t.getCause();
+        return t.getMessage() == null ? t.getClass().getSimpleName() : t.getMessage();
     }
 
     private static int n(Map<String, Object> m) {

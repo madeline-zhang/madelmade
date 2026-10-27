@@ -162,8 +162,8 @@
       <div><span class="label">Videos</span><strong th:text="${storageText.videos}">30 MB</strong><span class="t-small muted" th:text="${storage.videos() + ' videos'}">2 videos</span></div>
       <div><span class="label">No longer used</span><strong th:text="${storageText.unused}">50 MB</strong><span class="t-small muted" th:text="${(storage.unusedPhotos() + storage.unusedVideos()) + ((storage.unusedPhotos() + storage.unusedVideos()) == 1 ? ' file' : ' files')}">25 files</span></div>
     </div>
-    <form method="post" th:action="@{/admin/settings/storage/clean}" data-confirm="Delete photos and videos that nothing on the site uses? Photos in use aren't touched.">
-      <button type="submit" class="btn btn-secondary btn-small" th:disabled="${storage.unusedPhotos() + storage.unusedVideos() == 0}">Clean up now</button>
+    <form method="post" th:action="@{/admin/settings/storage/clean}" data-confirm="Delete photos and videos that nothing on the site uses, and hand freed space back to Railway? Photos in use aren't touched.">
+      <button type="submit" class="btn btn-secondary btn-small">Clean up now</button>
     </form>
   </section>
 </main>

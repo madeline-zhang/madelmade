@@ -49,10 +49,22 @@ public class AdminSettingsController {
 
     @PostMapping("/storage/clean")
     public String cleanStorage(RedirectAttributes flash) {
-        StorageService.Cleanup c = storage.clean();
-        flash.addFlashAttribute("ok", "Removed " + c.photos() + " unused photo" + (c.photos() == 1 ? "" : "s") + " and " + c.videos()
-                + " unused video" + (c.videos() == 1 ? "" : "s") + ". The database went from " + StorageService.mb(c.bytesBefore())
-                + " to " + StorageService.mb(c.bytesAfter()) + ".");
+        StorageService.Cleanup c;
+        try {
+            c = storage.clean();
+        } catch (RuntimeException e) {
+            flash.addFlashAttribute("errors", List.of("The cleanup didn't finish: " + e.getMessage()));
+            return "redirect:/admin/settings#storage";
+        }
+        String removed = "Removed " + c.photos() + " unused photo" + (c.photos() == 1 ? "" : "s") + " and " + c.videos()
+                + " unused video" + (c.videos() == 1 ? "" : "s") + ". ";
+        if (c.shrinkError() == null) {
+            flash.addFlashAttribute("ok", removed + "The database went from " + StorageService.mb(c.bytesBefore())
+                    + " to " + StorageService.mb(c.bytesAfter()) + ".");
+        } else {
+            flash.addFlashAttribute("ok", removed + "That space is free for new photos, but the disk was too full to hand it back to Railway, "
+                    + "so Railway's usage won't drop yet. (Postgres said: " + c.shrinkError() + ")");
+        }
         return "redirect:/admin/settings#storage";
     }
 
