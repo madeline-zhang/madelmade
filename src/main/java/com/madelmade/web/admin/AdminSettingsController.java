@@ -2,6 +2,7 @@ package com.madelmade.web.admin;
 
 import com.madelmade.service.EmailWording;
 import com.madelmade.service.SettingsService;
+import com.madelmade.service.StorageService;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -25,16 +26,34 @@ public class AdminSettingsController {
             "notify.newRequest", "notify.customerReply", "notify.morningSummary", "tax.enabled", "tax.included");
 
     private final SettingsService settings;
+    private final StorageService storage;
 
-    public AdminSettingsController(SettingsService settings) {
+    public AdminSettingsController(SettingsService settings, StorageService storage) {
         this.settings = settings;
+        this.storage = storage;
     }
 
     @GetMapping
     public String page(Model model) {
         model.addAttribute("wordings", EmailWording.values());
         model.addAttribute("daysOff", settings.daysOffEntries());
+        StorageService.Usage u = storage.usage();
+        model.addAttribute("storage", u);
+        model.addAttribute("storageText", Map.of(
+                "db", StorageService.mb(u.databaseBytes()),
+                "photos", StorageService.mb(u.photoBytes()),
+                "videos", StorageService.mb(u.videoBytes()),
+                "unused", StorageService.mb(u.unusedPhotoBytes() + u.unusedVideoBytes())));
         return "admin/settings";
+    }
+
+    @PostMapping("/storage/clean")
+    public String cleanStorage(RedirectAttributes flash) {
+        StorageService.Cleanup c = storage.clean();
+        flash.addFlashAttribute("ok", "Removed " + c.photos() + " unused photo" + (c.photos() == 1 ? "" : "s") + " and " + c.videos()
+                + " unused video" + (c.videos() == 1 ? "" : "s") + ". The database went from " + StorageService.mb(c.bytesBefore())
+                + " to " + StorageService.mb(c.bytesAfter()) + ".");
+        return "redirect:/admin/settings#storage";
     }
 
     @PostMapping

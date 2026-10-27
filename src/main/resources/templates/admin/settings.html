@@ -152,6 +152,20 @@
 
     <div class="save-bar" data-autosave-hide><button type="submit" class="btn">Save settings</button></div>
   </form>
+
+  <section class="card stack" id="storage" style="margin-top: 24px">
+    <h2 class="card-title">Storage</h2>
+    <p class="t-small muted" style="margin: 0">Photos and videos are kept in the site's database. When you replace or remove one, the old copy is cleared out overnight.</p>
+    <div class="dash-stats">
+      <div><span class="label">Database</span><strong th:text="${storageText.db}">120 MB</strong></div>
+      <div><span class="label">Photos</span><strong th:text="${storageText.photos}">80 MB</strong><span class="t-small muted" th:text="${storage.photos() + ' photos'}">40 photos</span></div>
+      <div><span class="label">Videos</span><strong th:text="${storageText.videos}">30 MB</strong><span class="t-small muted" th:text="${storage.videos() + ' videos'}">2 videos</span></div>
+      <div><span class="label">No longer used</span><strong th:text="${storageText.unused}">50 MB</strong><span class="t-small muted" th:text="${(storage.unusedPhotos() + storage.unusedVideos()) + ((storage.unusedPhotos() + storage.unusedVideos()) == 1 ? ' file' : ' files')}">25 files</span></div>
+    </div>
+    <form method="post" th:action="@{/admin/settings/storage/clean}" data-confirm="Delete photos and videos that nothing on the site uses? Photos in use aren't touched.">
+      <button type="submit" class="btn btn-secondary btn-small" th:disabled="${storage.unusedPhotos() + storage.unusedVideos() == 0}">Clean up now</button>
+    </form>
+  </section>
 </main>
 </body>
 </html>
