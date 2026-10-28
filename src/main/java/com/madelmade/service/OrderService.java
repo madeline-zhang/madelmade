@@ -518,6 +518,14 @@ public class OrderService {
     }
 
     @Transactional
+    public void saveTip(CustomerOrder o, BigDecimal tip) {
+        if (tip == null) tip = BigDecimal.ZERO;
+        if (tip.signum() < 0) throw new UserFacingException("A tip can't be less than $0.");
+        o.setTip(tip.setScale(2, java.math.RoundingMode.HALF_UP));
+        orders.save(o);
+    }
+
+    @Transactional
     public void savePrivateNotes(CustomerOrder o, String notes) {
         o.setPrivateNotes(trim(notes));
         orders.save(o);

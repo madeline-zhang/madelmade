@@ -70,6 +70,8 @@
         <span class="t-small muted" th:if="${breakdown.shippingFees.signum() > 0}" th:text="${@money.fmt(breakdown.shippingFees) + ' in fees'}">$12 in fees</span></div>
       <div><span class="label">Priority</span><strong th:text="${breakdown.priority}">2</strong></div>
       <div><span class="label">Promo code</span><strong th:text="${breakdown.promo}">1</strong></div>
+      <div><span class="label">Tips</span><strong th:text="${@money.fmt(breakdown.tips)}">$10</strong>
+        <span class="t-small muted" th:text="${breakdown.tipped == 0 ? 'Not in sales' : 'From ' + breakdown.tipped + (breakdown.tipped == 1 ? ' order' : ' orders') + ', not in sales'}">From 2 orders</span></div>
     </div>
 
     <div class="dash-row">

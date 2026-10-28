@@ -128,6 +128,14 @@
     </form>
   </div>
 
+  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/tip(id=${o.id})}" th:if="${o.status.name() != 'DECLINED' and o.status.name() != 'CANCELLED'}">
+    <h3>Tip</h3>
+    <div class="field"><label for="tip">Tip received</label>
+      <div class="price-input">$ <input type="number" step="0.01" min="0" id="tip" name="tip" th:value="${o.tip.signum() > 0 ? @money.plain(o.tip) : ''}" placeholder="0.00"></div>
+      <div class="help">Kept apart from the order total and sales, so it isn't taxed. It's in the dashboard's Tips and the export's Tip column for your income records.</div></div>
+    <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save tip</button>
+  </form>
+
   <!-- Conversation -->
   <div class="subtle-box">
     <h3>Messages</h3>
