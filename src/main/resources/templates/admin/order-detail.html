@@ -9,7 +9,7 @@
         <span th:text="${o.signedIn ? 'signed in' : 'guest'}">signed in</span>
       </div>
       <div class="action-row" style="gap: 8px">
-        <span class="flag" th:if="${o.overCapacity and !o.status.closed}" th:text="${'Over capacity: ' + inProgress + ' loaves already booked'}">Over capacity</span>
+        <span class="flag" th:if="${o.overCapacity and !o.status.closed}" th:text="${'Over capacity: ' + bookedAround + ' other loaves due within ' + settings.capacityDays() + ' days of this one'}">Over capacity</span>
         <span class="tag" th:if="${o.priority}">Priority</span>
         <span class="tag" th:if="${o.priceTbd}">Custom price to set</span>
       </div>

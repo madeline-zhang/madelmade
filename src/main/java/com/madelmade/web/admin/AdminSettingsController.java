@@ -79,7 +79,7 @@ public class AdminSettingsController {
                 values.put(key, form.getFirst(key));
             }
         }
-        for (String key : List.of("rules.noticeDays", "rules.maxLoaves", "rules.maxPerOrder", "rules.priorityNoticeDays")) {
+        for (String key : List.of("rules.noticeDays", "rules.maxLoaves", "rules.capacityDays", "rules.maxPerOrder", "rules.priorityNoticeDays")) {
             if (values.containsKey(key) && !values.get(key).trim().matches("\\d{1,2}")) {
                 flash.addFlashAttribute("errors", List.of("Please use a whole number for notice days and the loaf limits."));
                 return "redirect:/admin/settings";

@@ -114,8 +114,11 @@ public class AdminOrdersController {
         model.addAttribute("orders", list);
         model.addAttribute("selected", selected);
         model.addAttribute("todayText", TODAY.format(formats.today()));
-        model.addAttribute("inProgress", orderService.loavesBooked());
-        if (selected != null) contactLinks(selected, model);
+        model.addAttribute("bookedSoon", orderService.loavesBookedSoon());
+        if (selected != null) {
+            contactLinks(selected, model);
+            model.addAttribute("bookedAround", orderService.loavesBookedAround(selected.getRequestedDate(), selected.getId()));
+        }
         return "admin/orders";
     }
 

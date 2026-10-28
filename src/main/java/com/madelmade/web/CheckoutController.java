@@ -120,6 +120,8 @@ public class CheckoutController {
         model.addAttribute("minStandard", minStandard.toString());
         model.addAttribute("minStandardText", formats.longDay(minStandard));
         model.addAttribute("minPriority", minPriority.toString());
+        model.addAttribute("fullDates", String.join(",", orderService.fullDates(cart.getLoafCount(), formats.today()).stream().map(LocalDate::toString).toList()));
+        model.addAttribute("overCapacity", form.getDate() != null && orderService.wouldBeOverCapacity(cart.getLoafCount(), form.getDate()));
         model.addAttribute("priorityHelps", orderService.priorityHelps(cart));
         model.addAttribute("contactPrefs", ContactPref.values());
         List<LocalDate> off = settings.daysOff().stream().filter(d -> !d.isBefore(formats.today())).limit(12).toList();

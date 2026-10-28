@@ -27,6 +27,7 @@ public class SettingsService {
         DEFAULTS.put("orders.daysOff", "");
         DEFAULTS.put("rules.noticeDays", "3");
         DEFAULTS.put("rules.maxLoaves", "3");
+        DEFAULTS.put("rules.capacityDays", "3");
         DEFAULTS.put("rules.maxPerOrder", "3");
         DEFAULTS.put("rules.priorityEnabled", "true");
         DEFAULTS.put("rules.priorityNoticeDays", "1");
@@ -158,6 +159,13 @@ public class SettingsService {
     public int noticeDays() { return number("rules.noticeDays"); }
     /** How many loaves Madeline can have on the go at once, across all orders. */
     public int maxLoaves() { return number("rules.maxLoaves"); }
+    /** How many days in a row the loaf limit covers: 3 means at most maxLoaves due in any 3-day stretch. */
+    public int capacityDays() { return Math.max(1, number("rules.capacityDays")); }
+    /** "at a time" for a one-day window, otherwise "in any 3 days". */
+    public String capacityPhrase() {
+        int d = capacityDays();
+        return d == 1 ? "a day" : "in any " + d + " days";
+    }
     /** The most loaves one order can have. */
     public int maxPerOrder() { return number("rules.maxPerOrder"); }
     public boolean priorityEnabled() { return flag("rules.priorityEnabled"); }
