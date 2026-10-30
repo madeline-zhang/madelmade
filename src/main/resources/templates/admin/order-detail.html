@@ -36,6 +36,48 @@
     </div>
   </form>
 
+  <!-- Next step: bake, hand off, payment -->
+  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/baked(id=${o.id})}" th:if="${o.status.name() == 'APPROVED'}">
+    <h3 th:text="${o.needsBaking ? 'Bake day' : 'Pickup day'}">Bake day</h3>
+    <div class="alert alert-info" th:if="${o.depositRequired and !o.depositPaid}" th:text="${'The ' + o.depositName + ' isn''t marked paid yet.'}">The delivery deposit isn't marked paid yet.</div>
+    <th:block th:each="i : ${o.items}" th:if="${i.hasCertificate}">
+      <div class="t-small"><strong th:text="${i.certName + '''s birth certificate'}">Hazel's certificate</strong></div>
+      <div class="field-row">
+        <div class="field"><label th:for="${'c-at-' + i.id}">Date and time</label><input type="text" th:id="${'c-at-' + i.id}" th:name="${'certAt-' + i.id}" th:value="${i.certBakedAt}" placeholder="e.g. 10/11/26 13:47"></div>
+        <div class="field"><label th:for="${'c-w-' + i.id}">Weight</label><input type="text" th:id="${'c-w-' + i.id}" th:name="${'certWeight-' + i.id}" th:value="${i.certWeight}" placeholder="e.g. 2 lbs 8 oz"></div>
+        <div class="field"><label th:for="${'c-l-' + i.id}">Labor</label><input type="text" th:id="${'c-l-' + i.id}" th:name="${'certLabor-' + i.id}" th:value="${i.certLabor}" placeholder="e.g. 23 hr"></div>
+        <div class="field"><label th:for="${'c-s-' + i.id}">Starter</label><input type="text" th:id="${'c-s-' + i.id}" th:name="${'certStarter-' + i.id}" th:value="${i.certStarter != null ? i.certStarter : settings.defaultStarter()}"></div>
+      </div>
+    </th:block>
+    <div class="field"><label for="baked-msg">Message to the customer</label>
+      <textarea id="baked-msg" name="message" rows="2" th:placeholder="${o.needsBaking ? 'e.g. Your loaf is out of the oven! Does 4 PM work for pickup?' : 'e.g. Thank you! Enjoy your latte.'}"></textarea></div>
+    <div class="action-row">
+      <button type="submit" class="btn" th:if="${o.needsBaking}">Mark baked</button>
+      <button type="submit" th:class="${o.needsBaking ? 'btn btn-secondary' : 'btn'}" th:formaction="@{/admin/orders/{id}/completed(id=${o.id})}" th:text="${o.needsBaking ? 'Mark completed' : 'Mark picked up'}">Mark completed</button>
+      <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
+      <button type="submit" class="btn btn-danger" th:formaction="@{/admin/orders/{id}/decline(id=${o.id})}">Decline</button>
+    </div>
+  </form>
+
+  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/completed(id=${o.id})}" th:if="${o.status.name() == 'BAKED'}">
+    <h3>Handoff</h3>
+    <div class="field"><label for="done-msg">Thank-you note (optional)</label>
+      <textarea id="done-msg" name="message" rows="2" placeholder="e.g. Thank you! Enjoy Hazel's loaf."></textarea></div>
+    <button type="submit" class="btn" style="align-self: flex-start" th:text="${o.shipping ? 'Mark shipped' : o.delivery ? 'Mark delivered' : 'Mark picked up'}">Mark completed</button>
+  </form>
+
+  <div class="action-row" th:if="${o.status.name() != 'DECLINED' and o.status.name() != 'CANCELLED'}">
+    <form class="inline-form" method="post" th:action="@{/admin/orders/{id}/deposit(id=${o.id})}" th:if="${o.depositRequired}">
+      <input type="hidden" name="paid" th:value="${!o.depositPaid}">
+      <button type="submit" class="btn btn-secondary btn-small" th:text="${o.shipping ? (o.depositPaid ? 'Undo payment received' : 'Mark payment received') : (o.depositPaid ? 'Undo deposit paid' : 'Mark deposit paid')}">Mark deposit paid</button>
+    </form>
+    <form class="inline-form" method="post" th:action="@{/admin/orders/{id}/paid(id=${o.id})}" th:unless="${o.shipping and o.depositRequired}">
+      <input type="hidden" name="paid" th:value="${!o.paid}">
+      <button type="submit" class="btn btn-secondary btn-small" th:text="${o.paid ? 'Undo paid' : 'Mark paid'}">Mark paid</button>
+    </form>
+  </div>
+
+
   <div class="facts">
     <div><div class="k" th:text="${o.fulfillment.label}">Pickup</div><div class="v" th:text="${@fmt.day(o.requestedDate) + (o.requestedTime != null ? ', ' + o.requestedTime : '')}">Sat, Oct 11</div></div>
     <div><div class="k">Prefers</div><div class="v" th:text="${o.contactPref.label + (o.contactPhone != null ? ' · ' + o.contactPhone : '')}">Text · (615) 555-0142</div></div>
@@ -87,46 +129,6 @@
       <div class="help">Shown on their order page. Leave it blank to use your home pickup address.</div></div>
     <button type="submit" class="btn btn-secondary btn-small" style="align-self: flex-start">Save pickup spot</button>
   </form>
-
-  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/baked(id=${o.id})}" th:if="${o.status.name() == 'APPROVED'}">
-    <h3 th:text="${o.needsBaking ? 'Bake day' : 'Pickup day'}">Bake day</h3>
-    <div class="alert alert-info" th:if="${o.depositRequired and !o.depositPaid}" th:text="${'The ' + o.depositName + ' isn''t marked paid yet.'}">The delivery deposit isn't marked paid yet.</div>
-    <th:block th:each="i : ${o.items}" th:if="${i.hasCertificate}">
-      <div class="t-small"><strong th:text="${i.certName + '''s birth certificate'}">Hazel's certificate</strong></div>
-      <div class="field-row">
-        <div class="field"><label th:for="${'c-at-' + i.id}">Date and time</label><input type="text" th:id="${'c-at-' + i.id}" th:name="${'certAt-' + i.id}" th:value="${i.certBakedAt}" placeholder="e.g. 10/11/26 13:47"></div>
-        <div class="field"><label th:for="${'c-w-' + i.id}">Weight</label><input type="text" th:id="${'c-w-' + i.id}" th:name="${'certWeight-' + i.id}" th:value="${i.certWeight}" placeholder="e.g. 2 lbs 8 oz"></div>
-        <div class="field"><label th:for="${'c-l-' + i.id}">Labor</label><input type="text" th:id="${'c-l-' + i.id}" th:name="${'certLabor-' + i.id}" th:value="${i.certLabor}" placeholder="e.g. 23 hr"></div>
-        <div class="field"><label th:for="${'c-s-' + i.id}">Starter</label><input type="text" th:id="${'c-s-' + i.id}" th:name="${'certStarter-' + i.id}" th:value="${i.certStarter != null ? i.certStarter : settings.defaultStarter()}"></div>
-      </div>
-    </th:block>
-    <div class="field"><label for="baked-msg">Message to the customer</label>
-      <textarea id="baked-msg" name="message" rows="2" th:placeholder="${o.needsBaking ? 'e.g. Your loaf is out of the oven! Does 4 PM work for pickup?' : 'e.g. Thank you! Enjoy your latte.'}"></textarea></div>
-    <div class="action-row">
-      <button type="submit" class="btn" th:if="${o.needsBaking}">Mark baked</button>
-      <button type="submit" th:class="${o.needsBaking ? 'btn btn-secondary' : 'btn'}" th:formaction="@{/admin/orders/{id}/completed(id=${o.id})}" th:text="${o.needsBaking ? 'Mark completed' : 'Mark picked up'}">Mark completed</button>
-      <button type="submit" class="btn btn-secondary" th:formaction="@{/admin/orders/{id}/changes(id=${o.id})}">Ask for changes</button>
-      <button type="submit" class="btn btn-danger" th:formaction="@{/admin/orders/{id}/decline(id=${o.id})}">Decline</button>
-    </div>
-  </form>
-
-  <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/completed(id=${o.id})}" th:if="${o.status.name() == 'BAKED'}">
-    <h3>Handoff</h3>
-    <div class="field"><label for="done-msg">Thank-you note (optional)</label>
-      <textarea id="done-msg" name="message" rows="2" placeholder="e.g. Thank you! Enjoy Hazel's loaf."></textarea></div>
-    <button type="submit" class="btn" style="align-self: flex-start" th:text="${o.shipping ? 'Mark shipped' : o.delivery ? 'Mark delivered' : 'Mark picked up'}">Mark completed</button>
-  </form>
-
-  <div class="action-row" th:if="${o.status.name() != 'DECLINED' and o.status.name() != 'CANCELLED'}">
-    <form class="inline-form" method="post" th:action="@{/admin/orders/{id}/deposit(id=${o.id})}" th:if="${o.depositRequired}">
-      <input type="hidden" name="paid" th:value="${!o.depositPaid}">
-      <button type="submit" class="btn btn-secondary btn-small" th:text="${o.shipping ? (o.depositPaid ? 'Undo payment received' : 'Mark payment received') : (o.depositPaid ? 'Undo deposit paid' : 'Mark deposit paid')}">Mark deposit paid</button>
-    </form>
-    <form class="inline-form" method="post" th:action="@{/admin/orders/{id}/paid(id=${o.id})}" th:unless="${o.shipping and o.depositRequired}">
-      <input type="hidden" name="paid" th:value="${!o.paid}">
-      <button type="submit" class="btn btn-secondary btn-small" th:text="${o.paid ? 'Undo paid' : 'Mark paid'}">Mark paid</button>
-    </form>
-  </div>
 
   <form class="subtle-box" method="post" th:action="@{/admin/orders/{id}/tip(id=${o.id})}" th:if="${o.status.name() != 'DECLINED' and o.status.name() != 'CANCELLED'}">
     <h3>Tip</h3>
