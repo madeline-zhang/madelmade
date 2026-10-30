@@ -41,6 +41,8 @@ public class CustomerOrder {
     private BigDecimal subtotal = BigDecimal.ZERO;
     /** Custom price or discount Madeline adds before approving. */
     private BigDecimal adjustment = BigDecimal.ZERO;
+    /** A tip the customer chose to give, recorded by Madeline. Not part of the price, so never taxed. */
+    private BigDecimal tip = BigDecimal.ZERO;
     private String adjustmentNote;
     private String promoCode;
     private Integer promoPercent;
@@ -280,6 +282,8 @@ public class CustomerOrder {
     public boolean isDepositPaid() { return depositPaid; }
     public void setDepositPaid(boolean depositPaid) { this.depositPaid = depositPaid; }
     public BigDecimal getSubtotal() { return subtotal; }
+    public BigDecimal getTip() { return tip == null ? BigDecimal.ZERO : tip; }
+    public void setTip(BigDecimal tip) { this.tip = tip; }
     public BigDecimal getAdjustment() { return adjustment; }
     public void setAdjustment(BigDecimal adjustment) { this.adjustment = adjustment; }
     public String getPromoCode() { return promoCode; }

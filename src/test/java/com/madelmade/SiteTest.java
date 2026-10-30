@@ -143,9 +143,9 @@ class SiteTest {
     @Test
     void aboutAnswersWhetherWeShipOutOfTennessee() throws Exception {
         mvc.perform(get("/about")).andExpect(status().isOk())
-                .andExpect(content().string(Matchers.containsString("Can you ship my bread?")))
+                .andExpect(content().string(Matchers.containsString("Pickup, delivery or shipping?")))
                 .andExpect(content().string(Matchers.containsString("I can only ship within Tennessee.")))
-                .andExpect(content().string(Matchers.containsString("Can I get a refund?")));
+                .andExpect(content().string(Matchers.containsString("Can I cancel or get a refund?")));
     }
 
     @Test
@@ -158,6 +158,33 @@ class SiteTest {
         assertThat(jdbc.queryForObject("select count(*) from photo where id = ?", Integer.class, orphan)).isZero();
         if (used != null) assertThat(jdbc.queryForObject("select count(*) from photo where id = ?", Integer.class, used)).isOne();
         assertThat(storage.usage().unusedPhotos()).isZero();
+    }
+
+    @Test
+    void faqCleanupKeepsMadelinesOwnEntries() throws Exception {
+        String old = "Do you deliver?\r\nYes, nearby. Madeline quotes the delivery fee when she approves your order, and it's paid up front as a deposit.\r\n\r\n"
+                + "How do I pay?\r\nNothing is charged online. You pay at pickup or delivery with cash, Venmo or Zelle.\r\n\r\n"
+                + "Can I freeze it?\r\nYes!\r\n\r\n"
+                + "How should I store it?\r\nTo enjoy it later, slice it and freeze the slices.\r\n\r\n"
+                + "Best way to reheat?\r\nToast it and butter it up!";
+        String before = jdbc.query("select value from setting where key = 'about.faq'", rs -> rs.next() ? rs.getString(1) : null);
+        jdbc.update("insert into setting (key, value) values ('about.faq', ?) on conflict (key) do update set value = excluded.value", old);
+        try {
+            jdbc.execute(new String(getClass().getResourceAsStream("/db/migration/V19__shorter_faq.sql").readAllBytes()));
+            assertThat(jdbc.queryForObject("select value from setting where key = 'about.faq'", String.class)).isEqualTo(
+                    "Can I freeze it?\r\nYes!\r\n\r\nHow should I store and reheat it?\nTo enjoy it later, slice it and freeze the slices. To reheat, toast it and butter it up!");
+        } finally {
+            if (before == null) jdbc.update("delete from setting where key = 'about.faq'");
+            else jdbc.update("update setting set value = ? where key = 'about.faq'", before);
+        }
+    }
+
+    @Test
+    void aboutAnswersPayingAndTipping() throws Exception {
+        mvc.perform(get("/about")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("How do I pay? Can I tip?")))
+                .andExpect(content().string(Matchers.containsString("Tips are never expected, but always appreciated!")))
+                .andExpect(content().string(Matchers.not(Matchers.containsString("Do you deliver?"))));
     }
 
     @Test

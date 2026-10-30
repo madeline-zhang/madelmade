@@ -19,8 +19,9 @@
           <h2 class="card-title">Order rules</h2>
           <div class="field-row">
             <div class="field"><label for="noticeDays">Days of notice</label><input type="number" min="0" max="60" id="noticeDays" name="rules.noticeDays" th:value="${settings.get('rules.noticeDays')}"></div>
-            <div class="field"><label for="maxLoaves">Loaves at a time</label><input type="number" min="1" max="50" id="maxLoaves" name="rules.maxLoaves" th:value="${settings.get('rules.maxLoaves')}">
-              <div class="help">Every open order counts: waiting for review, approved or baked. Customers see a heads-up that you may move their date when an order would go over.</div></div>
+            <div class="field"><label for="maxLoaves">Most loaves</label><input type="number" min="1" max="50" id="maxLoaves" name="rules.maxLoaves" th:value="${settings.get('rules.maxLoaves')}"></div>
+            <div class="field"><label for="capacityDays">In any stretch of (days)</label><input type="number" min="1" max="30" id="capacityDays" name="rules.capacityDays" th:value="${settings.get('rules.capacityDays')}">
+              <div class="help">3 and 3 means no more than 3 loaves due in any 3 days in a row. Orders count by their due date, so ones far ahead don't block this week. Customers see a heads-up at checkout when their date is busy.</div></div>
             <div class="field"><label for="maxPerOrder">Most loaves in one order</label><input type="number" min="1" max="50" id="maxPerOrder" name="rules.maxPerOrder" th:value="${settings.get('rules.maxPerOrder')}">
               <div class="help">Customers can't add more than this to one cart.</div></div>
           </div>

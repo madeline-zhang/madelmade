@@ -12,6 +12,7 @@
   </div>
   <div th:if="${venmo != null and !venmo.isEmpty()}" style="margin:0 0 14px;">
     <strong>Venmo:</strong> <a th:href="${'https://venmo.com/u/' + venmo.substring(1)}" th:text="${venmo}" style="color:#A4502F;">@madelmade</a><span th:if="${!order.shipping}"> · You can pay at <span th:text="${order.delivery ? 'delivery' : 'pickup'}">pickup</span>, or early if you like.</span>
+    <span th:if="${tipsNote != null and !tipsNote.isEmpty()}" th:text="${' ' + tipsNote}"></span>
   </div>
   <div th:if="${!producerName.isEmpty()}" style="margin:0 0 14px;">
     <strong>Made by:</strong> <span th:text="${producerName}">Madeline</span><span th:if="${!producerPhone.isEmpty()}" th:text="${' · ' + producerPhone}"></span>

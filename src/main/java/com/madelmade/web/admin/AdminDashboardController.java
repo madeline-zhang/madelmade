@@ -58,7 +58,7 @@ public class AdminDashboardController {
 
     /** What the chosen period and fulfillment add up to. */
     public record Breakdown(int orders, BigDecimal gross, BigDecimal average, int pickup, int delivery, int shipping, int priority,
-                            int promo, BigDecimal deliveryFees, BigDecimal shippingFees) {}
+                            int promo, BigDecimal deliveryFees, BigDecimal shippingFees, BigDecimal tips, int tipped) {}
 
     static final List<Choice> PERIODS = List.of(new Choice("month", "This month"), new Choice("year", "This year"),
             new Choice("12m", "Last 12 months"), new Choice("all", "All time"));
@@ -143,8 +143,8 @@ public class AdminDashboardController {
     private static Breakdown breakdown(List<SalesStats.Sale> list) {
         BigDecimal gross = sum(list);
         int n = list.size();
-        int pickup = 0, delivery = 0, shipping = 0, priority = 0, promo = 0;
-        BigDecimal fees = BigDecimal.ZERO, shipFees = BigDecimal.ZERO;
+        int pickup = 0, delivery = 0, shipping = 0, priority = 0, promo = 0, tipped = 0;
+        BigDecimal fees = BigDecimal.ZERO, shipFees = BigDecimal.ZERO, tips = BigDecimal.ZERO;
         for (var s : list) {
             CustomerOrder o = s.order();
             BigDecimal fee = o.getDeliveryFee() == null ? BigDecimal.ZERO : o.getDeliveryFee();
@@ -155,9 +155,10 @@ public class AdminDashboardController {
             }
             if (o.isPriority()) priority++;
             if (o.getPromoCode() != null && !o.getPromoCode().isBlank()) promo++;
+            if (o.getTip().signum() > 0) { tipped++; tips = tips.add(o.getTip()); }
         }
         BigDecimal avg = n == 0 ? BigDecimal.ZERO : gross.divide(BigDecimal.valueOf(n), 2, RoundingMode.HALF_UP);
-        return new Breakdown(n, gross, avg, pickup, delivery, shipping, priority, promo, fees, shipFees);
+        return new Breakdown(n, gross, avg, pickup, delivery, shipping, priority, promo, fees, shipFees, tips, tipped);
     }
 
     private static BigDecimal sum(List<SalesStats.Sale> list) {

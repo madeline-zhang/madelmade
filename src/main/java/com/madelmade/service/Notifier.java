@@ -61,6 +61,7 @@ public class Notifier {
         boolean shareAddress = wording == EmailWording.APPROVED && o.getFulfillment() == com.madelmade.domain.Fulfillment.PICKUP;
         vars.put("pickupAddress", shareAddress ? settings.pickupAddressFor(o) : "");
         vars.put("venmo", wording == EmailWording.APPROVED ? settings.venmo() : "");
+        vars.put("tipsNote", settings.get("notice.tips"));
         // Tennessee's home food law asks for the producer's name and phone with the order.
         vars.put("producerName", wording == EmailWording.APPROVED ? settings.get("producer.name") : "");
         vars.put("producerPhone", wording == EmailWording.APPROVED ? settings.get("producer.phone") : "");

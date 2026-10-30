@@ -114,8 +114,11 @@ public class AdminOrdersController {
         model.addAttribute("orders", list);
         model.addAttribute("selected", selected);
         model.addAttribute("todayText", TODAY.format(formats.today()));
-        model.addAttribute("inProgress", orderService.loavesBooked());
-        if (selected != null) contactLinks(selected, model);
+        model.addAttribute("bookedSoon", orderService.loavesBookedSoon());
+        if (selected != null) {
+            contactLinks(selected, model);
+            model.addAttribute("bookedAround", orderService.loavesBookedAround(selected.getRequestedDate(), selected.getId()));
+        }
         return "admin/orders";
     }
 
@@ -173,6 +176,16 @@ public class AdminOrdersController {
     public String approve(@PathVariable Long id, @RequestParam(required = false) String message,
                           @RequestParam(required = false) String pickupSpot, RedirectAttributes flash) {
         return act(find(id), flash, "Approved. The customer has been emailed.", o -> orderService.approve(o, message, pickupSpot));
+    }
+
+    @PostMapping("/orders/{id}/tip")
+    public String tip(@PathVariable Long id, @RequestParam(required = false) String tip, RedirectAttributes flash) {
+        BigDecimal amount = decimal(tip);
+        if (tip != null && !tip.isBlank() && amount == null) {
+            flash.addFlashAttribute("errors", List.of("Enter the tip as a dollar amount, like 5 or 5.50."));
+            return "redirect:/admin/orders/" + id;
+        }
+        return act(find(id), flash, "Tip saved. It counts toward your income in the dashboard and export.", o -> orderService.saveTip(o, amount));
     }
 
     @PostMapping("/orders/{id}/pickup-spot")
@@ -242,11 +255,11 @@ public class AdminOrdersController {
         List<String> head = List.of("Order", "Order date", "Completed date", "Status", "Customer", "Email", "Phone", "Fulfillment",
                 "Requested date", "Items", "Items subtotal", "Promo code", "Discount", "Priority fee", "Delivery or shipping fee", "Adjustment",
                 "Taxable (prepared food)", "Taxable (food or grocery)", "Not taxable", "State rate prepared %", "State rate food %",
-                "Local rate %", "State tax", "Local tax", "Total tax", "Total collected", "Tax mode", "Paid");
+                "Local rate %", "State tax", "Local tax", "Total tax", "Total collected", "Tax mode", "Paid", "Tip");
         StringBuilder sb = new StringBuilder(String.join(",", head.stream().map(AdminOrdersController::csv).toList())).append('\n');
         BigDecimal[] sums = new BigDecimal[11];
         java.util.Arrays.fill(sums, BigDecimal.ZERO);
-        BigDecimal collected = BigDecimal.ZERO;
+        BigDecimal collected = BigDecimal.ZERO, tips = BigDecimal.ZERO;
         List<CustomerOrder> all = new ArrayList<>(orders.findAllByOrderByCreatedAtDesc());
         java.util.Collections.reverse(all);
         for (CustomerOrder o : all) {
@@ -258,6 +271,7 @@ public class AdminOrdersController {
             if (counts) {
                 for (int k = 0; k < sums.length; k++) sums[k] = sums[k].add(row[k] == null ? BigDecimal.ZERO : row[k]);
                 collected = collected.add(o.getTotal());
+                tips = tips.add(o.getTip());
             }
             sb.append(String.join(",", List.of(
                     o.getNumber(), formats.iso(o.getCreatedAt().atZone(props.zoneId()).toLocalDate()), done == null ? "" : formats.iso(done),
@@ -268,7 +282,7 @@ public class AdminOrdersController {
                     money.plain(o.getTaxablePrepared()), money.plain(o.getTaxableFood()), money.plain(o.getNonTaxable()),
                     rate(o, o.getTaxRates().prepared()), rate(o, o.getTaxRates().food()), rate(o, o.getTaxRates().local()),
                     money.plain(o.getStateTax()), money.plain(o.getLocalTax()), money.plain(o.getTax()), money.plain(o.getTotal()),
-                    o.getTaxMode(), o.isPaid() ? "yes" : "no").stream().map(AdminOrdersController::csv).toList()));
+                    o.getTaxMode(), o.isPaid() ? "yes" : "no", money.plain(o.getTip())).stream().map(AdminOrdersController::csv).toList()));
             sb.append('\n');
         }
         List<String> totals = new ArrayList<>(List.of("Totals (completed orders)", "", "", "", "", "", "", "", "", ""));
@@ -279,6 +293,7 @@ public class AdminOrdersController {
         for (int k = 8; k <= 10; k++) totals.add(money.plain(sums[k]));
         totals.add(money.plain(collected));
         totals.addAll(List.of("", ""));
+        totals.add(money.plain(tips));
         sb.append(String.join(",", totals.stream().map(AdminOrdersController::csv).toList())).append('\n');
         String name = from == null && to == null ? "madelmade-orders-" + formats.today()
                 : "madelmade-orders-" + (from == null ? "start" : from) + "-to-" + (to == null ? formats.today() : to);
