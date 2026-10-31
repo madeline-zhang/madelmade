@@ -188,6 +188,26 @@ class SiteTest {
     }
 
     @Test
+    void customerQuotesShowBelowTheMenuWithOrWithoutAName() throws Exception {
+        var admin = org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+                .user("madeline@example.com").roles("ADMIN");
+        var csrf = org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf();
+        mvc.perform(get("/")).andExpect(content().string(Matchers.not(Matchers.containsString("Kind words"))));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/quotes/new")
+                .param("quote", "Best bread I've had in years.").param("name", " ").with(admin).with(csrf))
+                .andExpect(status().is3xxRedirection());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/quotes/new")
+                .param("quote", "The butterfly loaf stole the show.").param("name", "Sarah K.").param("detail", "Birthday loaf").with(admin).with(csrf))
+                .andExpect(status().is3xxRedirection());
+        mvc.perform(get("/")).andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Kind words")))
+                .andExpect(content().string(Matchers.containsString("Best bread I&#39;ve had in years.")))
+                .andExpect(content().string(Matchers.containsString("Sarah K. · Birthday loaf")));
+        mvc.perform(get("/admin/quotes").with(admin)).andExpect(status().isOk());
+        jdbc.update("delete from testimonial");
+    }
+
+    @Test
     void unknownOrderIsNotFound() throws Exception {
         mvc.perform(get("/o/not-a-real-token")).andExpect(status().isNotFound());
     }

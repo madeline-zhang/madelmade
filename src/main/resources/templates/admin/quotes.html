@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: page(~{::title}, ~{::main}, 'quotes')}">
+<head><title>Customer quotes · MadelMade admin</title></head>
+<body>
+<main id="main" class="admin-main">
+  <div th:replace="~{admin/site-tabs :: tabs('quotes')}"></div>
+  <div class="admin-head">
+    <div class="stack" style="gap: 4px"><div class="t-eyebrow">Kind words, below the menu</div><h1>Customer quotes</h1></div>
+    <a class="btn btn-secondary btn-small" th:if="${!quotes.isEmpty()}" th:href="@{/#quotes}" target="_blank" rel="noopener">View on the home page&nbsp;&nbsp;↗</a>
+  </div>
+
+  <div class="alert alert-info" th:if="${quotes.isEmpty()}">The home page section stays hidden until you add the first quote.</div>
+
+  <section class="stack" style="gap: 16px" th:unless="${quotes.isEmpty()}">
+    <div class="help" style="margin: 0">The home page shows up to three at a time. With more than that, it slowly cycles through them in this order.</div>
+    <div class="card stack" th:each="q, it : ${quotes}" th:id="${'quote-' + q.id}">
+      <form method="post" th:action="@{/admin/quotes/{id}(id=${q.id})}" class="stack" style="gap: 10px" data-autosave>
+        <div class="field"><label th:for="${'q-' + q.id}" th:text="${'Quote ' + it.count}">Quote 1</label>
+          <textarea th:id="${'q-' + q.id}" name="quote" rows="3" maxlength="600" required th:text="${q.quote}"></textarea></div>
+        <div class="field-row">
+          <div class="field"><label th:for="${'n-' + q.id}">Name <span class="muted">(optional)</span></label>
+            <input type="text" th:id="${'n-' + q.id}" name="name" maxlength="80" th:value="${q.name}" placeholder="e.g. Sarah K."></div>
+          <div class="field"><label th:for="${'d-' + q.id}">What they ordered <span class="muted">(optional)</span></label>
+            <input type="text" th:id="${'d-' + q.id}" name="detail" maxlength="120" th:value="${q.detail}" placeholder="e.g. Birthday stencil loaf"></div>
+        </div>
+        <div class="process-admin-foot">
+          <span th:replace="~{admin/arrows :: arrows('', 'this quote', ${it.first}, ${it.last})}"></span>
+          <button type="submit" class="btn btn-secondary btn-small" data-autosave-hide>Save</button>
+          <button type="submit" class="link-btn" th:form="${'del-' + q.id}" style="margin-left: auto">Delete quote</button>
+        </div>
+      </form>
+      <form method="post" th:action="@{/admin/quotes/{id}/delete(id=${q.id})}" th:id="${'del-' + q.id}" data-confirm="Delete this quote?"></form>
+    </div>
+  </section>
+
+  <section class="card stack" id="add-quote">
+    <h2 class="card-title">Add a quote</h2>
+    <form method="post" th:action="@{/admin/quotes/new}" class="stack" style="gap: 12px">
+      <div class="field"><label for="newQuote">What they said</label>
+        <textarea id="newQuote" name="quote" rows="3" maxlength="600" required placeholder="e.g. The butterfly loaf was the star of the party. Everyone asked where it came from!"></textarea>
+        <div class="help">Short quotes read best: one to three sentences. Ask before using someone's words, and leave the name blank if they'd rather stay anonymous.</div></div>
+      <div class="field-row">
+        <div class="field"><label for="newName">Name <span class="muted">(optional)</span></label><input type="text" id="newName" name="name" maxlength="80" placeholder="e.g. Sarah K."></div>
+        <div class="field"><label for="newDetail">What they ordered <span class="muted">(optional)</span></label><input type="text" id="newDetail" name="detail" maxlength="120" placeholder="e.g. Birthday stencil loaf"></div>
+      </div>
+      <button type="submit" class="btn" style="align-self: flex-start">Add quote</button>
+    </form>
+  </section>
+</main>
+</body>
+</html>

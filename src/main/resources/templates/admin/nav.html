@@ -4,7 +4,7 @@
   <div class="nav-group" aria-hidden="true">Shop</div>
   <a th:href="@{/admin/products}" th:classappend="${section == 'products'} ? 'is-on'">Products</a>
   <a th:href="@{/admin/promos}" th:classappend="${section == 'promos'} ? 'is-on'">Promo codes</a>
-  <a th:href="@{/admin/hero}" th:classappend="${section == 'hero' or section == 'process' or section == 'gallery' or section == 'pages'} ? 'is-on'">Website</a>
+  <a th:href="@{/admin/hero}" th:classappend="${section == 'hero' or section == 'process' or section == 'gallery' or section == 'quotes' or section == 'pages'} ? 'is-on'">Website</a>
   <div class="nav-group" aria-hidden="true">People</div>
   <a th:href="@{/admin/customers}" th:classappend="${section == 'customers'} ? 'is-on'">Customers</a>
   <a th:href="@{/admin/feedback}" th:classappend="${section == 'feedback'} ? 'is-on'">Feedback<span class="pill-count" th:if="${openFeedbackCount > 0}" th:text="${openFeedbackCount}">2</span></a>
