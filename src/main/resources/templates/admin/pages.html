@@ -61,6 +61,8 @@
             <div class="help">Shown at checkout, on order pages, in approval emails and in the About FAQ.</div></div>
           <div class="field"><label for="noticeDecline">Right to decline</label><textarea id="noticeDecline" name="notice.decline" rows="3" th:text="${settings.get('notice.decline')}"></textarea>
             <div class="help">Shown at checkout and in the About FAQ.</div></div>
+          <div class="field"><label for="noticeTips">Tips note</label><input type="text" id="noticeTips" name="notice.tips" maxlength="200" th:value="${settings.get('notice.tips')}">
+            <div class="help">Shown next to your Venmo once you approve an order, and in the About FAQ. Leave it blank to hide it. Record tips you get on each order's page.</div></div>
         </section>
       </div>
     </div>

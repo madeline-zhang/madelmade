@@ -4,9 +4,9 @@
   <span th:text="${settings.get('notice.pickupOnly')}">Lattes are pickup only.</span>
 </div>
 
-<div th:fragment="busy" class="notice-box" th:if="${overCapacity}" role="note">
-  <strong>Madeline's oven is full right now</strong>
-  <span th:text="${'She bakes up to ' + settings.maxLoaves() + ' loaves at a time, and this order would go over. You can still send your request, but she may ask to move it to a later date.'}">She bakes up to 3 loaves at a time.</span>
+<div th:fragment="busy" class="notice-box" th:hidden="${!overCapacity}" role="note" data-busy>
+  <strong>That date is already busy</strong>
+  <span th:text="${'Madeline bakes up to ' + settings.maxLoaves() + ' loaves ' + settings.capacityPhrase() + ', and this order would go over around that date. You can still send your request, but she may ask to move it. A later date may be open.'}">Madeline bakes up to 3 loaves in any 3 days.</span>
 </div>
 
 <p th:fragment="homeKitchen" class="home-kitchen t-small muted" th:text="${settings.get('notice.homeKitchen')}">This product was produced at a private residence that is exempt from state licensing and inspection.</p>

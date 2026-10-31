@@ -19,7 +19,7 @@
     </div>
 
     <div class="two-col">
-      <form method="post" th:action="@{/checkout}" th:object="${form}" class="stack" style="gap: 28px" data-checkout-form
+      <form method="post" th:action="@{/checkout}" th:object="${form}" class="stack" style="gap: 28px" data-checkout-form th:attr="data-full-dates=${fullDates}"
             th:data-min-standard="${minStandard}" th:data-min-priority="${minPriority}">
         <section class="card stack">
           <h2 class="card-title">Your details</h2>

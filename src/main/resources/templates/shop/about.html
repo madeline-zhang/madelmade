@@ -31,18 +31,16 @@
       <h2 id="faq" class="t-section section-title">Frequently asked questions</h2>
       <p class="muted">Anything else? Email <a href="mailto:madelmadewithlove@gmail.com">madelmadewithlove@gmail.com</a> or message <a href="https://www.instagram.com/madelmadewithlove/" target="_blank" rel="noopener">@madelmadewithlove</a> on Instagram.</p>
       <div class="faq">
-        <details><summary>How much notice do you need?</summary>
-          <p th:text="${'About ' + settings.noticeDays() + ' days for most loaves.' + (settings.priorityEnabled() ? ' Need it sooner? Priority gets it ready in ' + settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's') + ' for an extra ' + @money.fmt(settings.priorityFee()) + ', when there''s room.' : '')}">Three days for most loaves.</p></details>
-        <details><summary>Where do I pick up?</summary>
-          <p th:text="${'Pickup is in the ' + settings.pickupArea() + ' area. You''ll get the exact address once your order is approved.'}">Pickup is in the Brentwood and Nolensville area.</p></details>
-        <details><summary>How many loaves can you bake?</summary>
-          <p th:text="${'I bake up to ' + settings.maxLoaves() + ' loaves at a time across all orders. When lots of orders come in for the same days, I may ask to move your order to a later date before I approve it. If the new date doesn''t work for you, you can cancel at no cost.'}">Up to 3 loaves at a time.</p></details>
-        <details th:if="${settings.shippingEnabled()}"><summary>Can you ship my bread?</summary>
-          <p th:text="${settings.get('notice.shipping') + ' I quote the shipping cost when I approve your order.'}">I can only ship within Tennessee.</p></details>
-        <details><summary>Can I get a refund?</summary>
-          <p th:text="${settings.get('notice.refund')}">Orders can be cancelled for free until I approve them.</p></details>
-        <details><summary>Can you turn down an order?</summary>
-          <p th:text="${settings.get('notice.decline')}">Madeline has the right to decline any order.</p></details>
+        <details><summary>How far ahead should I order?</summary>
+          <p th:text="${'About ' + settings.noticeDays() + ' days for most loaves.' + (settings.priorityEnabled() ? ' Need it sooner? Priority gets it ready in ' + settings.priorityNoticeDays() + ' day' + (settings.priorityNoticeDays() == 1 ? '' : 's') + ' for an extra ' + @money.fmt(settings.priorityFee()) + ', when there''s room.' : '') + ' I bake up to ' + settings.maxLoaves() + ' loaves ' + settings.capacityPhrase() + ', so when lots of orders land close together I may ask to move yours before I approve it. If the new date doesn''t work, you can cancel at no cost.'}">About three days for most loaves.</p></details>
+        <details><summary th:text="${settings.shippingEnabled() ? 'Pickup, delivery or shipping?' : 'Pickup or delivery?'}">Pickup or delivery?</summary>
+          <p th:text="${'Pickup is in the ' + settings.pickupArea() + ' area, and you''ll get the exact spot once I approve your order. I also deliver nearby. I quote the fee when I approve, and it''s paid up front.'}">Pickup is in the Brentwood and Nolensville area.</p>
+          <p th:if="${settings.shippingEnabled()}" th:text="${settings.get('notice.shipping') + ' I quote the shipping cost when I approve your order.'}">I can only ship within Tennessee.</p></details>
+        <details><summary th:text="${settings.get('notice.tips').isEmpty() ? 'How do I pay?' : 'How do I pay? Can I tip?'}">How do I pay?</summary>
+          <p th:text="${'Nothing is charged online. You pay at pickup or delivery with cash, Venmo or Zelle, or early if you like.' + (settings.shippingEnabled() ? ' Shipped orders are paid in full before they ship.' : '') + (settings.get('notice.tips').isEmpty() ? '' : ' ' + settings.get('notice.tips'))}">Nothing is charged online.</p></details>
+        <details><summary>Can I cancel or get a refund?</summary>
+          <p th:text="${settings.get('notice.refund')}">Orders can be cancelled for free until I approve them.</p>
+          <p th:text="${settings.get('notice.decline')}">I can decline any order.</p></details>
         <details th:each="f : ${settings.faqs()}"><summary th:text="${f.question}">Do you deliver?</summary>
           <p th:text="${f.answer}">Yes, nearby.</p></details>
       </div>

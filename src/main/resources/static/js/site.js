@@ -375,6 +375,8 @@
     var prio = $('[data-priority]', co);
     var minStd = co.getAttribute('data-min-standard');
     var minPri = co.getAttribute('data-min-priority');
+    var busy = $('[data-busy]', co);
+    var full = (co.getAttribute('data-full-dates') || '').split(',');
     var pretty = function (iso) {
       var d = new Date(iso + 'T12:00:00');
       return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -391,8 +393,10 @@
         if (date.value && date.value < min) date.value = min;
       }
       if (help) help.textContent = 'Earliest: ' + pretty(min);
+      if (busy) busy.hidden = !(date && date.value && full.indexOf(date.value) >= 0);
     };
     co.addEventListener('change', sync);
+    if (date) date.addEventListener('input', sync);
     sync();
   }
 

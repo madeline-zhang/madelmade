@@ -47,6 +47,5 @@ public class GlobalModel {
         String q = request.getQueryString();
         model.addAttribute("path", request.getRequestURI() + (q == null ? "" : "?" + q));
         if (!model.containsAttribute("openCart")) model.addAttribute("openCart", false);
-        model.addAttribute("overCapacity", orders.getObject().wouldBeOverCapacity(cart.getLoafCount()));
     }
 }

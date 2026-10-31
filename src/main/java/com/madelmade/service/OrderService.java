@@ -83,15 +83,60 @@ public class OrderService {
         return settings.priorityEnabled() && settings.priorityNoticeDays() < standardNotice(cart);
     }
 
-    /** Loaves in every order that's still open: waiting for review, approved or baked. */
-    public int loavesBooked() {
-        return orders.findByStatusInOrderByCreatedAtDesc(OrderStatus.OPEN).stream()
-                .mapToInt(CustomerOrder::getLoafCount).sum();
+    /** Loaves due each day in open orders (waiting for review, approved or baked), leaving out one order if given. */
+    private Map<LocalDate, Integer> loavesByDay(Long excludeOrderId) {
+        Map<LocalDate, Integer> byDay = new java.util.HashMap<>();
+        for (CustomerOrder o : orders.findByStatusInOrderByCreatedAtDesc(OrderStatus.OPEN)) {
+            if (o.getRequestedDate() == null || o.getId() != null && o.getId().equals(excludeOrderId)) continue;
+            byDay.merge(o.getRequestedDate(), o.getLoafCount(), Integer::sum);
+        }
+        return byDay;
     }
 
-    /** True when this cart would put Madeline over the loaves she can have on the go at once. */
-    public boolean wouldBeOverCapacity(int cartLoaves) {
-        return cartLoaves > 0 && loavesBooked() + cartLoaves > settings.maxLoaves();
+    /**
+     * The most loaves already due in any stretch of capacityDays days that includes this date. With a
+     * 3-day stretch and a Friday date, that's the busiest of Wed-Fri, Thu-Sat and Fri-Sun.
+     */
+    static int busiestStretch(Map<LocalDate, Integer> byDay, LocalDate date, int n) {
+        int most = 0;
+        for (int start = -(n - 1); start <= 0; start++) {
+            int sum = 0;
+            for (int i = 0; i < n; i++) sum += byDay.getOrDefault(date.plusDays(start + i), 0);
+            most = Math.max(most, sum);
+        }
+        return most;
+    }
+
+    /** Loaves already booked around this date, not counting the given order. */
+    public int loavesBookedAround(LocalDate date, Long excludeOrderId) {
+        return date == null ? 0 : busiestStretch(loavesByDay(excludeOrderId), date, settings.capacityDays());
+    }
+
+    /** Loaves due over the next capacityDays days, starting today. */
+    public int loavesBookedSoon() {
+        Map<LocalDate, Integer> byDay = loavesByDay(null);
+        LocalDate today = formats.today();
+        int sum = 0;
+        for (int i = 0; i < settings.capacityDays(); i++) sum += byDay.getOrDefault(today.plusDays(i), 0);
+        return sum;
+    }
+
+    /** True when this many more loaves on this date would go over the limit for some stretch of days around it. */
+    public boolean wouldBeOverCapacity(int loaves, LocalDate date) {
+        return loaves > 0 && date != null && loavesBookedAround(date, null) + loaves > settings.maxLoaves();
+    }
+
+    /** Dates in the coming months where these loaves would go over, so checkout can warn before sending. */
+    public List<LocalDate> fullDates(int loaves, LocalDate from) {
+        List<LocalDate> full = new ArrayList<>();
+        if (loaves <= 0) return full;
+        Map<LocalDate, Integer> byDay = loavesByDay(null);
+        if (byDay.isEmpty() && loaves <= settings.maxLoaves()) return full;
+        for (int i = 0; i < 180; i++) {
+            LocalDate d = from.plusDays(i);
+            if (busiestStretch(byDay, d, settings.capacityDays()) + loaves > settings.maxLoaves()) full.add(d);
+        }
+        return full;
     }
 
     public String perOrderLimitMessage(int inCart) {
@@ -213,7 +258,7 @@ public class OrderService {
         items.forEach(o::addItem);
         o.applyTaxRates(settings.taxRates());
         o.recalculate();
-        o.setOverCapacity(wouldBeOverCapacity(o.getLoafCount()));
+        o.setOverCapacity(wouldBeOverCapacity(o.getLoafCount(), o.getRequestedDate()));
         o.changeStatus(OrderStatus.NEEDS_REVIEW, "Request submitted");
         orders.save(o);
         if (promo != null) promos.recordUse(promo);
@@ -514,6 +559,14 @@ public class OrderService {
     public void savePickupSpot(CustomerOrder o, String spot) {
         o.setPickupAddress(trim(spot));
         o.setUpdatedAt(Instant.now());
+        orders.save(o);
+    }
+
+    @Transactional
+    public void saveTip(CustomerOrder o, BigDecimal tip) {
+        if (tip == null) tip = BigDecimal.ZERO;
+        if (tip.signum() < 0) throw new UserFacingException("A tip can't be less than $0.");
+        o.setTip(tip.setScale(2, java.math.RoundingMode.HALF_UP));
         orders.save(o);
     }
 
