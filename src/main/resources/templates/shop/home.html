@@ -44,6 +44,18 @@
       </div>
     </div>
   </section>
+
+  <section id="quotes" class="quotes-section" th:if="${!quotes.isEmpty()}" aria-labelledby="quotes-title">
+    <div class="wrap">
+      <h2 id="quotes-title" class="t-section section-title">Kind words</h2>
+      <div class="quote-grid" data-quotes>
+        <figure class="quote-card" th:each="q, it : ${quotes}" th:hidden="${it.index >= 3}" data-quote>
+          <blockquote th:text="${q.quote}">The butterfly loaf was the star of the party.</blockquote>
+          <figcaption th:unless="${q.byline.isEmpty()}" th:text="${q.byline}">Sarah K. · Birthday loaf</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
 </main>
 </body>
 </html>

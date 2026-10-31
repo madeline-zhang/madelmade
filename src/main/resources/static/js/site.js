@@ -130,6 +130,37 @@
     }
   }
 
+  // Home quotes: three at a time; with more, the next group fades in every few seconds. Pauses while
+  // hovered or focused, and stays put with reduced motion.
+  var quoteBox = $('[data-quotes]');
+  if (quoteBox) {
+    var quotes = Array.prototype.slice.call(quoteBox.querySelectorAll('[data-quote]'));
+    var calmQuotes = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var per = 3, start = 0, held = false;
+    quoteBox.addEventListener('mouseenter', function () { held = true; });
+    quoteBox.addEventListener('mouseleave', function () { held = false; });
+    quoteBox.addEventListener('focusin', function () { held = true; });
+    quoteBox.addEventListener('focusout', function () { held = false; });
+    if (quotes.length > per && !calmQuotes) {
+      setInterval(function () {
+        if (held || document.hidden) return;
+        quotes.forEach(function (q) { if (!q.hidden) q.classList.add('is-fading'); });
+        setTimeout(function () {
+          start = (start + per) % quotes.length;
+          quotes.forEach(function (q, i) {
+            var shown = (i - start + quotes.length) % quotes.length < per;
+            q.hidden = !shown;
+            if (shown) q.classList.add('is-fading');
+          });
+          // Let the browser draw them faded before easing back in.
+          requestAnimationFrame(function () { requestAnimationFrame(function () {
+            quotes.forEach(function (q) { q.classList.remove('is-fading'); });
+          }); });
+        }, 600);
+      }, 9000);
+    }
+  }
+
   // How it's made: steps ease in as they scroll into view, and videos play only while on screen.
   var steps = $('.process-steps');
   if (steps && 'IntersectionObserver' in window) {

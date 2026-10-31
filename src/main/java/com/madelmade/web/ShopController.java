@@ -6,6 +6,7 @@ import com.madelmade.repo.CategoryRepository;
 import com.madelmade.repo.GalleryPhotoRepository;
 import com.madelmade.repo.ProcessStepRepository;
 import com.madelmade.repo.ProductRepository;
+import com.madelmade.repo.TestimonialRepository;
 import com.madelmade.service.HeroService;
 import com.madelmade.service.SettingsService;
 import com.madelmade.service.VideoService;
@@ -24,9 +25,12 @@ public class ShopController {
     private final HeroService hero;
     private final ProcessStepRepository steps;
     private final VideoService videos;
+    private final TestimonialRepository quotes;
 
     public ShopController(ProductRepository products, CategoryRepository categories, GalleryPhotoRepository gallery,
-                          SettingsService settings, HeroService hero, ProcessStepRepository steps, VideoService videos) {
+                          SettingsService settings, HeroService hero, ProcessStepRepository steps, VideoService videos,
+                          TestimonialRepository quotes) {
+        this.quotes = quotes;
         this.steps = steps;
         this.videos = videos;
         this.settings = settings;
@@ -45,6 +49,7 @@ public class ShopController {
         model.addAttribute("products", menu);
         model.addAttribute("categories", used);
         model.addAttribute("heroSlides", hero.slides());
+        model.addAttribute("quotes", quotes.findAllByOrderByDisplayOrderAscIdAsc());
         return "shop/home";
     }
 
